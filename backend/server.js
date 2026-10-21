@@ -133,7 +133,7 @@ app.post('/api/contacts', async (req, res) => {
     if (!name || !phone) {
       return res.status(400).json({
         success: false,
-        error: 'नाम और मोबाइल नंबर दोनों आवश्यक हैं (Both name and phone are required)',
+        error: 'Both name and phone number are required',
       });
     }
 
@@ -142,8 +142,8 @@ app.post('/api/contacts', async (req, res) => {
     const contact = new Contact({
       name: name.trim(),
       phone: cleanedPhone,
-      ward: ward?.trim() || 'महापुरा (Mahapura)',
-      category: category?.trim() || 'समर्थक (Supporter)',
+      ward: ward?.trim() || 'Main List',
+      category: category?.trim() || 'General',
       notes: notes?.trim() || '',
     });
 
@@ -157,12 +157,12 @@ app.post('/api/contacts', async (req, res) => {
 // POST /api/contacts/bulk (Bulk contacts list import)
 app.post('/api/contacts/bulk', async (req, res) => {
   try {
-    const { contacts, defaultWard = 'महापुरा (Mahapura)', defaultCategory = 'समर्थक (Supporter)' } = req.body;
+    const { contacts, defaultWard = 'Main List', defaultCategory = 'General' } = req.body;
 
     if (!Array.isArray(contacts) || contacts.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'मान्य संपर्कों की सूची भेजें (Please provide an array of contacts)',
+        error: 'Please provide a valid array of contacts',
       });
     }
 
@@ -175,7 +175,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
       const phone = normalizePhone(rawPhone);
 
       if (!name || !phone || phone.length < 8) {
-        skipped.push({ item, reason: 'अमान्य नाम या फ़ोन नंबर' });
+        skipped.push({ item, reason: 'Invalid name or phone number' });
         continue;
       }
 
@@ -193,7 +193,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
     if (validDocs.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'कोई मान्य संपर्क नहीं मिला (No valid contacts to insert)',
+        error: 'No valid contacts to insert',
         skipped,
       });
     }
@@ -202,7 +202,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `${inserted.length} संपर्क सफलतापूर्वक जोड़े गए!`,
+      message: `${inserted.length} contacts added successfully!`,
       insertedCount: inserted.length,
       skippedCount: skipped.length,
       skipped,
@@ -220,7 +220,7 @@ app.patch('/api/contacts/:id/contacted', async (req, res) => {
 
     const contact = await Contact.findById(id);
     if (!contact) {
-      return res.status(404).json({ success: false, error: 'संपर्क नहीं मिला' });
+      return res.status(404).json({ success: false, error: 'Contact not found' });
     }
 
     if (contacted !== undefined) {
@@ -257,7 +257,7 @@ app.put('/api/contacts/:id', async (req, res) => {
 
     const updated = await Contact.findByIdAndUpdate(id, updateData, { new: true });
     if (!updated) {
-      return res.status(404).json({ success: false, error: 'संपर्क नहीं मिला' });
+      return res.status(404).json({ success: false, error: 'Contact not found' });
     }
 
     res.json({ success: true, data: updated });
@@ -272,9 +272,9 @@ app.delete('/api/contacts/:id', async (req, res) => {
     const { id } = req.params;
     const deleted = await Contact.findByIdAndDelete(id);
     if (!deleted) {
-      return res.status(404).json({ success: false, error: 'संपर्क नहीं मिला' });
+      return res.status(404).json({ success: false, error: 'Contact not found' });
     }
-    res.json({ success: true, message: 'संपर्क हटा दिया गया', data: deleted });
+    res.json({ success: true, message: 'Contact deleted successfully', data: deleted });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -286,7 +286,7 @@ app.delete('/api/contacts', async (req, res) => {
     const { ids } = req.body;
     if (Array.isArray(ids) && ids.length > 0) {
       const result = await Contact.deleteMany({ _id: { $in: ids } });
-      return res.json({ success: true, message: `${result.deletedCount} संपर्क हटाए गए` });
+      return res.json({ success: true, message: `${result.deletedCount} contacts deleted` });
     }
     res.status(400).json({ success: false, error: 'IDs array required' });
   } catch (error) {
@@ -295,5 +295,5 @@ app.delete('/api/contacts', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Mahapura Election Server running on port ${PORT}`);
+  console.log(`🚀 Outreach Server running on port ${PORT}`);
 });

@@ -3,8 +3,8 @@ import { X, FileSpreadsheet, AlertCircle } from 'lucide-react';
 
 export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
   const [rawText, setRawText] = useState('');
-  const [defaultWard, setDefaultWard] = useState('वार्ड 1 (Ward 1)');
-  const [defaultCategory, setDefaultCategory] = useState('समर्थक (Supporter)');
+  const [defaultWard, setDefaultWard] = useState('Main List');
+  const [defaultCategory, setDefaultCategory] = useState('General');
   const [parsedItems, setParsedItems] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +54,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
 
   const handleImport = async () => {
     if (parsedItems.length === 0) {
-      setError('कोई मान्य नाम और 10-अंकों का नंबर नहीं मिला');
+      setError('No valid name and 10-digit phone numbers detected');
       return;
     }
 
@@ -75,7 +75,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
       setParsedItems([]);
       onClose();
     } catch (err) {
-      setError(err.message || 'इम्पोर्ट करने में त्रुटि हुई');
+      setError(err.message || 'Error occurred while importing');
     } finally {
       setSubmitting(false);
     }
@@ -106,10 +106,10 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
-                बल्क मतदाता लिस्ट पेस्ट करें (Bulk Paste List)
+                Bulk Paste Contact List
               </h3>
               <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
-                WhatsApp, Excel या डायरी से नाम और नंबर सीधे यहाँ पेस्ट करें
+                Copy and paste lines directly from WhatsApp, Excel, or notes
               </p>
             </div>
           </div>
@@ -146,35 +146,35 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
           color: '#9a3412',
           marginBottom: '14px',
         }}>
-          💡 <strong>कोई भी फॉर्मेट चलेगा:</strong> उदा.<br />
-          <code>राजेश शर्मा 9829012345</code> या <code>सुरेश कुमार, 9829098765</code> या <code>मुकेश - 9829054321</code>
+          💡 <strong>Any format works:</strong> e.g.<br />
+          <code>Rahul Sharma 9829012345</code> or <code>Suresh Kumar, 9829098765</code> or <code>Michael - 9829054321</code>
         </div>
 
         {/* Textarea */}
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
-            <span>मतदाता सूची यहाँ पेस्ट करें (Paste Lines Here)</span>
+            <span>Paste Contacts Below (1 per line)</span>
             {parsedItems.length > 0 && (
               <span style={{ color: '#059669', fontWeight: 700 }}>
-                ✓ {parsedItems.length} संपर्क पहचाने गए
+                ✓ {parsedItems.length} contacts identified
               </span>
             )}
           </label>
           <textarea
             className="input-field"
             rows={7}
-            placeholder={`सुनील कुमार 9829011111\nरमेश जी 9829022222\nकविता शर्मा, 9829033333`}
+            placeholder={`Rahul Sharma 9829011111\nSuresh Kumar 9829022222\nAnita Singh, 9829033333`}
             value={rawText}
             onChange={(e) => handleParse(e.target.value)}
             style={{ fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: '1.6' }}
           />
         </div>
 
-        {/* Default Ward & Category */}
+        {/* Default Area & Category */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px', color: '#334155' }}>
-              डिफ़ॉल्ट वार्ड / क्षेत्र
+              Default Area / Group
             </label>
             <input
               type="text"
@@ -185,17 +185,18 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px', color: '#334155' }}>
-              डिफ़ॉल्ट श्रेणी (Category)
+              Default Tag / Category
             </label>
             <select
               className="input-field"
               value={defaultCategory}
               onChange={(e) => setDefaultCategory(e.target.value)}
             >
-              <option value="समर्थक (Supporter)">समर्थक (Supporter)</option>
-              <option value="तटस्थ (Undecided)">तटस्थ (Undecided)</option>
-              <option value="प्रमुख व्यक्ति (Key Person)">प्रमुख व्यक्ति (Key Person)</option>
-              <option value="कार्यकर्ता (Volunteer)">कार्यकर्ता (Volunteer)</option>
+              <option value="General">General</option>
+              <option value="Lead / Inquiry">Lead / Inquiry</option>
+              <option value="VIP Contact">VIP Contact</option>
+              <option value="Member / Supporter">Member / Supporter</option>
+              <option value="Volunteer / Staff">Volunteer / Staff</option>
             </select>
           </div>
         </div>
@@ -207,9 +208,9 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
               <thead>
                 <tr style={{ background: '#f8fafc', textAlign: 'left', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
                   <th style={{ padding: '8px 12px' }}>#</th>
-                  <th style={{ padding: '8px 12px' }}>नाम (Name)</th>
-                  <th style={{ padding: '8px 12px' }}>मोबाइल (Phone)</th>
-                  <th style={{ padding: '8px 12px' }}>वार्ड (Ward)</th>
+                  <th style={{ padding: '8px 12px' }}>Name</th>
+                  <th style={{ padding: '8px 12px' }}>Mobile Number</th>
+                  <th style={{ padding: '8px 12px' }}>Group / Area</th>
                 </tr>
               </thead>
               <tbody>
@@ -225,7 +226,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
             </table>
             {parsedItems.length > 10 && (
               <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.78rem', color: '#64748b', background: '#f8fafc' }}>
-                ...और {parsedItems.length - 10} अन्य संपर्क भी सम्मिलित हैं
+                ...and {parsedItems.length - 10} more contacts included
               </div>
             )}
           </div>
@@ -234,7 +235,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
         {/* Footer actions */}
         <div style={{ display: 'flex', gap: '10px' }}>
           <button type="button" className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>
-            रद्द करें
+            Cancel
           </button>
           <button
             type="button"
@@ -243,7 +244,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
             disabled={submitting || parsedItems.length === 0}
             style={{ flex: 2 }}
           >
-            {submitting ? 'इम्पोर्ट हो रहा है...' : `MongoDB में ${parsedItems.length} संपर्क जोड़ें`}
+            {submitting ? 'Importing...' : `Import ${parsedItems.length} Contacts to Database`}
           </button>
         </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Vote, UserPlus, FileSpreadsheet, Download, RefreshCw, Database } from 'lucide-react';
+import { MessageCircle, UserPlus, FileSpreadsheet, Download, RefreshCw } from 'lucide-react';
 
 export default function Navbar({ onOpenAddModal, onOpenBulkModal, onRefresh, onExportCSV, dbConnected, loading }) {
   return (
@@ -12,14 +12,14 @@ export default function Navbar({ onOpenAddModal, onOpenBulkModal, onRefresh, onE
             width: '44px',
             height: '44px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ea580c, #f97316)',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(234, 88, 12, 0.3)',
+            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
             flexShrink: 0,
           }}>
-            <Vote size={24} color="#ffffff" />
+            <MessageCircle size={24} color="#ffffff" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -31,23 +31,23 @@ export default function Navbar({ onOpenAddModal, onOpenBulkModal, onRefresh, onE
                 color: '#0f172a',
                 margin: 0,
               }}>
-                चुनाव जनसंपर्क पोर्टल
+                WhatsApp Outreach Portal
               </h1>
               <span style={{
                 fontSize: '0.7rem',
                 padding: '2px 8px',
                 borderRadius: '6px',
-                background: '#fff7ed',
-                color: '#c2410c',
+                background: '#ecfdf5',
+                color: '#059669',
                 fontWeight: 600,
-                border: '1px solid #fed7aa',
+                border: '1px solid #a7f3d0',
               }}>
-                ELECTION 2026
+                INTERNAL TOOL
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '3px' }}>
               <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                Voter Outreach & Direct WhatsApp Contact Portal
+                Add contacts, paste lists & 1-click WhatsApp redirect
               </span>
               <span style={{
                 display: 'inline-flex',
@@ -73,35 +73,35 @@ export default function Navbar({ onOpenAddModal, onOpenBulkModal, onRefresh, onE
           </div>
         </div>
 
-        {/* Action Buttons (Desktop & Tablet) */}
+        {/* Action Buttons */}
         <div className="nav-actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           
-          {/* Refresh */}
           <button 
             className="btn btn-secondary btn-icon" 
             onClick={onRefresh}
-            title="रिफ्रेश करें"
+            title="Refresh List"
             disabled={loading}
           >
             <RefreshCw size={16} />
           </button>
 
-          {/* Export CSV */}
           <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
             <Download size={15} />
             <span>CSV Export</span>
           </button>
 
-          {/* Bulk Paste */}
-          <button className="btn btn-secondary" onClick={onOpenBulkModal} style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '8px 14px', fontSize: '0.85rem' }}>
+          <button 
+            className="btn btn-secondary" 
+            onClick={onOpenBulkModal} 
+            style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '8px 14px', fontSize: '0.85rem' }}
+          >
             <FileSpreadsheet size={16} color="#4f46e5" />
-            <span>📋 बल्क लिस्ट पेस्ट</span>
+            <span>📋 Paste Bulk List</span>
           </button>
 
-          {/* Add Single */}
           <button className="btn btn-primary" onClick={onOpenAddModal} style={{ padding: '8px 16px', fontSize: '0.88rem' }}>
             <UserPlus size={16} />
-            <span>+ नया संपर्क</span>
+            <span>+ Add Contact</span>
           </button>
 
         </div>

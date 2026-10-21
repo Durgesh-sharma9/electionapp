@@ -20,10 +20,11 @@ export default function ContactCard({
   };
 
   const getCategoryClass = (cat) => {
-    if (cat?.includes('समर्थक')) return 'badge-supporter';
-    if (cat?.includes('तटस्थ')) return 'badge-undecided';
-    if (cat?.includes('प्रमुख')) return 'badge-key';
-    if (cat?.includes('कार्यकर्ता')) return 'badge-volunteer';
+    const c = (cat || '').toLowerCase();
+    if (c.includes('vip') || c.includes('key')) return 'badge-key';
+    if (c.includes('lead')) return 'badge-undecided';
+    if (c.includes('supporter') || c.includes('member')) return 'badge-supporter';
+    if (c.includes('volunteer') || c.includes('staff')) return 'badge-volunteer';
     return 'badge-pending';
   };
 
@@ -42,7 +43,7 @@ export default function ContactCard({
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const initial = (contact.name || 'म').charAt(0).toUpperCase();
+  const initial = (contact.name || 'C').charAt(0).toUpperCase();
 
   return (
     <div
@@ -123,7 +124,7 @@ export default function ContactCard({
                 className="btn btn-secondary btn-icon"
                 onClick={() => onEdit(contact)}
                 style={{ width: '28px', height: '28px', padding: 0 }}
-                title="एडिट करें"
+                title="Edit Contact"
               >
                 <Edit2 size={13} />
               </button>
@@ -131,7 +132,7 @@ export default function ContactCard({
                 className="btn btn-secondary btn-icon"
                 onClick={() => onDelete(contact._id)}
                 style={{ width: '28px', height: '28px', padding: 0, color: '#ef4444' }}
-                title="डिलीट करें"
+                title="Delete Contact"
               >
                 <Trash2 size={13} />
               </button>
@@ -154,7 +155,7 @@ export default function ContactCard({
                 display: 'flex',
                 alignItems: 'center',
               }}
-              title="नंबर कॉपी करें"
+              title="Copy Phone Number"
             >
               {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
             </button>
@@ -163,7 +164,7 @@ export default function ContactCard({
           {/* Badges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
             <span className={`badge ${getCategoryClass(contact.category)}`}>
-              {contact.category || 'समर्थक'}
+              {contact.category || 'General'}
             </span>
 
             {contact.ward && (
@@ -176,11 +177,11 @@ export default function ContactCard({
             {contact.contacted ? (
               <span className="badge badge-contacted" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <CheckCircle2 size={11} />
-                <span>संपर्क पूर्ण {contact.contactCount > 1 ? `(${contact.contactCount} बार)` : ''}</span>
+                <span>Messaged {contact.contactCount > 1 ? `(${contact.contactCount}x)` : ''}</span>
               </span>
             ) : (
               <span className="badge badge-pending">
-                बाकी (Pending)
+                Pending
               </span>
             )}
           </div>
@@ -203,10 +204,10 @@ export default function ContactCard({
           className="btn btn-whatsapp"
           onClick={() => onWhatsAppRedirect(contact)}
           style={{ padding: '10px 12px', minHeight: '42px', fontSize: '0.88rem' }}
-          title="WhatsApp पर सन्देश भेजें (1-Click Redirect)"
+          title="Send WhatsApp Message (1-Click Redirect)"
         >
           <MessageCircle size={17} />
-          <span>WhatsApp भेजें</span>
+          <span>Send WhatsApp</span>
         </button>
 
         {/* Call Button */}
@@ -214,10 +215,10 @@ export default function ContactCard({
           className="btn btn-call"
           onClick={() => onCallRedirect(contact)}
           style={{ padding: '10px 12px', minHeight: '42px', fontSize: '0.88rem' }}
-          title="सीधा कॉल करें (Direct Call)"
+          title="Direct Phone Call"
         >
           <Phone size={16} />
-          <span>कॉल करें</span>
+          <span>Call</span>
         </button>
 
       </div>

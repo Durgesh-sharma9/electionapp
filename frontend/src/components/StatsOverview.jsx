@@ -10,7 +10,7 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
   return (
     <div className="stats-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '20px' }}>
       
-      {/* Total Voters */}
+      {/* Total Contacts */}
       <div 
         className="glass-panel" 
         onClick={() => onFilterCategory('ALL')}
@@ -23,7 +23,7 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>कुल मतदाता / संपर्क</span>
+          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Total Contacts</span>
           <div style={{ padding: '6px', borderRadius: '8px', background: '#fff7ed', color: '#ea580c' }}>
             <Users size={17} />
           </div>
@@ -32,11 +32,11 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
           {total}
         </div>
         <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
-          सभी दर्ज मतदाता
+          All recorded numbers
         </div>
       </div>
 
-      {/* Contacted */}
+      {/* Messaged */}
       <div 
         className="glass-panel" 
         onClick={() => onFilterCategory('CONTACTED')}
@@ -49,7 +49,7 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>संपर्क हो चुका</span>
+          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Messaged / Contacted</span>
           <div style={{ padding: '6px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}>
             <CheckCircle2 size={17} />
           </div>
@@ -59,11 +59,11 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
         </div>
         <div style={{ fontSize: '0.74rem', color: '#059669', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 500 }}>
           <TrendingUp size={12} />
-          <span>{progressPercent}% जनसंपर्क पूर्ण</span>
+          <span>{progressPercent}% Completed</span>
         </div>
       </div>
 
-      {/* Remaining */}
+      {/* Pending */}
       <div 
         className="glass-panel" 
         onClick={() => onFilterCategory('PENDING')}
@@ -76,7 +76,7 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>बाकी (Pending)</span>
+          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Pending</span>
           <div style={{ padding: '6px', borderRadius: '8px', background: '#fffbeb', color: '#d97706' }}>
             <Clock size={17} />
           </div>
@@ -85,14 +85,14 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
           {pending}
         </div>
         <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
-          संदेश भेजना बाकी
+          Waiting to be messaged
         </div>
       </div>
 
-      {/* Campaign Progress */}
+      {/* Progress */}
       <div className="glass-panel" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>अभियान लक्ष्य प्रगति</span>
+          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Outreach Progress</span>
           <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ea580c' }}>{progressPercent}%</span>
         </div>
         <div style={{
@@ -112,7 +112,7 @@ export default function StatsOverview({ stats, onFilterCategory, currentCategory
           }} />
         </div>
         <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-          {contacted} संपर्कित / {total} कुल मतदाता
+          {contacted} messaged of {total} total
         </span>
       </div>
 

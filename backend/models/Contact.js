@@ -4,22 +4,22 @@ const contactSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'नाम आवश्यक है (Name is required)'],
+      required: [true, 'Name is required'],
       trim: true,
     },
     phone: {
       type: String,
-      required: [true, 'मोबाइल नंबर आवश्यक है (Phone number is required)'],
+      required: [true, 'Phone number is required'],
       trim: true,
     },
     ward: {
       type: String,
-      default: 'महापुरा (Mahapura)',
+      default: 'Main List',
       trim: true,
     },
     category: {
       type: String,
-      default: 'समर्थक (Supporter)',
+      default: 'General',
       trim: true,
     },
     notes: {

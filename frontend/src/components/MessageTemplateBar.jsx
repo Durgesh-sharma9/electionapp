@@ -3,24 +3,24 @@ import { MessageSquareText, Edit3, Check } from 'lucide-react';
 
 export const DEFAULT_TEMPLATES = [
   {
-    id: 'appeal',
-    title: '🗳️ चुनाव सहयोग अपील',
-    text: 'सादर प्रणाम {name} जी! आगामी चुनाव में आपके अमूल्य सहयोग, आशीर्वाद एवं समर्थन की विनम्र अपील करते हैं। आपका साथ ही हमारी ताकत है। धन्यवाद!',
+    id: 'greeting',
+    title: '👋 Greeting & Connect',
+    text: 'Hello {name}, hope you are doing well! Reaching out to connect with you regarding our latest update. Please let us know if you have any questions. Thank you!',
   },
   {
-    id: 'development',
-    title: '🌟 विकास एवं विजन',
-    text: 'नमस्ते {name} जी, क्षेत्र के चहुंमुखी विकास, जनसेवा और बेहतर सुविधाओं के लिए अपना बहुमूल्य मत देकर विजयी बनाएं। आपका एक वोट बदलेगा भविष्य!',
+    id: 'update',
+    title: '📢 Important Update',
+    text: 'Hi {name}, we have an important announcement to share with you. Please review and feel free to reach out anytime. Best regards!',
   },
   {
     id: 'meeting',
-    title: '📢 जनसंवाद आमंत्रण',
-    text: 'सादर नमस्कार {name} जी, आज क्षेत्र में जनसंवाद एवं जनसंपर्क बैठक का आयोजन है। आप सादर आमंत्रित हैं, अवश्य पधारें।',
+    title: '🤝 Meeting Invitation',
+    text: 'Dear {name}, you are cordially invited to our upcoming meeting and discussion. Looking forward to your valuable presence!',
   },
   {
-    id: 'reminder',
-    title: '⏰ मतदान दिवस स्मरण',
-    text: 'सादर प्रणाम {name} जी! आज मतदान का पावन पर्व है। कृपया अपने परिवार सहित मतदान केंद्र पहुंचकर अपना मत अवश्य दें।',
+    id: 'followup',
+    title: '⏰ Quick Follow-up',
+    text: 'Hello {name}, following up on our previous conversation. Please let us know a convenient time to connect. Thank you!',
   },
 ];
 
@@ -39,10 +39,10 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MessageSquareText size={18} color="#059669" />
           <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
-            WhatsApp सन्देश टेम्पलेट
+            WhatsApp Message Template
           </span>
           <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-            ({" {name} "} उस व्यक्ति के नाम से स्वतः बदल जाएगा)
+            ({" {name} "} is dynamically replaced with the recipient's name)
           </span>
         </div>
 
@@ -61,12 +61,12 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
           {isEditing ? (
             <>
               <Check size={14} color="#059669" />
-              <span>सेव करें</span>
+              <span>Save Message</span>
             </>
           ) : (
             <>
               <Edit3 size={14} />
-              <span>कस्टम संदेश लिखें</span>
+              <span>Edit Custom Message</span>
             </>
           )}
         </button>
@@ -103,7 +103,7 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
           rows={3}
           value={tempText}
           onChange={(e) => setTempText(e.target.value)}
-          placeholder="अपना संदेश यहाँ लिखें... ({name} व्यक्ति के नाम से बदल जाएगा)"
+          placeholder="Write your custom message here... ({name} will be replaced with recipient's name)"
           style={{ width: '100%', resize: 'vertical' }}
         />
       ) : (
@@ -117,7 +117,7 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
           fontStyle: 'italic',
           lineHeight: '1.5',
         }}>
-          "{customText.replace('{name}', 'राम शर्मा')}"
+          "{customText.replace('{name}', 'John Doe')}"
         </div>
       )}
     </div>

@@ -1,18 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search,
-  Filter,
   Users,
   Grid,
   List,
   Trash2,
-  CheckSquare,
-  Square,
-  AlertCircle,
-  Sparkles,
   MessageCircle,
   Phone,
-  Edit2,
   Check,
   Download,
   UserPlus,
@@ -45,7 +39,7 @@ export default function App() {
   const [editingContact, setEditingContact] = useState(null);
 
   // Message Template
-  const [activeTemplate, setActiveTemplate] = useState('appeal');
+  const [activeTemplate, setActiveTemplate] = useState('greeting');
   const [customText, setCustomText] = useState(DEFAULT_TEMPLATES[0].text);
 
   // Selection
@@ -93,7 +87,7 @@ export default function App() {
     fetchData();
   }, []);
 
-  // Distinct wards for filter dropdown
+  // Distinct groups/areas for filter dropdown
   const availableWards = useMemo(() => {
     const set = new Set();
     contacts.forEach((c) => {
@@ -114,7 +108,7 @@ export default function App() {
         return false;
       }
 
-      // Ward filter
+      // Area filter
       if (wardFilter !== 'ALL' && c.ward !== wardFilter) {
         return false;
       }
@@ -123,7 +117,7 @@ export default function App() {
       if (contactedFilter === 'CONTACTED' && !c.contacted) return false;
       if (contactedFilter === 'PENDING' && c.contacted) return false;
 
-      // Search query (name, phone, ward, notes)
+      // Search query (name, phone, area, notes)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchesName = c.name?.toLowerCase().includes(q);
@@ -148,7 +142,7 @@ export default function App() {
     if (!result.success) {
       throw new Error(result.error);
     }
-    showToast(`✓ ${result.data.name} को सफलता पूर्वक जोड़ दिया गया!`);
+    showToast(`✓ Added contact: ${result.data.name}`);
     fetchData();
   };
 
@@ -163,27 +157,26 @@ export default function App() {
     if (!result.success) {
       throw new Error(result.error);
     }
-    showToast(`✓ ${result.insertedCount} नए संपर्क MongoDB में जोड़े गए!`);
+    showToast(`✓ Successfully imported ${result.insertedCount} contacts!`);
     fetchData();
   };
 
-  // WhatsApp Redirect (CORE REQUIREMENT)
+  // WhatsApp Redirect (1-CLICK DIRECT MESSAGING)
   const handleWhatsAppRedirect = async (contact) => {
     const cleanPhone = String(contact.phone).replace(/\D/g, '').slice(-10);
-    const personalizedMessage = customText.replace(/{name}/g, contact.name || 'मतदाता');
+    const personalizedMessage = customText.replace(/{name}/g, contact.name || 'Friend');
     const waUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(personalizedMessage)}`;
 
     // Open WhatsApp in new tab
     window.open(waUrl, '_blank');
 
-    // Update MongoDB status to contacted
+    // Update MongoDB status to messaged/contacted
     try {
       await fetch(`/api/contacts/${contact._id}/contacted`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contacted: true }),
       });
-      // Update local state instantly
       setContacts((prev) =>
         prev.map((c) =>
           c._id === contact._id
@@ -200,7 +193,7 @@ export default function App() {
             }
           : prev
       );
-      showToast(`✓ ${contact.name} के WhatsApp पर रीडायरेक्ट किया गया!`);
+      showToast(`✓ Opened WhatsApp for ${contact.name}`);
     } catch (err) {
       console.error('Error updating contacted status:', err);
     }
@@ -224,7 +217,7 @@ export default function App() {
             : c
         )
       );
-      showToast(`📞 ${contact.name} को कॉल डायल किया गया!`);
+      showToast(`📞 Calling ${contact.name}...`);
     } catch (err) {
       console.error(err);
     }
@@ -232,12 +225,12 @@ export default function App() {
 
   // Delete Contact
   const handleDeleteContact = async (id) => {
-    if (!window.confirm('क्या आप इस संपर्क को हटाना चाहते हैं?')) return;
+    if (!window.confirm('Are you sure you want to delete this contact?')) return;
     try {
       const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
       const result = await res.json();
       if (result.success) {
-        showToast('संपर्क हटा दिया गया');
+        showToast('Contact deleted');
         fetchData();
       }
     } catch (err) {
@@ -248,7 +241,7 @@ export default function App() {
   // Bulk Delete
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm(`क्या आप चुने गए ${selectedIds.size} संपर्कों को हटाना चाहते हैं?`)) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} selected contacts?`)) return;
 
     try {
       const res = await fetch('/api/contacts', {
@@ -258,7 +251,7 @@ export default function App() {
       });
       const result = await res.json();
       if (result.success) {
-        showToast(`✓ ${result.message}`);
+        showToast(`✓ Deleted ${selectedIds.size} contacts`);
         setSelectedIds(new Set());
         fetchData();
       }
@@ -289,16 +282,16 @@ export default function App() {
   // Export to CSV
   const handleExportCSV = () => {
     if (contacts.length === 0) {
-      alert('एक्सपोर्ट के लिए कोई डेटा नहीं है');
+      alert('No contacts available to export');
       return;
     }
-    const headers = ['नाम (Name)', 'मोबाइल (Phone)', 'वार्ड (Ward)', 'श्रेणी (Category)', 'संपर्क हुआ (Contacted)', 'टिप्पणी (Notes)'];
+    const headers = ['Name', 'Phone', 'Area/Group', 'Category', 'Messaged', 'Notes'];
     const rows = contacts.map((c) => [
       `"${c.name || ''}"`,
       `"${c.phone || ''}"`,
       `"${c.ward || ''}"`,
       `"${c.category || ''}"`,
-      c.contacted ? 'हाँ (Yes)' : 'नहीं (No)',
+      c.contacted ? 'Yes' : 'No',
       `"${c.notes || ''}"`,
     ]);
 
@@ -306,11 +299,11 @@ export default function App() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Mahapura_Election_Voters_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `Contacts_Export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('✓ CSV फ़ाइल डाउनलोड हो गई!');
+    showToast('✓ CSV file downloaded successfully!');
   };
 
   return (
@@ -334,7 +327,7 @@ export default function App() {
         loading={loading}
       />
 
-      {/* Campaign Statistics Overview */}
+      {/* Statistics Overview */}
       <StatsOverview
         stats={stats}
         onFilterCategory={(cat) => setCategoryFilter(cat)}
@@ -358,18 +351,18 @@ export default function App() {
           
           {/* Search Box */}
           <div style={{ position: 'relative', flex: '1 1 300px' }}>
-            <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '13px' }} />
+            <Search size={18} color="#64748b" style={{ position: 'absolute', left: '14px', top: '13px' }} />
             <input
               type="text"
               className="input-field"
-              placeholder="नाम, मोबाइल नंबर या वार्ड से खोजें..."
+              placeholder="Search by name, phone number, area or notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ paddingLeft: '40px' }}
             />
           </div>
 
-          {/* Filters: Ward & Category & View Toggle */}
+          {/* Filters */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             
             {/* Category Dropdown */}
@@ -379,16 +372,17 @@ export default function App() {
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
-              <option value="ALL">सभी श्रेणियाँ (All)</option>
-              <option value="समर्थक (Supporter)">समर्थक (Supporter)</option>
-              <option value="तटस्थ (Undecided)">तटस्थ (Undecided)</option>
-              <option value="प्रमुख व्यक्ति (Key Person)">प्रमुख व्यक्ति (Key Person)</option>
-              <option value="कार्यकर्ता (Volunteer)">कार्यकर्ता (Volunteer)</option>
-              <option value="CONTACTED">केवल संपर्कित (Contacted)</option>
-              <option value="PENDING">केवल शेष (Pending)</option>
+              <option value="ALL">All Categories</option>
+              <option value="General">General</option>
+              <option value="Lead / Inquiry">Lead / Inquiry</option>
+              <option value="VIP Contact">VIP Contact</option>
+              <option value="Member / Supporter">Member / Supporter</option>
+              <option value="Volunteer / Staff">Volunteer / Staff</option>
+              <option value="CONTACTED">Messaged Only</option>
+              <option value="PENDING">Pending Only</option>
             </select>
 
-            {/* Ward Dropdown */}
+            {/* Area Dropdown */}
             {availableWards.length > 0 && (
               <select
                 className="input-field"
@@ -396,7 +390,7 @@ export default function App() {
                 value={wardFilter}
                 onChange={(e) => setWardFilter(e.target.value)}
               >
-                <option value="ALL">सभी वार्ड / क्षेत्र</option>
+                <option value="ALL">All Groups / Areas</option>
                 {availableWards.map((w) => (
                   <option key={w} value={w}>
                     {w}
@@ -406,18 +400,18 @@ export default function App() {
             )}
 
             {/* View Mode Toggle */}
-            <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', padding: '2px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '10px', padding: '2px', border: '1px solid var(--border-subtle)' }}>
               <button
                 className="btn btn-secondary btn-icon"
                 onClick={() => setViewMode('cards')}
                 style={{
-                  background: viewMode === 'cards' ? 'rgba(249, 115, 22, 0.25)' : 'transparent',
-                  color: viewMode === 'cards' ? '#f97316' : 'var(--text-muted)',
+                  background: viewMode === 'cards' ? '#ea580c' : 'transparent',
+                  color: viewMode === 'cards' ? '#ffffff' : '#64748b',
                   border: 'none',
                   width: '34px',
                   height: '34px',
                 }}
-                title="कार्ड व्यू (Card View)"
+                title="Card Grid View"
               >
                 <Grid size={16} />
               </button>
@@ -425,13 +419,13 @@ export default function App() {
                 className="btn btn-secondary btn-icon"
                 onClick={() => setViewMode('table')}
                 style={{
-                  background: viewMode === 'table' ? 'rgba(249, 115, 22, 0.25)' : 'transparent',
-                  color: viewMode === 'table' ? '#f97316' : 'var(--text-muted)',
+                  background: viewMode === 'table' ? '#ea580c' : 'transparent',
+                  color: viewMode === 'table' ? '#ffffff' : '#64748b',
                   border: 'none',
                   width: '34px',
                   height: '34px',
                 }}
-                title="टेबल व्यू (Table View)"
+                title="Table View"
               >
                 <List size={16} />
               </button>
@@ -441,7 +435,7 @@ export default function App() {
 
         </div>
 
-        {/* Selection Bar if items selected */}
+        {/* Selection Bar */}
         {selectedIds.size > 0 && (
           <div style={{
             marginTop: '12px',
@@ -454,7 +448,7 @@ export default function App() {
             justifyContent: 'space-between',
           }}>
             <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#9a3412' }}>
-              {selectedIds.size} संपर्क चुने गए हैं
+              {selectedIds.size} contact(s) selected
             </span>
             <button
               className="btn btn-secondary"
@@ -462,7 +456,7 @@ export default function App() {
               style={{ color: '#dc2626', borderColor: '#fca5a5', padding: '6px 12px', fontSize: '0.8rem' }}
             >
               <Trash2 size={14} />
-              <span>चुने गए हटाएं (Delete Selected)</span>
+              <span>Delete Selected</span>
             </button>
           </div>
         )}
@@ -486,20 +480,20 @@ export default function App() {
             <Users size={32} />
           </div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
-            {contacts.length === 0 ? 'अभी कोई मतदाता संपर्क दर्ज नहीं है' : 'कोई परिणाम नहीं मिला'}
+            {contacts.length === 0 ? 'No contacts in database yet' : 'No matching contacts found'}
           </h3>
           <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.9rem' }}>
             {contacts.length === 0
-              ? 'ऊपर दिए गए बटन से नया संपर्क जोड़ें या सीधे बल्क लिस्ट पेस्ट करें!'
-              : 'कृपया अपनी खोज या फ़िल्टर बदलकर देखें'}
+              ? 'Click "+ Add Contact" or "Paste Bulk List" above to get started!'
+              : 'Try adjusting your search query or category filters'}
           </p>
           {contacts.length === 0 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
               <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
-                + पहला संपर्क जोड़ें
+                + Add First Contact
               </button>
               <button className="btn btn-secondary" onClick={() => setIsBulkModalOpen(true)}>
-                📋 बल्क लिस्ट पेस्ट करें
+                📋 Paste Bulk List
               </button>
             </div>
           )}
@@ -534,12 +528,12 @@ export default function App() {
                     style={{ accentColor: '#ea580c', cursor: 'pointer' }}
                   />
                 </th>
-                <th style={{ padding: '12px 16px' }}>नाम (Name)</th>
-                <th style={{ padding: '12px 16px' }}>मोबाइल (Phone)</th>
-                <th style={{ padding: '12px 16px' }}>वार्ड (Ward)</th>
-                <th style={{ padding: '12px 16px' }}>श्रेणी (Category)</th>
-                <th style={{ padding: '12px 16px' }}>स्थिति (Status)</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right' }}>रीडायरेक्ट ऐक्शन (Action)</th>
+                <th style={{ padding: '12px 16px' }}>Name</th>
+                <th style={{ padding: '12px 16px' }}>Mobile Number</th>
+                <th style={{ padding: '12px 16px' }}>Group / Area</th>
+                <th style={{ padding: '12px 16px' }}>Category</th>
+                <th style={{ padding: '12px 16px' }}>Status</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right' }}>Direct Action</th>
               </tr>
             </thead>
             <tbody>
@@ -574,9 +568,9 @@ export default function App() {
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     {contact.contacted ? (
-                      <span className="badge badge-contacted">संपर्कित</span>
+                      <span className="badge badge-contacted">Messaged</span>
                     ) : (
-                      <span className="badge badge-pending">बाकी</span>
+                      <span className="badge badge-pending">Pending</span>
                     )}
                   </td>
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
@@ -599,7 +593,7 @@ export default function App() {
                       <button
                         className="btn btn-secondary btn-icon"
                         onClick={() => handleDeleteContact(contact._id)}
-                        style={{ width: '30px', height: '30px', color: '#f87171' }}
+                        style={{ width: '30px', height: '30px', color: '#ef4444' }}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -632,7 +626,7 @@ export default function App() {
           className="btn btn-secondary"
           onClick={handleExportCSV}
           style={{ flex: '0 0 50px', padding: 0 }}
-          title="CSV डाउनलोड"
+          title="Export CSV"
         >
           <Download size={18} />
         </button>
@@ -640,10 +634,10 @@ export default function App() {
         <button
           className="btn btn-secondary"
           onClick={() => setIsBulkModalOpen(true)}
-          style={{ borderColor: 'rgba(99, 102, 241, 0.4)', background: 'rgba(99, 102, 241, 0.18)', color: '#c7d2fe' }}
+          style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca' }}
         >
-          <FileSpreadsheet size={17} color="#a5b4fc" />
-          <span>बल्क पेस्ट</span>
+          <FileSpreadsheet size={17} color="#4f46e5" />
+          <span>Paste List</span>
         </button>
 
         <button
@@ -651,7 +645,7 @@ export default function App() {
           onClick={() => setIsAddModalOpen(true)}
         >
           <UserPlus size={18} />
-          <span>+ नया संपर्क</span>
+          <span>+ Add Contact</span>
         </button>
       </div>
 
