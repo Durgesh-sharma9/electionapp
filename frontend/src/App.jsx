@@ -1062,25 +1062,29 @@ export default function App() {
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
-                        <span
-                          className="badge"
-                          style={{
-                            fontSize: '0.74rem',
-                            padding: '2px 8px',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
-                            border: '1px solid #bfdbfe',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '3px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          🏛️ {contact.ward || 'Ward 1'}
-                        </span>
+                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
+                        {contact.ward ? (
+                          <span
+                            className="badge"
+                            style={{
+                              fontSize: '0.74rem',
+                              padding: '2px 8px',
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            🏛️ {contact.ward}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.76rem', color: '#94a3b8' }}>— Unassigned</span>
+                        )}
                       </td>
-                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
                         {contact.locality ? (
                           <span
                             className="badge"
@@ -1099,12 +1103,12 @@ export default function App() {
                             📍 {contact.locality}
                           </span>
                         ) : (
-                          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— Unassigned</span>
+                          <span style={{ fontSize: '0.76rem', color: '#94a3b8' }}>— Unassigned</span>
                         )}
                       </td>
-                      <td style={{ padding: '9px 12px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px 12px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.88rem' }}>+91 {contact.phone}</span>
+                          <span style={{ fontSize: '0.86rem' }}>+91 {contact.phone}</span>
                           <button
                             type="button"
                             onClick={() => {
@@ -1118,7 +1122,7 @@ export default function App() {
                           </button>
                         </div>
                       </td>
-                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
                         <button
                           type="button"
                           onClick={() => handleToggleSureVoter(contact._id, contact.isSureVoter)}
@@ -1126,9 +1130,9 @@ export default function App() {
                             background: contact.isSureVoter ? '#fef3c7' : '#ffffff',
                             border: contact.isSureVoter ? '1.5px solid #f59e0b' : '1px solid #cbd5e1',
                             color: contact.isSureVoter ? '#b45309' : '#64748b',
-                            padding: '3px 9px',
+                            padding: '3px 8px',
                             borderRadius: '6px',
-                            fontSize: '0.76rem',
+                            fontSize: '0.74rem',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -1142,7 +1146,7 @@ export default function App() {
                           <span>{contact.isSureVoter ? '⭐ Sure' : '☆ Mark Sure'}</span>
                         </button>
                       </td>
-                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
                         {contact.reference ? (
                           <span
                             className="badge"
@@ -1161,48 +1165,65 @@ export default function App() {
                             👤 {contact.reference}
                           </span>
                         ) : (
-                          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— None</span>
+                          <span style={{ fontSize: '0.76rem', color: '#94a3b8' }}>— None</span>
                         )}
                       </td>
-                      <td style={{ padding: '9px 12px' }}>
+                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
                         <button
                           onClick={() => handleToggleContacted(contact._id, contact.contacted)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           title="Click to toggle status"
                         >
-                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'} style={{ fontSize: '0.72rem', padding: '2px 7px' }}>
+                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'} style={{ fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px' }}>
                             {contact.contacted ? '✅ Messaged' : '⏳ Pending'}
                           </span>
                         </button>
                       </td>
-                      <td style={{ padding: '9px 12px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                          {/* 1. Direct WhatsApp Redirect */}
+                      <td style={{ padding: '8px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
+                          {/* 1. Direct WhatsApp Button */}
                           <button
+                            type="button"
                             className="btn btn-whatsapp"
                             onClick={() => handleSendWebFromModal(contact, customText)}
-                            style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px', fontWeight: 700 }}
+                            style={{
+                              height: '28px',
+                              padding: '0 10px',
+                              fontSize: '0.74rem',
+                              borderRadius: '6px',
+                              gap: '5px',
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.22)',
+                              flexShrink: 0,
+                            }}
                             title="Direct WhatsApp Chat"
                           >
-                            <Zap size={12} fill="#ffffff" />
-                            <span>Direct WA</span>
+                            <MessageCircle size={13} fill="#ffffff" />
+                            <span>WhatsApp</span>
                           </button>
 
-                          {/* 2. Choose Template / Edit Message */}
+                          {/* 2. Choose Template / Edit Message Button */}
                           <button
+                            type="button"
                             className="btn btn-secondary"
                             onClick={() => setMessageModalContact(contact)}
                             style={{
-                              padding: '4px 8px',
-                              fontSize: '0.76rem',
+                              height: '28px',
+                              padding: '0 9px',
+                              fontSize: '0.74rem',
                               borderRadius: '6px',
-                              background: '#ffffff',
-                              borderColor: '#f59e0b',
+                              background: '#fffbeb',
+                              borderColor: '#fde68a',
                               color: '#b45309',
-                              fontWeight: 600,
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
+                              flexShrink: 0,
                             }}
                             title="Choose Template / Edit Message"
                           >
@@ -1210,34 +1231,70 @@ export default function App() {
                             <span>Template</span>
                           </button>
 
-                          {/* 3. Call Phone */}
+                          {/* 3. Call Phone Button */}
                           <button
+                            type="button"
                             className="btn btn-call"
                             onClick={() => handleCallRedirect(contact)}
-                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px', gap: '3px' }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              padding: 0,
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
                             title="Call Phone Number"
                           >
-                            <Phone size={12} />
+                            <Phone size={13} />
                           </button>
 
-                          {/* 4. Edit Contact */}
+                          {/* 4. Edit Contact Button */}
                           <button
+                            type="button"
                             className="btn btn-secondary"
                             onClick={() => {
                               setEditingContact(contact);
                               setIsAddModalOpen(true);
                             }}
-                            style={{ padding: '4px 7px', borderRadius: '6px', color: '#0284c7' }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              padding: 0,
+                              borderRadius: '6px',
+                              color: '#0284c7',
+                              borderColor: '#cbd5e1',
+                              background: '#ffffff',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
                             title="Edit Contact"
                           >
                             <Edit2 size={13} />
                           </button>
 
-                          {/* 5. Delete Contact */}
+                          {/* 5. Delete Contact Button */}
                           <button
+                            type="button"
                             className="btn btn-secondary"
                             onClick={() => handleDeleteContact(contact._id)}
-                            style={{ padding: '4px 7px', borderRadius: '6px', color: '#ef4444' }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              padding: 0,
+                              borderRadius: '6px',
+                              color: '#ef4444',
+                              borderColor: '#fecaca',
+                              background: '#fff5f5',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
                             title="Delete Contact"
                           >
                             <Trash2 size={13} />

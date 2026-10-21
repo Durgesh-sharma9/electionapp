@@ -232,22 +232,24 @@ export default function ContactCard({
       {/* Row 2: Badges (Ward, Locality, Sure Toggle, Reference, Status) */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center' }}>
         {/* Ward Badge */}
-        <span
-          style={{
-            fontSize: '0.72rem',
-            padding: '2px 7px',
-            background: '#eff6ff',
-            color: '#1d4ed8',
-            border: '1px solid #bfdbfe',
-            borderRadius: '6px',
-            fontWeight: 700,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '3px',
-          }}
-        >
-          🏛️ {contact.ward || 'Ward 1'}
-        </span>
+        {contact.ward && (
+          <span
+            style={{
+              fontSize: '0.72rem',
+              padding: '2px 7px',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              border: '1px solid #bfdbfe',
+              borderRadius: '6px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+          >
+            🏛️ {contact.ward}
+          </span>
+        )}
 
         {/* Locality Badge */}
         {contact.locality && (
