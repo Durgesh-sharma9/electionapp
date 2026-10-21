@@ -16,26 +16,26 @@ export default function MessageTemplateBar({
     <div
       className="glass-panel"
       style={{
-        padding: '12px 18px',
-        marginBottom: '16px',
+        padding: '7px 12px',
+        marginBottom: '8px',
         background: '#ffffff',
         border: '1px solid #e2e8f0',
-        borderRadius: '12px',
+        borderRadius: '9px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         
         {/* Left: Active Template Badge & Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
+            width: '26px',
+            height: '26px',
+            borderRadius: '6px',
             background: '#ecfdf5',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1rem',
+            fontSize: '0.85rem',
             border: '1px solid #a7f3d0',
           }}>
             {activeTpl?.icon || '💬'}

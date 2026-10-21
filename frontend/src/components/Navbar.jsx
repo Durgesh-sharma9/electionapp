@@ -50,30 +50,30 @@ export default function Navbar({
   const headerInfo = getHeaderInfo();
 
   return (
-    <header className="glass-panel main-top-header" style={{ padding: '14px 18px', marginBottom: '18px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+    <header className="glass-panel main-top-header" style={{ padding: '8px 14px', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
         
         {/* Mobile Logo + Page Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="mobile-only-logo" style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
             background: 'linear-gradient(135deg, #10b981, #059669)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+            boxShadow: '0 3px 10px rgba(16, 185, 129, 0.2)',
             flexShrink: 0,
           }}>
-            <MessageCircle size={20} color="#ffffff" />
+            <MessageCircle size={17} color="#ffffff" />
           </div>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h1 style={{
                 fontFamily: 'var(--font-heading)',
-                fontSize: '1.25rem',
+                fontSize: '1.1rem',
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 color: '#0f172a',
@@ -82,7 +82,7 @@ export default function Navbar({
                 {headerInfo.title}
               </h1>
             </div>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
+            <p style={{ fontSize: '0.74rem', color: '#64748b', margin: '1px 0 0 0' }}>
               {headerInfo.subtitle}
             </p>
           </div>
@@ -137,34 +137,34 @@ export default function Navbar({
 
           {activeTab === 'contacts' && (
             <>
-              <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '7px 12px', fontSize: '0.82rem' }}>
-                <Download size={14} />
+              <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '5px 9px', fontSize: '0.76rem' }}>
+                <Download size={13} />
                 <span>CSV Export</span>
               </button>
 
               <button 
                 className="btn btn-secondary" 
                 onClick={onOpenBulkModal} 
-                style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '7px 12px', fontSize: '0.82rem' }}
+                style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '5px 9px', fontSize: '0.76rem' }}
               >
-                <FileSpreadsheet size={15} color="#4f46e5" />
+                <FileSpreadsheet size={13} color="#4f46e5" />
                 <span>Paste Bulk List</span>
               </button>
 
               <button 
                 className="btn btn-secondary" 
                 onClick={onOpenShareModal} 
-                style={{ borderColor: '#7dd3fc', background: '#f0f9ff', color: '#0369a1', padding: '7px 12px', fontSize: '0.82rem', fontWeight: 600 }}
+                style={{ borderColor: '#7dd3fc', background: '#f0f9ff', color: '#0369a1', padding: '5px 9px', fontSize: '0.76rem', fontWeight: 600 }}
                 title="Generate public caller link with Call & WhatsApp buttons"
               >
-                <Share2 size={14} color="#0284c7" />
+                <Share2 size={13} color="#0284c7" />
                 <span>Share Link</span>
               </button>
             </>
           )}
 
-          <button className="btn btn-primary" onClick={onOpenAddModal} style={{ padding: '7px 14px', fontSize: '0.85rem' }}>
-            <UserPlus size={15} />
+          <button className="btn btn-primary" onClick={onOpenAddModal} style={{ padding: '5px 11px', fontSize: '0.78rem' }}>
+            <UserPlus size={13} />
             <span>+ Add Contact</span>
           </button>
         </div>

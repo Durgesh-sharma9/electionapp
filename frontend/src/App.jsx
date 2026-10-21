@@ -13,6 +13,8 @@ import {
   FileSpreadsheet,
   FileText,
   Filter,
+  Edit2,
+  Copy,
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
@@ -52,7 +54,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [contactedFilter, setContactedFilter] = useState('ALL');
-  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
+  const [viewMode, setViewMode] = useState('table'); // Default: 'table' (Compact list view)
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -529,32 +531,32 @@ export default function App() {
             onGoToTemplatesTab={() => setActiveTab('templates')}
           />
 
-          {/* Search & Filter Toolbar */}
-          <div className="glass-panel" style={{ padding: '14px 18px', marginBottom: '18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          {/* Search & Filter Toolbar (Compact) */}
+          <div className="glass-panel" style={{ padding: '7px 12px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
               
               {/* Search Box */}
-              <div style={{ position: 'relative', flex: '1 1 260px' }}>
-                <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <div style={{ position: 'relative', flex: '1 1 220px' }}>
+                <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '9px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Search by name, phone number, notes..."
+                  placeholder="Search name, phone, notes, #..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-field"
-                  style={{ paddingLeft: '38px', width: '100%' }}
+                  style={{ paddingLeft: '30px', width: '100%', height: '32px', fontSize: '0.82rem' }}
                 />
               </div>
 
               {/* Filter Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 
                 {/* Category Filter */}
                 <select
                   className="input-field"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '8px 12px', fontSize: '0.84rem' }}
+                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.78rem', height: '32px' }}
                 >
                   <option value="ALL">All Categories</option>
                   <option value="General">General</option>
@@ -569,7 +571,7 @@ export default function App() {
                   className="input-field"
                   value={contactedFilter}
                   onChange={(e) => setContactedFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '8px 12px', fontSize: '0.84rem' }}
+                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.78rem', height: '32px' }}
                 >
                   <option value="ALL">All Status</option>
                   <option value="PENDING">⏳ Pending Only</option>
@@ -577,7 +579,7 @@ export default function App() {
                 </select>
 
                 {/* View Mode Switcher */}
-                <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '10px', padding: '3px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0' }}>
                   <button
                     onClick={() => setViewMode('cards')}
                     style={{
@@ -744,11 +746,11 @@ export default function App() {
               ))}
             </div>
           ) : (
-            <div className="section-card" style={{ padding: 0, overflowX: 'auto' }}>
+            <div className="compact-table-container" style={{ overflowX: 'auto' }}>
               <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ padding: '12px 14px', width: '40px' }}>
+                  <tr>
+                    <th style={{ width: '36px', textAlign: 'center', padding: '6px 8px' }}>
                       <input
                         type="checkbox"
                         checked={selectedIds.size > 0 && selectedIds.size === filteredContacts.length}
@@ -758,12 +760,12 @@ export default function App() {
                         }}
                       />
                     </th>
-                    <th style={{ padding: '12px 14px', width: '55px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>क्र.</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>NAME / DESCRIPTION</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>PHONE NUMBER</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>CATEGORY</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>STATUS</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600, textAlign: 'right' }}>OUTREACH ACTIONS</th>
+                    <th style={{ width: '50px', textAlign: 'center', padding: '6px 8px' }}>क्र.</th>
+                    <th style={{ padding: '6px 10px' }}>NAME / DESCRIPTION</th>
+                    <th style={{ padding: '6px 10px' }}>PHONE NUMBER</th>
+                    <th style={{ padding: '6px 10px' }}>CATEGORY</th>
+                    <th style={{ padding: '6px 10px' }}>STATUS</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'right' }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -771,11 +773,10 @@ export default function App() {
                     <tr
                       key={contact._id}
                       style={{
-                        borderBottom: '1px solid #f1f5f9',
-                        background: selectedIds.has(contact._id) ? '#f8fafc' : '#ffffff',
+                        background: selectedIds.has(contact._id) ? '#f0fdf4' : index % 2 === 1 ? '#fafafa' : '#ffffff',
                       }}
                     >
-                      <td style={{ padding: '12px 14px' }}>
+                      <td style={{ textAlign: 'center', padding: '5px 8px' }}>
                         <input
                           type="checkbox"
                           checked={selectedIds.has(contact._id)}
@@ -787,43 +788,60 @@ export default function App() {
                           }}
                         />
                       </td>
-                      <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7' }}>
+                      <td style={{ textAlign: 'center', padding: '5px 8px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '0.8rem' }}>
                         #{contact.serialNo || index + 1}
                       </td>
-                      <td style={{ padding: '12px 14px', fontWeight: 600, color: '#0f172a' }}>
-                        <div>{contact.name}</div>
-                        {contact.notes && (
-                          <div style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 600, marginTop: '2px' }}>
-                            ⚠️ {contact.notes}
-                          </div>
-                        )}
+                      <td style={{ padding: '5px 10px', fontWeight: 600, color: '#0f172a' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span>{contact.name}</span>
+                          {contact.notes && (
+                            <span style={{ fontSize: '0.7rem', color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', padding: '1px 5px', fontWeight: 500 }}>
+                              ⚠️ {contact.notes}
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: '#334155', fontWeight: 600 }}>
-                        +91 {contact.phone}
+                      <td style={{ padding: '5px 10px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span>+91 {contact.phone}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(contact.phone);
+                              showToast(`Copied ${contact.phone}`);
+                            }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#94a3b8' }}
+                            title="Copy number"
+                          >
+                            <Copy size={12} />
+                          </button>
+                        </div>
                       </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span className="badge badge-pending">{contact.category || 'General'}</span>
+                      <td style={{ padding: '5px 10px' }}>
+                        <span className="badge badge-pending" style={{ fontSize: '0.7rem', padding: '1px 6px' }}>
+                          {contact.category || 'General'}
+                        </span>
                       </td>
-                      <td style={{ padding: '12px 14px' }}>
+                      <td style={{ padding: '5px 10px' }}>
                         <button
                           onClick={() => handleToggleContacted(contact._id, contact.contacted)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           title="Click to toggle status"
                         >
-                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'}>
-                            {contact.contacted ? '✅ Contacted' : '⏳ Pending'}
+                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'} style={{ fontSize: '0.7rem', padding: '1px 6px' }}>
+                            {contact.contacted ? '✅ Messaged' : '⏳ Pending'}
                           </span>
                         </button>
                       </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px' }}>
-                          {/* 1. Direct Send (Opens Send Message Box with templates) */}
+                      <td style={{ padding: '5px 10px', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                          {/* 1. Direct Send (WhatsApp Modal) */}
                           <button
                             className="btn btn-whatsapp"
                             onClick={() => handleOpenSendMessage(contact)}
                             disabled={sendingDirectId === contact._id}
-                            style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '4px' }}
-                            title="Open WhatsApp Message Box & Templates"
+                            style={{ padding: '3px 7px', fontSize: '0.72rem', borderRadius: '5px', gap: '3px' }}
+                            title="Open Message Box & Send"
                           >
                             <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
                           </button>
@@ -832,30 +850,43 @@ export default function App() {
                           <button
                             className="btn btn-secondary"
                             onClick={() => handleOpenSendMessage(contact)}
-                            style={{ padding: '6px 10px', fontSize: '0.78rem', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
-                            title="Open Message Box for Web / App"
+                            style={{ padding: '3px 7px', fontSize: '0.72rem', borderRadius: '5px', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
+                            title="Open WhatsApp Web"
                           >
                             <span>🔗 Web</span>
                           </button>
 
-                          {/* 3. Call */}
+                          {/* 3. Call Phone */}
                           <button
                             className="btn btn-call"
                             onClick={() => handleCallRedirect(contact)}
-                            style={{ padding: '6px 10px', fontSize: '0.78rem' }}
+                            style={{ padding: '3px 6px', fontSize: '0.72rem', borderRadius: '5px' }}
                             title="Call Phone Number"
                           >
-                            <Phone size={13} />
+                            <Phone size={11} />
                           </button>
 
-                          {/* 4. Delete */}
+                          {/* 4. Edit Contact */}
                           <button
-                            className="btn btn-secondary btn-icon"
-                            onClick={() => handleDeleteContact(contact._id)}
-                            style={{ width: '28px', height: '28px', color: '#ef4444' }}
-                            title="Delete"
+                            className="btn btn-secondary"
+                            onClick={() => {
+                              setEditingContact(contact);
+                              setIsAddModalOpen(true);
+                            }}
+                            style={{ padding: '3px 6px', borderRadius: '5px', color: '#0284c7' }}
+                            title="Edit Contact"
                           >
-                            <Trash2 size={13} />
+                            <Edit2 size={11} />
+                          </button>
+
+                          {/* 5. Delete Contact */}
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => handleDeleteContact(contact._id)}
+                            style={{ padding: '3px 6px', borderRadius: '5px', color: '#ef4444' }}
+                            title="Delete Contact"
+                          >
+                            <Trash2 size={11} />
                           </button>
                         </div>
                       </td>
