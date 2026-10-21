@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   MessageCircle,
+  LayoutDashboard,
   Users,
   FileText,
   UserPlus,
@@ -8,7 +9,6 @@ import {
   Download,
   RefreshCw,
   Database,
-  ExternalLink,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -53,10 +53,24 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Main Navigation Links */}
+      {/* Main Navigation Links: 3 Separate Tabs */}
       <div className="sidebar-section">
-        <span className="sidebar-section-title">NAVIGATION</span>
+        <span className="sidebar-section-title">MAIN TABS</span>
         <nav className="sidebar-nav">
+          
+          {/* Tab 1: Dashboard */}
+          <button
+            type="button"
+            onClick={() => onTabChange('dashboard')}
+            className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          >
+            <div className="flex items-center gap-2.5">
+              <LayoutDashboard size={18} />
+              <span>Dashboard</span>
+            </div>
+          </button>
+
+          {/* Tab 2: Contacts List */}
           <button
             type="button"
             onClick={() => onTabChange('contacts')}
@@ -71,6 +85,7 @@ export default function Sidebar({
             )}
           </button>
 
+          {/* Tab 3: Message Templates */}
           <button
             type="button"
             onClick={() => onTabChange('templates')}
@@ -84,6 +99,7 @@ export default function Sidebar({
               <span className="sidebar-nav-badge sidebar-nav-badge-emerald">{templatesCount}</span>
             )}
           </button>
+
         </nav>
       </div>
 

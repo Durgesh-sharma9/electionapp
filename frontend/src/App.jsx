@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
+import DashboardView from './components/DashboardView';
 import StatsOverview from './components/StatsOverview';
 import MessageTemplateBar from './components/MessageTemplateBar';
 import AddContactModal from './components/AddContactModal';
@@ -408,13 +409,25 @@ export default function App() {
         />
 
       {/* ============================================================== */}
-      {/* TAB 1: CONTACTS & OUTREACH VIEW                                 */}
+      {/* TAB 1: DEDICATED DASHBOARD                                      */}
+      {/* ============================================================== */}
+      {activeTab === 'dashboard' && (
+        <DashboardView
+          stats={stats}
+          contactsCount={contacts.length}
+          templatesCount={templates.length}
+          onNavigateTab={setActiveTab}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenBulkModal={() => setIsBulkModalOpen(true)}
+          onExportCSV={handleExportCSV}
+        />
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 2: CONTACTS LIST ONLY (Bss List View)                      */}
       {/* ============================================================== */}
       {activeTab === 'contacts' && (
         <>
-          {/* Quick Stats Overview */}
-          <StatsOverview stats={stats} />
-
           {/* WhatsApp Message Template Quick Bar */}
           <MessageTemplateBar
             templates={templates}

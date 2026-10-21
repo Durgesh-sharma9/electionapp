@@ -1,11 +1,8 @@
 import React from 'react';
-import { MessageCircle, UserPlus, FileSpreadsheet, Download, RefreshCw, Users, FileText } from 'lucide-react';
+import { MessageCircle, UserPlus, FileSpreadsheet, Download, RefreshCw } from 'lucide-react';
 
 export default function Navbar({
   activeTab = 'contacts',
-  onTabChange,
-  totalContacts = 0,
-  templatesCount = 0,
   onOpenAddModal,
   onOpenBulkModal,
   onRefresh,
@@ -13,11 +10,34 @@ export default function Navbar({
   dbConnected,
   loading,
 }) {
+  const getHeaderInfo = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return {
+          title: 'Outreach Dashboard',
+          subtitle: 'Real-time overview, outreach completion progress, and quick statistics',
+        };
+      case 'templates':
+        return {
+          title: 'WhatsApp Message Templates',
+          subtitle: 'Create, test with {name}, and permanently save reusable messages',
+        };
+      case 'contacts':
+      default:
+        return {
+          title: 'Contacts & Outreach List',
+          subtitle: 'Manage your contact list and 1-click WhatsApp redirects',
+        };
+    }
+  };
+
+  const headerInfo = getHeaderInfo();
+
   return (
     <header className="glass-panel main-top-header" style={{ padding: '14px 18px', marginBottom: '18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         
-        {/* Mobile Brand / Desktop Title */}
+        {/* Mobile Brand / Desktop Page Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="mobile-only-logo" style={{
             width: '38px',
@@ -43,7 +63,7 @@ export default function Navbar({
                 color: '#0f172a',
                 margin: 0,
               }}>
-                {activeTab === 'contacts' ? 'Contacts & Outreach' : 'WhatsApp Message Templates'}
+                {headerInfo.title}
               </h1>
               <span className="mobile-only-badge" style={{
                 fontSize: '0.68rem',
@@ -58,9 +78,7 @@ export default function Navbar({
               </span>
             </div>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
-              {activeTab === 'contacts'
-                ? 'Manage contacts and launch 1-click WhatsApp redirects'
-                : 'Create, test, and save reusable WhatsApp messages'}
+              {headerInfo.subtitle}
             </p>
           </div>
         </div>
@@ -70,7 +88,7 @@ export default function Navbar({
           <button 
             className="btn btn-secondary btn-icon" 
             onClick={onRefresh}
-            title="Refresh List"
+            title="Refresh Data"
             disabled={loading}
           >
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
