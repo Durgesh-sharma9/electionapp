@@ -444,43 +444,50 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100vw;
   z-index: 999;
   background: #ffffff !important;
   border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
-  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px)) 10px;
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
+  padding: 5px 6px calc(6px + env(safe-area-inset-bottom, 0px)) 6px;
+  box-sizing: border-box;
 }
 
 .bottom-tab-container {
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  gap: 2px;
+  justify-content: space-between;
+  gap: 0;
+  box-sizing: border-box;
 }
 
 .bottom-tab-item {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 2px;
+  padding: 4px 1px;
   border: none;
   background: transparent;
   color: #64748b;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
 }
 
 .bottom-tab-item:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .bottom-tab-item.active {
   color: #059669;
+  font-weight: 700;
 }
 
 .bottom-tab-fab {
@@ -496,7 +503,7 @@ body {
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
   cursor: pointer;
   flex-shrink: 0;
-  margin: 0 6px;
+  margin: 0 4px;
   transition: all 0.15s ease;
 }
 
@@ -515,6 +522,10 @@ body {
   margin-top: 2px;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.1;
 }
 
 .bottom-tab-badge {
@@ -974,13 +985,48 @@ body {
   .mobile-only-cards {
     display: flex !important;
   }
+
+  .mobile-filter-row {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-filter-row::-webkit-scrollbar {
+    display: none;
+  }
+  .mobile-filter-row select {
+    flex-shrink: 0;
+  }
 }
 
 .mobile-only-cards {
   display: none;
 }
 
+/* Native App-Style Contact Cards */
+.mobile-app-contact-card {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.mobile-app-contact-card:hover {
+  transform: translateY(-1px);
+}
+
 @media (max-width: 640px) {
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mobile-app-contact-card {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+
   .metric-cards-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;

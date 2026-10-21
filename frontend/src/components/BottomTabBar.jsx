@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, MapPin, BarChart3, Smartphone, Plus } from 'lucide-react';
+import { Users, MapPin, FileText, BarChart3, Smartphone, Plus } from 'lucide-react';
 
 export default function BottomTabBar({
   activeTab,
@@ -16,21 +16,31 @@ export default function BottomTabBar({
           onClick={() => onTabChange('contacts')}
           className={`bottom-tab-item ${activeTab === 'contacts' ? 'active' : ''}`}
         >
-          <Users size={20} />
+          <Users size={19} />
           <span className="bottom-tab-label">Contacts</span>
         </button>
 
-        {/* 2. Locality Tab */}
+        {/* 2. Wards Tab */}
         <button
           type="button"
           onClick={() => onTabChange('localities')}
           className={`bottom-tab-item ${activeTab === 'localities' ? 'active' : ''}`}
         >
-          <MapPin size={20} />
+          <MapPin size={19} />
           <span className="bottom-tab-label">Wards</span>
         </button>
 
-        {/* 3. CENTER FAB: Quick Add Contact */}
+        {/* 3. Templates Tab */}
+        <button
+          type="button"
+          onClick={() => onTabChange('templates')}
+          className={`bottom-tab-item ${activeTab === 'templates' ? 'active' : ''}`}
+        >
+          <FileText size={19} />
+          <span className="bottom-tab-label">Templates</span>
+        </button>
+
+        {/* 4. CENTER FAB: Quick Add Contact */}
         <button
           type="button"
           onClick={onOpenAddModal}
@@ -38,27 +48,27 @@ export default function BottomTabBar({
           title="Add New Contact"
           aria-label="Add Contact"
         >
-          <Plus size={22} color="#ffffff" strokeWidth={2.5} />
+          <Plus size={22} color="#ffffff" strokeWidth={2.6} />
         </button>
 
-        {/* 4. Analytics Tab */}
+        {/* 5. Analytics Tab */}
         <button
           type="button"
           onClick={() => onTabChange('analytics')}
           className={`bottom-tab-item ${activeTab === 'analytics' ? 'active' : ''}`}
         >
-          <BarChart3 size={20} />
+          <BarChart3 size={19} />
           <span className="bottom-tab-label">Analytics</span>
         </button>
 
-        {/* 5. WhatsApp Tab */}
+        {/* 6. WhatsApp Tab */}
         <button
           type="button"
           onClick={() => onTabChange('whatsapp')}
           className={`bottom-tab-item ${activeTab === 'whatsapp' ? 'active' : ''}`}
         >
           <div style={{ position: 'relative', display: 'inline-flex' }}>
-            <Smartphone size={20} />
+            <Smartphone size={19} />
             <span
               style={{
                 position: 'absolute',

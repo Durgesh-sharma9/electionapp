@@ -702,8 +702,8 @@ export default function App() {
                 />
               </div>
 
-              {/* Filter Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              {/* Filter Controls (Horizontally scrollable on mobile) */}
+              <div className="mobile-filter-row" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 
                 {/* Ward Filter */}
                 <select
@@ -789,8 +789,8 @@ export default function App() {
                   <option value="CONTACTED">✅ Messaged</option>
                 </select>
 
-                {/* View Mode Switcher */}
-                <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0' }}>
+                {/* View Mode Switcher (Desktop only - mobile uses dedicated responsive Cards) */}
+                <div className="hide-on-mobile" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0' }}>
                   <button
                     onClick={() => setViewMode('cards')}
                     style={{
@@ -935,39 +935,41 @@ export default function App() {
             </div>
           ) : (
             <>
-              {/* Desktop / Tablet View (Switchable Cards or Table) */}
-              <div className="hide-on-mobile">
-                {viewMode === 'cards' ? (
-                  <div className="contact-grid">
-                    {filteredContacts.map((contact) => (
-                      <ContactCard
-                        key={contact._id}
-                        contact={contact}
-                        isSelected={selectedIds.has(contact._id)}
-                        onSelectToggle={(id, checked) => {
-                          const next = new Set(selectedIds);
-                          if (checked) next.add(id);
-                          else next.delete(id);
-                          setSelectedIds(next);
-                        }}
-                        onToggleSureVoter={handleToggleSureVoter}
-                        onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
-                        onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
-                        onOpenTemplateModal={(c) => setMessageModalContact(c)}
-                        onCallRedirect={handleCallRedirect}
-                        onDelete={handleDeleteContact}
-                        onEdit={(c) => {
-                          setEditingContact(c);
-                          setIsAddModalOpen(true);
-                        }}
-                        isSendingDirect={sendingDirectId === contact._id}
-                        waConnected={waConnected}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="compact-table-container" style={{ overflowX: 'auto' }}>
-                    <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              {viewMode === 'cards' ? (
+                /* Native App-Style Responsive Contact Cards */
+                <div className="contact-grid">
+                  {filteredContacts.map((contact) => (
+                    <ContactCard
+                      key={contact._id}
+                      contact={contact}
+                      isSelected={selectedIds.has(contact._id)}
+                      onSelectToggle={(id, checked) => {
+                        const next = new Set(selectedIds);
+                        if (checked) next.add(id);
+                        else next.delete(id);
+                        setSelectedIds(next);
+                      }}
+                      onToggleSureVoter={handleToggleSureVoter}
+                      onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
+                      onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
+                      onOpenTemplateModal={(c) => setMessageModalContact(c)}
+                      onCallRedirect={handleCallRedirect}
+                      onDelete={handleDeleteContact}
+                      onEdit={(c) => {
+                        setEditingContact(c);
+                        setIsAddModalOpen(true);
+                      }}
+                      isSendingDirect={sendingDirectId === contact._id}
+                      waConnected={waConnected}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hide-on-mobile">
+                    <div className="compact-table-container" style={{ overflowX: 'auto' }}>
+                      <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr>
                     <th style={{ width: '40px', textAlign: 'center', padding: '10px 10px' }}>
@@ -1211,43 +1213,44 @@ export default function App() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
 
-              {/* Mobile View: Clean, Native Responsive Contact Cards */}
-              <div className="mobile-only-cards" style={{ display: 'none', flexDirection: 'column', gap: '12px' }}>
-                <div className="contact-grid">
-                  {filteredContacts.map((contact) => (
-                    <ContactCard
-                      key={contact._id}
-                      contact={contact}
-                      isSelected={selectedIds.has(contact._id)}
-                      onSelectToggle={(id, checked) => {
-                        const next = new Set(selectedIds);
-                        if (checked) next.add(id);
-                        else next.delete(id);
-                        setSelectedIds(next);
-                      }}
-                      onToggleSureVoter={handleToggleSureVoter}
-                      onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
-                      onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
-                      onOpenTemplateModal={(c) => setMessageModalContact(c)}
-                      onCallRedirect={handleCallRedirect}
-                      onDelete={handleDeleteContact}
-                      onEdit={(c) => {
-                        setEditingContact(c);
-                        setIsAddModalOpen(true);
-                      }}
-                      isSendingDirect={sendingDirectId === contact._id}
-                      waConnected={waConnected}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+          {/* Mobile Fallback: Shows sleek Contact Cards if table was selected */}
+          <div className="mobile-only-cards">
+            <div className="contact-grid">
+              {filteredContacts.map((contact) => (
+                <ContactCard
+                  key={contact._id}
+                  contact={contact}
+                  isSelected={selectedIds.has(contact._id)}
+                  onSelectToggle={(id, checked) => {
+                    const next = new Set(selectedIds);
+                    if (checked) next.add(id);
+                    else next.delete(id);
+                    setSelectedIds(next);
+                  }}
+                  onToggleSureVoter={handleToggleSureVoter}
+                  onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
+                  onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
+                  onOpenTemplateModal={(c) => setMessageModalContact(c)}
+                  onCallRedirect={handleCallRedirect}
+                  onDelete={handleDeleteContact}
+                  onEdit={(c) => {
+                    setEditingContact(c);
+                    setIsAddModalOpen(true);
+                  }}
+                  isSendingDirect={sendingDirectId === contact._id}
+                  waConnected={waConnected}
+                />
+              ))}
+            </div>
+          </div>
         </>
       )}
+    </>
+  )}
+</>
+)}
 
       {/* ============================================================== */}
       {/* TAB 3: TEMPLATES MANAGER VIEW (Saved WhatsApp templates)       */}
