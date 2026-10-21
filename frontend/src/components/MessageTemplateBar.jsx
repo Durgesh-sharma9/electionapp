@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquareText, Edit3, Check, Settings2, Plus } from 'lucide-react';
+import { MessageSquareText, ChevronDown, ChevronUp, ExternalLink, Check, Sparkles } from 'lucide-react';
 
 export default function MessageTemplateBar({
   templates = [],
@@ -8,146 +8,122 @@ export default function MessageTemplateBar({
   customText,
   onUpdateCustomText,
   onGoToTemplatesTab,
-  onSaveActiveToDb,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempText, setTempText] = useState(customText);
-
-  const handleSaveCustom = async () => {
-    onUpdateCustomText(tempText);
-    setIsEditing(false);
-    if (onSaveActiveToDb) {
-      onSaveActiveToDb(tempText);
-    }
-  };
+  const [expanded, setExpanded] = useState(false);
+  const activeTpl = templates.find((t) => t._id === activeTemplateId || t.id === activeTemplateId) || templates[0];
 
   return (
-    <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MessageSquareText size={18} color="#059669" />
-          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
-            Active WhatsApp Message Template
-          </span>
-          <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-            ({" {name} "} is dynamically replaced with the recipient's name)
-          </span>
+    <div
+      className="glass-panel"
+      style={{
+        padding: '12px 18px',
+        marginBottom: '16px',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '12px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        
+        {/* Left: Active Template Badge & Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: '#ecfdf5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1rem',
+            border: '1px solid #a7f3d0',
+          }}>
+            {activeTpl?.icon || '💬'}
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Active Message:
+              </span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>
+                {activeTpl?.title || 'Greeting & Connect'}
+              </span>
+              <span className="badge badge-supporter" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
+                {activeTpl?.category || 'General'}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Right: Quick Template Chips & Toggle Preview */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Quick Switch Pills */}
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', maxWidth: '340px', padding: '2px 0' }}>
+            {templates.slice(0, 3).map((t) => {
+              const isSelected = activeTemplateId === t._id || (!activeTemplateId && t.isDefault);
+              return (
+                <button
+                  key={t._id}
+                  onClick={() => onSelectTemplate(t._id, t.text)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '16px',
+                    border: isSelected ? '1px solid #10b981' : '1px solid #e2e8f0',
+                    background: isSelected ? '#ecfdf5' : '#f8fafc',
+                    color: isSelected ? '#047857' : '#475569',
+                    fontSize: '0.76rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {t.icon || '💬'} {t.title}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Toggle Text Preview */}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="btn btn-secondary"
+            style={{ padding: '5px 10px', fontSize: '0.78rem' }}
+            title="Preview message content"
+          >
+            <span>{expanded ? 'Hide Preview' : 'Preview'}</span>
+            {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
+
+          {/* Link to Full Templates Tab */}
           {onGoToTemplatesTab && (
             <button
-              className="btn btn-secondary"
-              style={{ padding: '6px 12px', fontSize: '0.8rem', background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46' }}
               onClick={onGoToTemplatesTab}
-              title="Open Templates Manager to create, edit and permanently save templates"
+              className="btn btn-secondary"
+              style={{ padding: '5px 10px', fontSize: '0.78rem', color: '#059669', borderColor: '#a7f3d0', background: '#f0fdf4' }}
+              title="Open all templates"
             >
-              <Settings2 size={14} color="#059669" />
-              <span>Manage & Save Templates</span>
+              <ExternalLink size={13} />
+              <span>All Templates</span>
             </button>
           )}
-
-          <button
-            className="btn btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-            onClick={() => {
-              if (isEditing) {
-                handleSaveCustom();
-              } else {
-                setTempText(customText);
-                setIsEditing(true);
-              }
-            }}
-          >
-            {isEditing ? (
-              <>
-                <Check size={14} color="#059669" />
-                <span>Save Message</span>
-              </>
-            ) : (
-              <>
-                <Edit3 size={14} />
-                <span>Edit Current</span>
-              </>
-            )}
-          </button>
         </div>
+
       </div>
 
-      {/* Preset Pills from DB */}
-      <div className="template-pills-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-        {templates.map((tmpl) => {
-          const isSelected = activeTemplateId === tmpl._id || activeTemplateId === tmpl.id;
-          return (
-            <button
-              key={tmpl._id || tmpl.id}
-              onClick={() => onSelectTemplate(tmpl._id || tmpl.id, tmpl.text)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                border: isSelected ? '1.5px solid #10b981' : '1px solid #cbd5e1',
-                background: isSelected ? '#ecfdf5' : '#f8fafc',
-                color: isSelected ? '#047857' : '#475569',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              <span>{tmpl.icon || '💬'}</span>
-              <span>{tmpl.title}</span>
-            </button>
-          );
-        })}
-
-        {onGoToTemplatesTab && (
-          <button
-            onClick={onGoToTemplatesTab}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '20px',
-              border: '1px dashed #cbd5e1',
-              background: '#f8fafc',
-              color: '#64748b',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <Plus size={13} />
-            <span>New Template</span>
-          </button>
-        )}
-      </div>
-
-      {/* Message Preview */}
-      {isEditing ? (
-        <textarea
-          className="input-field"
-          rows={3}
-          value={tempText}
-          onChange={(e) => setTempText(e.target.value)}
-          placeholder="Write your custom message here... ({name} will be replaced with recipient's name)"
-          style={{ width: '100%', resize: 'vertical' }}
-        />
-      ) : (
+      {/* Expandable Preview Drawer */}
+      {expanded && (
         <div style={{
+          marginTop: '10px',
           padding: '10px 14px',
-          borderRadius: '10px',
+          borderRadius: '8px',
           background: '#f8fafc',
-          border: '1px dashed #cbd5e1',
-          fontSize: '0.84rem',
+          border: '1px solid #e2e8f0',
+          fontSize: '0.82rem',
           color: '#334155',
-          fontStyle: 'italic',
           lineHeight: '1.5',
+          fontStyle: 'italic',
         }}>
           "{customText.replace('{name}', 'Rahul Sharma')}"
         </div>
