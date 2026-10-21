@@ -704,15 +704,28 @@ export default function App() {
       {activeTab === 'dashboard' && (
         <DashboardView
           stats={stats}
+          contacts={contacts}
+          wards={wards}
+          localities={localities}
           contactsCount={contacts.length}
           templatesCount={templates.length}
           onNavigateTab={navigateTab}
+          onFilterByWard={(wName) => {
+            setWardFilter(wName);
+            navigateTab('contacts');
+          }}
+          onFilterByLocality={(lName) => {
+            setLocalityFilter(lName);
+            navigateTab('contacts');
+          }}
           onOpenAddModal={() => {
             setEditingContact(null);
             setIsAddModalOpen(true);
           }}
           onOpenBulkModal={() => setIsBulkModalOpen(true)}
           onExportCSV={handleExportCSV}
+          onOpenSendMessage={handleOpenSendMessage}
+          onCallRedirect={handleCallRedirect}
         />
       )}
 
