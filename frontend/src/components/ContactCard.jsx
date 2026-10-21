@@ -279,7 +279,7 @@ export default function ContactCard({
           </button>
         )}
 
-        {/* 2. 1-Click WhatsApp Redirect (wa.me) */}
+        {/* 2. WhatsApp Message Redirect */}
         <button
           className="btn btn-secondary"
           onClick={() => onWhatsAppRedirect(contact)}
@@ -288,14 +288,15 @@ export default function ContactCard({
             minHeight: '38px',
             fontSize: '0.82rem',
             background: '#f0fdf4',
-            borderColor: '#a7f3d0',
-            color: '#065f46',
+            borderColor: '#86efac',
+            color: '#15803d',
+            fontWeight: 600,
             gap: '5px',
           }}
-          title="Open WhatsApp Web / App Redirect"
+          title="Send WhatsApp Message"
         >
-          <ExternalLink size={13} color="#059669" />
-          <span>WA Web</span>
+          <MessageCircle size={14} color="#16a34a" />
+          <span>WhatsApp</span>
         </button>
 
         {/* 3. Direct Phone Call Redirect */}

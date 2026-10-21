@@ -843,6 +843,10 @@ body {
   .mobile-only-status {
     display: inline-flex !important;
   }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
 }
 
 /* ============================================================== */

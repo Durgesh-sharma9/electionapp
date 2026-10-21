@@ -550,6 +550,7 @@ export default function App() {
           onTabChange={setActiveTab}
           totalContacts={contacts.length}
           templatesCount={templates.length}
+          localitiesCount={localities.length}
           onOpenAddModal={() => {
             setEditingContact(null);
             setIsAddModalOpen(true);
@@ -979,14 +980,26 @@ export default function App() {
                             </button>
                           )}
 
-                          {/* 2. WhatsApp Web Redirect */}
+                          {/* 2. WhatsApp Message / Chat Redirect */}
                           <button
                             className="btn btn-secondary"
                             onClick={() => handleOpenSendMessage(contact)}
-                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
-                            title="Open WhatsApp Web"
+                            style={{
+                              padding: '4px 9px',
+                              fontSize: '0.78rem',
+                              borderRadius: '6px',
+                              background: '#f0fdf4',
+                              borderColor: '#86efac',
+                              color: '#15803d',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                            title="Send WhatsApp Message"
                           >
-                            <span>🔗 Web</span>
+                            <MessageCircle size={13} color="#16a34a" />
+                            <span>WhatsApp</span>
                           </button>
 
                           {/* 3. Call Phone */}
