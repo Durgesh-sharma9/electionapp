@@ -1,204 +1,185 @@
 import React, { useState } from 'react';
-import { X, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { X, FileSpreadsheet, Check, AlertCircle, Sparkles } from 'lucide-react';
 
 export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
   const [rawText, setRawText] = useState('');
-  const [defaultWard, setDefaultWard] = useState('Main List');
   const [defaultCategory, setDefaultCategory] = useState('General');
   const [parsedItems, setParsedItems] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  // Auto-parse lines into { name, phone }
-  const handleParse = (text) => {
+  // Auto-parse text as user types or pastes
+  const handleTextChange = (e) => {
+    const text = e.target.value;
     setRawText(text);
-    if (!text.trim()) {
-      setParsedItems([]);
-      return;
-    }
 
-    const lines = text.split(/\r?\n/);
-    const results = [];
+    const lines = text.split('\n');
+    const items = [];
 
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line) continue;
+    lines.forEach((line) => {
+      const cleanLine = line.trim();
+      if (!cleanLine) return;
 
-      const phoneMatch = line.match(/(?:\+?91[\s-]?)?[6-9]\d{9}/);
-
+      // Match 10-12 digit phone numbers
+      const phoneMatch = cleanLine.match(/(?:\+91|91|0)?([6-9]\d{9})/);
       if (phoneMatch) {
-        const fullMatchedPhone = phoneMatch[0];
-        const cleanDigits = fullMatchedPhone.replace(/\D/g, '').slice(-10);
+        const phone = phoneMatch[1];
+        // The rest of the line is the name
+        let name = cleanLine.replace(phoneMatch[0], '').replace(/[,\-\t:|()]/g, ' ').trim();
+        name = name.replace(/\s+/g, ' ');
 
-        let name = line.replace(fullMatchedPhone, '').trim();
-        name = name.replace(/^[-–—:,.\t\s]+|[-–—:,.\t\s]+$/g, '').trim();
+        if (!name) {
+          name = `Contact ${phone.slice(-4)}`;
+        }
 
-        if (name && cleanDigits.length === 10) {
-          results.push({ name, phone: cleanDigits });
-        }
-      } else {
-        const parts = line.split(/[,\t|]/).map((p) => p.trim());
-        if (parts.length >= 2) {
-          const possiblePhone = parts[1].replace(/\D/g, '').slice(-10);
-          if (possiblePhone.length === 10) {
-            results.push({ name: parts[0], phone: possiblePhone });
-          }
-        }
+        items.push({
+          name,
+          phone,
+          category: defaultCategory,
+        });
       }
-    }
+    });
 
-    setParsedItems(results);
+    setParsedItems(items);
   };
 
   const handleImport = async () => {
     if (parsedItems.length === 0) {
-      setError('No valid name and 10-digit phone numbers detected');
+      alert('Please paste at least one contact name with a valid 10-digit mobile number.');
       return;
     }
 
-    setError('');
-    setSubmitting(true);
+    setIsSubmitting(true);
     try {
-      await onBulkImport({
-        contacts: parsedItems.map((item) => ({
-          name: item.name,
-          phone: item.phone,
-          ward: defaultWard,
-          category: defaultCategory,
-        })),
-        defaultWard,
-        defaultCategory,
-      });
+      const payload = parsedItems.map((item) => ({
+        ...item,
+        category: defaultCategory,
+      }));
+      await onBulkImport(payload);
       setRawText('');
       setParsedItems([]);
-      onClose();
     } catch (err) {
-      setError(err.message || 'Error occurred while importing');
+      console.error(err);
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
+  const sampleExample = `Ramesh Sharma 9829012345
+Suresh Verma 9414056789
+Amit Singh +91 9785012345
+Vikram Patel, 9876543210`;
+
   return (
-    <div className="modal-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(15, 23, 42, 0.6)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px',
-    }}>
-      <div className="glass-modal animate-fade-in" style={{ width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto', padding: '24px' }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="glass-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '100%' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ padding: '8px', borderRadius: '10px', background: '#eef2ff', color: '#4f46e5' }}>
-              <FileSpreadsheet size={22} />
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: '#eef2ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid #c7d2fe',
+            }}>
+              <FileSpreadsheet size={20} color="#4f46e5" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
-                Bulk Paste Contact List
-              </h3>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
-                Copy and paste lines directly from WhatsApp, Excel, or notes
-              </p>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                Paste & Import Bulk Contacts
+              </h2>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                Paste lines with names & numbers in any format
+              </span>
             </div>
           </div>
-          <button className="btn btn-secondary btn-icon" onClick={onClose} style={{ borderRadius: '50%' }}>
-            <X size={18} />
+          <button onClick={onClose} className="btn btn-secondary btn-icon" style={{ width: '32px', height: '32px' }}>
+            <X size={16} />
           </button>
         </div>
 
-        {error && (
-          <div style={{
-            padding: '10px 14px',
-            borderRadius: '8px',
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#dc2626',
-            fontSize: '0.85rem',
-            marginBottom: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}>
-            <AlertCircle size={16} />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Example format helper */}
+        {/* Info Banner */}
         <div style={{
           padding: '10px 14px',
-          borderRadius: '8px',
-          background: '#fff7ed',
-          border: '1px solid #fed7aa',
-          fontSize: '0.82rem',
-          color: '#9a3412',
+          borderRadius: '10px',
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
           marginBottom: '14px',
+          fontSize: '0.82rem',
+          color: '#475569',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '8px',
         }}>
-          💡 <strong>Any format works:</strong> e.g.<br />
-          <code>Rahul Sharma 9829012345</code> or <code>Suresh Kumar, 9829098765</code> or <code>Michael - 9829054321</code>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={16} color="#4f46e5" />
+            <span>Format: <strong>Name + 10-digit Mobile Number</strong> on each line</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleTextChange({ target: { value: sampleExample } })}
+            style={{
+              background: '#eef2ff',
+              border: '1px solid #c7d2fe',
+              color: '#4338ca',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              fontSize: '0.74rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Paste Sample
+          </button>
         </div>
 
-        {/* Textarea */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
-            <span>Paste Contacts Below (1 per line)</span>
+        {/* Text Area */}
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+              Paste Your List Here:
+            </label>
             {parsedItems.length > 0 && (
-              <span style={{ color: '#059669', fontWeight: 700 }}>
-                ✓ {parsedItems.length} contacts identified
+              <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Check size={14} />
+                <span>{parsedItems.length} valid contacts detected</span>
               </span>
             )}
-          </label>
+          </div>
           <textarea
             className="input-field"
-            rows={7}
-            placeholder={`Rahul Sharma 9829011111\nSuresh Kumar 9829022222\nAnita Singh, 9829033333`}
+            rows={6}
+            placeholder={`Paste here, example:\nRamesh Sharma 9829012345\nSuresh Verma 9414056789\nAmit Singh +91 9785012345`}
             value={rawText}
-            onChange={(e) => handleParse(e.target.value)}
-            style={{ fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: '1.6' }}
+            onChange={handleTextChange}
+            style={{ width: '100%', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.84rem' }}
           />
         </div>
 
-        {/* Default Area & Category */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px', color: '#334155' }}>
-              Default Area / Group
-            </label>
-            <input
-              type="text"
-              className="input-field"
-              value={defaultWard}
-              onChange={(e) => setDefaultWard(e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px', color: '#334155' }}>
-              Default Tag / Category
-            </label>
-            <select
-              className="input-field"
-              value={defaultCategory}
-              onChange={(e) => setDefaultCategory(e.target.value)}
-            >
-              <option value="General">General</option>
-              <option value="Lead / Inquiry">Lead / Inquiry</option>
-              <option value="VIP Contact">VIP Contact</option>
-              <option value="Member / Supporter">Member / Supporter</option>
-              <option value="Volunteer / Staff">Volunteer / Staff</option>
-            </select>
-          </div>
+        {/* Default Category */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px', color: '#334155' }}>
+            Assign Tag / Category to Imported Contacts
+          </label>
+          <select
+            className="input-field"
+            value={defaultCategory}
+            onChange={(e) => setDefaultCategory(e.target.value)}
+          >
+            <option value="General">General</option>
+            <option value="Lead / Inquiry">Lead / Inquiry</option>
+            <option value="VIP Contact">VIP Contact</option>
+            <option value="Member / Supporter">Member / Supporter</option>
+            <option value="Volunteer / Staff">Volunteer / Staff</option>
+          </select>
         </div>
 
         {/* Live Preview Table */}
@@ -210,7 +191,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
                   <th style={{ padding: '8px 12px' }}>#</th>
                   <th style={{ padding: '8px 12px' }}>Name</th>
                   <th style={{ padding: '8px 12px' }}>Mobile Number</th>
-                  <th style={{ padding: '8px 12px' }}>Group / Area</th>
+                  <th style={{ padding: '8px 12px' }}>Category</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +200,7 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
                     <td style={{ padding: '8px 12px', color: '#94a3b8' }}>{idx + 1}</td>
                     <td style={{ padding: '8px 12px', fontWeight: 600, color: '#0f172a' }}>{item.name}</td>
                     <td style={{ padding: '8px 12px', color: '#0284c7', fontWeight: 600 }}>+91 {item.phone}</td>
-                    <td style={{ padding: '8px 12px', color: '#64748b' }}>{defaultWard}</td>
+                    <td style={{ padding: '8px 12px', color: '#64748b' }}>{defaultCategory}</td>
                   </tr>
                 ))}
               </tbody>
@@ -232,19 +213,32 @@ export default function BulkImportModal({ isOpen, onClose, onBulkImport }) {
           </div>
         )}
 
-        {/* Footer actions */}
+        {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="button" className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            style={{ flex: 1 }}
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleImport}
-            disabled={submitting || parsedItems.length === 0}
             style={{ flex: 2 }}
+            disabled={isSubmitting || parsedItems.length === 0}
           >
-            {submitting ? 'Importing...' : `Import ${parsedItems.length} Contacts to Database`}
+            {isSubmitting ? (
+              'Importing...'
+            ) : (
+              <>
+                <Check size={16} />
+                <span>Import {parsedItems.length} Contacts to Database</span>
+              </>
+            )}
           </button>
         </div>
 

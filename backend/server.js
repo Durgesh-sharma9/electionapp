@@ -57,12 +57,6 @@ app.get('/api/stats', async (req, res) => {
       { $group: { _id: '$category', count: { $sum: 1 } } },
     ]);
 
-    const wardStats = await Contact.aggregate([
-      { $group: { _id: '$ward', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 10 },
-    ]);
-
     res.json({
       success: true,
       data: {
@@ -70,7 +64,6 @@ app.get('/api/stats', async (req, res) => {
         contactedCount,
         pendingCount,
         categoryStats,
-        wardStats,
       },
     });
   } catch (error) {
@@ -140,7 +133,7 @@ app.post('/api/contacts', async (req, res) => {
     const contact = new Contact({
       name: name.trim(),
       phone: cleanedPhone,
-      ward: ward?.trim() || 'Main List',
+      ward: ward?.trim() || '',
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
     });
@@ -155,7 +148,7 @@ app.post('/api/contacts', async (req, res) => {
 // POST /api/contacts/bulk (Bulk contacts list import)
 app.post('/api/contacts/bulk', async (req, res) => {
   try {
-    const { contacts, defaultWard = 'Main List', defaultCategory = 'General' } = req.body;
+    const { contacts, defaultCategory = 'General' } = req.body;
 
     if (!Array.isArray(contacts) || contacts.length === 0) {
       return res.status(400).json({
@@ -180,7 +173,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
       validDocs.push({
         name,
         phone,
-        ward: item.ward?.trim() || defaultWard,
+        ward: item.ward?.trim() || '',
         category: item.category?.trim() || defaultCategory,
         notes: item.notes?.trim() || '',
         contacted: false,

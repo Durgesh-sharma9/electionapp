@@ -14,7 +14,7 @@ const contactSchema = new mongoose.Schema(
     },
     ward: {
       type: String,
-      default: 'Main List',
+      default: '',
       trim: true,
     },
     category: {

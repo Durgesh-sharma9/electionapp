@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Phone, User, MapPin } from 'lucide-react';
+import { X, UserPlus, Phone, User } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -10,21 +10,9 @@ const CATEGORIES = [
   'Other',
 ];
 
-const COMMON_AREAS = [
-  'Main List',
-  'Group A',
-  'Group B',
-  'Ward 1',
-  'Ward 2',
-  'Central Area',
-  'North Zone',
-  'South Zone',
-];
-
 export default function AddContactModal({ isOpen, onClose, onSave }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [ward, setWard] = useState('Main List');
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -50,7 +38,6 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
       await onSave({
         name: name.trim(),
         phone: cleanDigits.slice(-10),
-        ward: ward.trim() || 'General',
         category,
         notes: notes.trim(),
       });
@@ -59,53 +46,50 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
       setNotes('');
       onClose();
     } catch (err) {
-      setError(err.message || 'Error occurred while saving');
+      setError(err.message || 'Error saving contact');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="modal-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(15, 23, 42, 0.6)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px',
-    }}>
-      <div className="glass-modal animate-fade-in" style={{ width: '100%', maxWidth: '500px', padding: '24px' }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="glass-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', width: '100%' }}>
         
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        {/* Modal Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '14px', borderBottom: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ padding: '8px', borderRadius: '10px', background: '#ecfdf5', color: '#059669' }}>
-              <UserPlus size={20} />
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: '#ecfdf5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid #a7f3d0',
+            }}>
+              <UserPlus size={20} color="#059669" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
                 Add New Contact
-              </h3>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
-                Add person details for quick WhatsApp messaging
-              </p>
+              </h2>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                Enter contact details for 1-click messaging
+              </span>
             </div>
           </div>
-          <button 
-            className="btn btn-secondary btn-icon" 
+          <button
             onClick={onClose}
-            style={{ borderRadius: '50%' }}
+            className="btn btn-secondary btn-icon"
+            style={{ width: '32px', height: '32px' }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
+        {/* Error Notice */}
         {error && (
           <div style={{
             padding: '10px 14px',
@@ -115,12 +99,14 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
             color: '#dc2626',
             fontSize: '0.85rem',
             marginBottom: '16px',
+            fontWeight: 500,
           }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           
           {/* Name */}
           <div>
@@ -132,12 +118,12 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
               <input
                 type="text"
                 className="input-field"
-                placeholder="e.g. Rahul Sharma"
+                placeholder="e.g. Ramesh Kumar"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={{ paddingLeft: '38px' }}
-                autoFocus
                 required
+                autoFocus
               />
             </div>
           </div>
@@ -145,7 +131,7 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
           {/* Phone */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
-              Mobile Number (10 Digits) *
+              Mobile / WhatsApp Number *
             </label>
             <div style={{ position: 'relative' }}>
               <Phone size={16} color="#059669" style={{ position: 'absolute', left: '12px', top: '14px' }} />
@@ -161,47 +147,23 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Area & Category in 2 columns */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            
-            {/* Area */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
-                Area / Group
-              </label>
-              <input
-                list="area-list"
-                className="input-field"
-                value={ward}
-                onChange={(e) => setWard(e.target.value)}
-                placeholder="Group or Area"
-              />
-              <datalist id="area-list">
-                {COMMON_AREAS.map((a) => (
-                  <option key={a} value={a} />
-                ))}
-              </datalist>
-            </div>
-
-            {/* Category */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
-                Tag / Category
-              </label>
-              <select
-                className="input-field"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                style={{ cursor: 'pointer' }}
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+          {/* Category */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
+              Tag / Category
+            </label>
+            <select
+              className="input-field"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              style={{ cursor: 'pointer' }}
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Notes */}
@@ -209,32 +171,34 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
               Notes / Remarks (Optional)
             </label>
-            <input
-              type="text"
+            <textarea
               className="input-field"
-              placeholder="e.g. Key contact, family of 4, follow-up needed"
+              rows={2}
+              placeholder="e.g. Interested in next meeting, called on Monday..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              style={{ resize: 'vertical' }}
             />
           </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+          {/* Buttons */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
               style={{ flex: 1 }}
+              disabled={submitting}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
               style={{ flex: 2 }}
+              disabled={submitting}
             >
-              {submitting ? 'Saving...' : 'Save to Database'}
+              {submitting ? 'Saving...' : 'Save Contact'}
             </button>
           </div>
 

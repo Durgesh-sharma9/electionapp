@@ -36,7 +36,6 @@ export default function App() {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [wardFilter, setWardFilter] = useState('ALL');
   const [contactedFilter, setContactedFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
@@ -117,15 +116,6 @@ export default function App() {
     fetchTemplates();
   }, []);
 
-  // Distinct groups/areas for filter dropdown
-  const availableWards = useMemo(() => {
-    const set = new Set();
-    contacts.forEach((c) => {
-      if (c.ward) set.add(c.ward);
-    });
-    return Array.from(set);
-  }, [contacts]);
-
   // Filtered contacts
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
@@ -138,11 +128,6 @@ export default function App() {
         return false;
       }
 
-      // Area filter
-      if (wardFilter !== 'ALL' && c.ward !== wardFilter) {
-        return false;
-      }
-
       // Contacted filter
       if (contactedFilter === 'CONTACTED' && !c.contacted) return false;
       if (contactedFilter === 'PENDING' && c.contacted) return false;
@@ -152,16 +137,15 @@ export default function App() {
         const q = searchQuery.toLowerCase().trim();
         const matchName = c.name?.toLowerCase().includes(q);
         const matchPhone = c.phone?.toLowerCase().includes(q);
-        const matchWard = c.ward?.toLowerCase().includes(q);
         const matchNotes = c.notes?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchWard && !matchNotes) {
+        if (!matchName && !matchPhone && !matchNotes) {
           return false;
         }
       }
 
       return true;
     });
-  }, [contacts, categoryFilter, wardFilter, contactedFilter, searchQuery]);
+  }, [contacts, categoryFilter, contactedFilter, searchQuery]);
 
   // 1-Click WhatsApp Redirect
   const handleWhatsAppRedirect = async (contact) => {
@@ -303,12 +287,11 @@ export default function App() {
       alert('No contacts to export.');
       return;
     }
-    const headers = ['Name', 'Phone', 'Category', 'List/Ward', 'Status', 'Contact Count', 'Notes'];
+    const headers = ['Name', 'Phone', 'Category', 'Status', 'Contact Count', 'Notes'];
     const rows = contacts.map((c) => [
       `"${(c.name || '').replace(/"/g, '""')}"`,
       `"${c.phone || ''}"`,
       `"${(c.category || '').replace(/"/g, '""')}"`,
-      `"${(c.ward || '').replace(/"/g, '""')}"`,
       c.contacted ? 'Contacted' : 'Pending',
       c.contactCount || 0,
       `"${(c.notes || '').replace(/"/g, '""')}"`,
@@ -434,7 +417,7 @@ export default function App() {
                 <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Search by name, phone number, list/ward..."
+                  placeholder="Search by name, phone number, notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-field"
@@ -459,21 +442,6 @@ export default function App() {
                   <option value="Volunteer">Volunteers</option>
                   <option value="Undecided">Undecided</option>
                 </select>
-
-                {/* Ward/Area Filter */}
-                {availableWards.length > 0 && (
-                  <select
-                    className="input-field"
-                    value={wardFilter}
-                    onChange={(e) => setWardFilter(e.target.value)}
-                    style={{ width: 'auto', padding: '8px 12px', fontSize: '0.84rem' }}
-                  >
-                    <option value="ALL">All Lists / Wards</option>
-                    {availableWards.map((w) => (
-                      <option key={w} value={w}>{w}</option>
-                    ))}
-                  </select>
-                )}
 
                 {/* Contacted Filter */}
                 <select
@@ -613,7 +581,7 @@ export default function App() {
                 No Contacts Found
               </h3>
               <p style={{ fontSize: '0.88rem', color: '#64748b', maxWidth: '420px', margin: '0 auto 20px auto' }}>
-                {searchQuery || categoryFilter !== 'ALL' || wardFilter !== 'ALL'
+                {searchQuery || categoryFilter !== 'ALL' || contactedFilter !== 'ALL'
                   ? 'No contacts match your active search or filters. Try clearing them.'
                   : 'Start by pasting your list of names and numbers or adding contacts individually.'}
               </p>
@@ -666,7 +634,6 @@ export default function App() {
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>NAME</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>PHONE NUMBER</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>CATEGORY</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>LIST / WARD</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>STATUS</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600, textAlign: 'right' }}>ACTIONS</th>
                   </tr>
@@ -700,9 +667,6 @@ export default function App() {
                       </td>
                       <td style={{ padding: '12px 14px' }}>
                         <span className="badge badge-pending">{contact.category || 'General'}</span>
-                      </td>
-                      <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '0.85rem' }}>
-                        {contact.ward || 'Main List'}
                       </td>
                       <td style={{ padding: '12px 14px' }}>
                         <button

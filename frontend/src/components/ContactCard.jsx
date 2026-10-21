@@ -167,13 +167,6 @@ export default function ContactCard({
               {contact.category || 'General'}
             </span>
 
-            {contact.ward && (
-              <span className="badge badge-pending" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MapPin size={11} />
-                <span>{contact.ward}</span>
-              </span>
-            )}
-
             {contact.contacted ? (
               <span className="badge badge-contacted" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <CheckCircle2 size={11} />
