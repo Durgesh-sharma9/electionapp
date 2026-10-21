@@ -81,8 +81,51 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState(false);
 
-  // Active Main View Tab ('contacts' | 'templates' | 'dashboard' | 'whatsapp' | 'localities')
-  const [activeTab, setActiveTab] = useState('contacts');
+  // Valid Main View Tabs with browser URL synchronization
+  const VALID_TABS = ['contacts', 'sure-voters', 'templates', 'dashboard', 'whatsapp', 'localities', 'analytics'];
+
+  const getTabFromUrl = () => {
+    try {
+      const path = window.location.pathname.replace(/^\/+/, '').toLowerCase();
+      if (VALID_TABS.includes(path)) return path;
+      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      if (VALID_TABS.includes(hash)) return hash;
+    } catch {}
+    return 'contacts';
+  };
+
+  const [activeTab, setActiveTab] = useState(getTabFromUrl);
+
+  const navigateTab = (tab, replace = false) => {
+    setActiveTab(tab);
+    try {
+      const targetPath = tab === 'contacts' ? '/' : `/${tab}`;
+      if (window.location.pathname !== targetPath) {
+        if (replace) {
+          window.history.replaceState({ tab }, '', targetPath);
+        } else {
+          window.history.pushState({ tab }, '', targetPath);
+        }
+      }
+    } catch {}
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigateTab('contacts');
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const currentTab = getTabFromUrl();
+      setActiveTab(currentTab);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -307,7 +350,7 @@ export default function App() {
         'WhatsApp account is not connected yet.\n\nClick "OK" to open the WhatsApp Link tab and scan the QR code.\nClick "Cancel" to send via WhatsApp Web instead.'
       );
       if (wantToConnect) {
-        setActiveTab('whatsapp');
+        navigateTab('whatsapp');
         return;
       } else {
         handleSendWebFromModal(contact, messageText);
@@ -626,7 +669,7 @@ export default function App() {
       {/* Desktop / Laptop Left Sidebar */}
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={navigateTab}
         totalContacts={contacts.length}
         sureCount={stats?.sureCount ?? contacts.filter((c) => c.isSureVoter).length}
         templatesCount={templates.length}
@@ -648,7 +691,8 @@ export default function App() {
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
           onLogout={handleLogout}
-          onNavigateTab={setActiveTab}
+          onNavigateTab={navigateTab}
+          onBack={handleBack}
           loading={loading}
         />
 
@@ -663,7 +707,7 @@ export default function App() {
           stats={stats}
           contactsCount={contacts.length}
           templatesCount={templates.length}
-          onNavigateTab={setActiveTab}
+          onNavigateTab={navigateTab}
           onOpenAddModal={() => {
             setEditingContact(null);
             setIsAddModalOpen(true);
@@ -685,7 +729,7 @@ export default function App() {
             onSelectTemplate={handleSelectTemplate}
             customText={customText}
             onUpdateCustomText={setCustomText}
-            onGoToTemplatesTab={() => setActiveTab('templates')}
+            onGoToTemplatesTab={() => navigateTab('templates')}
           />
 
           {/* Search & Filter Toolbar (Balanced) */}
@@ -1277,6 +1321,7 @@ export default function App() {
             setEditingContact(null);
             setIsAddModalOpen(true);
           }}
+          onBack={handleBack}
           waConnected={waConnected}
           onToast={showToast}
         />
@@ -1322,8 +1367,9 @@ export default function App() {
           }}
           onFilterByLocality={(locName) => {
             setLocalityFilter(locName);
-            setActiveTab('contacts');
+            navigateTab('contacts');
           }}
+          onBack={handleBack}
           totalContacts={contacts.length}
           onToast={showToast}
         />
@@ -1378,7 +1424,7 @@ export default function App() {
         waSession={waSession}
         onSendDirect={handleSendDirectFromModal}
         onSendWeb={handleSendWebFromModal}
-        onNavigateToWhatsAppLink={() => setActiveTab('whatsapp')}
+        onNavigateToWhatsAppLink={() => navigateTab('whatsapp')}
       />
 
       {/* Share Outreach Webpage Link Modal */}
@@ -1395,7 +1441,7 @@ export default function App() {
       {/* Sticky Bottom Tab Bar (Mobile Navigation) */}
       <BottomTabBar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={navigateTab}
         totalContacts={contacts.length}
         localitiesCount={localities.length}
         templatesCount={templates.length}

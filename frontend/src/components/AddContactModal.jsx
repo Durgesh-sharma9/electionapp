@@ -46,7 +46,7 @@ export default function AddContactModal({
     if (contact) {
       setName(contact.name || '');
       setPhone(contact.phone || '');
-      setWard(contact.ward || (wards[0]?.name || 'Ward 1'));
+      setWard(contact.ward || '');
       setLocality(contact.locality || '');
       setReference(contact.reference || '');
       setCategory(contact.category || 'General');
@@ -55,8 +55,7 @@ export default function AddContactModal({
     } else {
       setName('');
       setPhone('');
-      const defaultWard = wards[0]?.name || 'Ward 1';
-      setWard(defaultWard);
+      setWard('');
       setLocality('');
       setReference('');
       setCategory('General');
@@ -66,27 +65,26 @@ export default function AddContactModal({
     setError('');
   }, [contact, isOpen, wards]);
 
-  // Dynamically filter localities strictly belonging to the chosen Ward
+  // Dynamically filter localities: show localities for this ward + unassigned general localities
   const filteredLocalities = useMemo(() => {
     if (!ward) return localities;
     const targetWard = ward.trim().toLowerCase();
     return localities.filter(
-      (loc) => (loc.ward || '').trim().toLowerCase() === targetWard
+      (loc) => !loc.ward || loc.ward.trim() === '' || loc.ward.trim().toLowerCase() === targetWard
     );
   }, [localities, ward]);
 
-  // When ward changes, ensure locality is valid for that ward
+  // When ward changes, ensure locality is still compatible
   const handleWardChange = (newWard) => {
     setWard(newWard);
     setIsAddingNewLocality(false);
     setNewLocalityInput('');
-    // Check if current locality belongs to this new ward
-    const target = newWard.trim().toLowerCase();
-    const belongs = localities.some(
-      (l) => l.name === locality && (l.ward || '').trim().toLowerCase() === target
-    );
-    if (!belongs) {
-      setLocality('');
+    if (newWard) {
+      const target = newWard.trim().toLowerCase();
+      const currentLocObj = localities.find((l) => l.name === locality);
+      if (currentLocObj && currentLocObj.ward && currentLocObj.ward.trim().toLowerCase() !== target) {
+        setLocality('');
+      }
     }
   };
 
@@ -265,7 +263,7 @@ export default function AddContactModal({
             {/* Step 1: Choose Ward */}
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Ward *
+                Ward (Optional)
               </label>
               <div style={{ position: 'relative' }}>
                 <Landmark size={15} color="#0284c7" style={{ position: 'absolute', left: '10px', top: '11px' }} />
@@ -274,9 +272,8 @@ export default function AddContactModal({
                   value={ward}
                   onChange={(e) => handleWardChange(e.target.value)}
                   style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, color: '#0369a1' }}
-                  required
                 >
-                  <option value="">— Select Ward —</option>
+                  <option value="">— No Specific Ward / Unassigned —</option>
                   {wards.length > 0 ? (
                     wards.map((w) => (
                       <option key={w._id || w.name} value={w.name}>

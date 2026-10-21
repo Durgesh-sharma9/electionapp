@@ -11,6 +11,7 @@ import {
   Filter,
   Phone,
   MessageCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import ContactCard from './ContactCard';
 
@@ -26,6 +27,7 @@ export default function SureVotersView({
   onEditContact,
   onDeleteContact,
   onOpenAddModal,
+  onBack,
   waConnected = false,
   onToast,
 }) {
@@ -206,7 +208,28 @@ export default function SureVotersView({
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="btn btn-secondary"
+              style={{
+                padding: '7px 12px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                gap: '5px',
+                borderColor: '#cbd5e1',
+                background: '#ffffff',
+                color: '#334155',
+              }}
+              title="Return to Contacts Directory"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Contacts</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleExportCSV}

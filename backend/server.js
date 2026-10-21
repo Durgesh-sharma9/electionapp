@@ -616,7 +616,7 @@ app.delete('/api/wards/:id', async (req, res) => {
 // LOCALITY MASTER CRUD API
 // ==============================================================
 const defaultLocalitiesSeed = [
-  { name: 'Mahima', ward: 'Ward 1', color: '#ea580c', description: 'Mahima' },
+  { name: 'Mahima', ward: '', color: '#ea580c', description: 'Mahima' },
 ];
 
 // GET /api/localities (List all localities with contact counts)

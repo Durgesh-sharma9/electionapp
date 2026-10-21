@@ -5,6 +5,7 @@ import {
   UserPlus,
   RefreshCw,
   LogOut,
+  ArrowLeft,
 } from 'lucide-react';
 
 export default function Navbar({
@@ -16,6 +17,7 @@ export default function Navbar({
   onRefresh,
   onLogout,
   onNavigateTab,
+  onBack,
   loading = false,
 }) {
   const getPageTitle = () => {
@@ -42,8 +44,36 @@ export default function Navbar({
 
   return (
     <header className="main-top-navbar">
-      {/* LEFT: Logo Emblem + Brand Name */}
+      {/* LEFT: Logo Emblem + Brand Name + Back Button */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexShrink: 1 }}>
+        {/* Visible Back button when navigating away from contacts */}
+        {activeTab !== 'contacts' && (
+          <button
+            type="button"
+            onClick={onBack || (() => onNavigateTab && onNavigateTab('contacts'))}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '5px 10px',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1',
+              background: '#f8fafc',
+              color: '#0f172a',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+              marginRight: '2px',
+              flexShrink: 0,
+            }}
+            title="Go Back to Contacts"
+          >
+            <ArrowLeft size={14} />
+            <span>Back</span>
+          </button>
+        )}
+
         {/* Emblem */}
         <div
           style={{

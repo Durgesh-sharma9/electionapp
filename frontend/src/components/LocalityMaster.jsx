@@ -13,6 +13,7 @@ import {
   Target,
   Sparkles,
   Star,
+  ArrowLeft,
 } from 'lucide-react';
 
 const PRESET_COLORS = [
@@ -32,6 +33,7 @@ export default function LocalityMaster({
   localities = [],
   onRefreshLocalities,
   onFilterByLocality,
+  onBack,
   totalContacts = 0,
   onToast,
 }) {
@@ -138,7 +140,7 @@ export default function LocalityMaster({
   const openAddLocalityModal = () => {
     setEditingLocality(null);
     setLocName('');
-    setLocWard(filterWardForLocality !== 'ALL' ? filterWardForLocality : wards[0]?.name || 'Ward 1');
+    setLocWard(filterWardForLocality !== 'ALL' ? filterWardForLocality : '');
     setLocDescription('');
     setLocColor('#ea580c');
     setLocError('');
@@ -148,7 +150,7 @@ export default function LocalityMaster({
   const openEditLocalityModal = (loc) => {
     setEditingLocality(loc);
     setLocName(loc.name || '');
-    setLocWard(loc.ward || wards[0]?.name || 'Ward 1');
+    setLocWard(loc.ward || '');
     setLocDescription(loc.description || '');
     setLocColor(loc.color || '#0284c7');
     setLocError('');
@@ -173,7 +175,7 @@ export default function LocalityMaster({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: locName.trim(),
-          ward: locWard.trim() || 'Ward 1',
+          ward: locWard ? locWard.trim() : '',
           description: locDescription.trim(),
           color: locColor,
         }),
@@ -282,8 +284,29 @@ export default function LocalityMaster({
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Tab Switcher & Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="btn btn-secondary"
+              style={{
+                padding: '6px 12px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                gap: '5px',
+                background: '#ffffff',
+                borderColor: '#cbd5e1',
+                color: '#334155',
+              }}
+              title="Back to Contacts Directory"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Contacts</span>
+            </button>
+          )}
+
           <div
             style={{
               display: 'flex',
@@ -768,14 +791,14 @@ export default function LocalityMaster({
             <form onSubmit={handleSaveLocality} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
-                  Assign to Ward *
+                  Assign to Ward (Optional)
                 </label>
                 <select
                   className="input-field"
                   value={locWard}
                   onChange={(e) => setLocWard(e.target.value)}
-                  required
                 >
+                  <option value="">-- No Specific Ward / General --</option>
                   {wards.map((w) => (
                     <option key={w._id || w.name} value={w.name}>
                       🏛️ {w.name}
