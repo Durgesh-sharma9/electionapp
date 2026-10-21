@@ -102,7 +102,13 @@ app.get('/api/contacts', async (req, res) => {
     }
 
     const sortObj = {};
-    sortObj[sort] = order === 'asc' ? 1 : -1;
+    if (sort === 'createdAt' && order === 'desc') {
+      // Default to ascending serialNo first if available, otherwise createdAt
+      sortObj.serialNo = 1;
+      sortObj.createdAt = 1;
+    } else {
+      sortObj[sort] = order === 'asc' ? 1 : -1;
+    }
 
     const contacts = await Contact.find(filter).sort(sortObj).lean();
 
@@ -119,7 +125,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { name, phone, ward, category, notes } = req.body;
+    const { serialNo, name, phone, ward, category, notes } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -131,6 +137,7 @@ app.post('/api/contacts', async (req, res) => {
     const cleanedPhone = normalizePhone(phone);
 
     const contact = new Contact({
+      serialNo: Number(serialNo) || 0,
       name: name.trim(),
       phone: cleanedPhone,
       ward: ward?.trim() || '',
@@ -160,7 +167,8 @@ app.post('/api/contacts/bulk', async (req, res) => {
     const validDocs = [];
     const skipped = [];
 
-    for (const item of contacts) {
+    for (let i = 0; i < contacts.length; i++) {
+      const item = contacts[i];
       const name = item.name ? String(item.name).trim() : '';
       const rawPhone = item.phone ? String(item.phone).trim() : '';
       const phone = normalizePhone(rawPhone);
@@ -171,6 +179,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
       }
 
       validDocs.push({
+        serialNo: item.serialNo ? Number(item.serialNo) : i + 1,
         name,
         phone,
         ward: item.ward?.trim() || '',

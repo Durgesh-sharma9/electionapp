@@ -116,21 +116,40 @@ export default function ContactCard({
         {/* Details */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-            <h4
-              style={{
-                margin: 0,
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                color: '#0f172a',
-                fontFamily: 'var(--font-heading)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-              title={contact.name}
-            >
-              {contact.name}
-            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+              {contact.serialNo ? (
+                <span
+                  style={{
+                    background: '#e0f2fe',
+                    color: '#0284c7',
+                    fontSize: '0.74rem',
+                    fontWeight: 800,
+                    padding: '2px 7px',
+                    borderRadius: '6px',
+                    fontFamily: 'monospace',
+                    flexShrink: 0,
+                  }}
+                  title={`Serial No. ${contact.serialNo}`}
+                >
+                  #{contact.serialNo}
+                </span>
+              ) : null}
+              <h4
+                style={{
+                  margin: 0,
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  fontFamily: 'var(--font-heading)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={contact.name}
+              >
+                {contact.name}
+              </h4>
+            </div>
 
             {/* Delete & Edit Buttons */}
             <div style={{ display: 'flex', gap: '4px' }}>
@@ -174,6 +193,28 @@ export default function ContactCard({
               {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
             </button>
           </div>
+
+          {/* Special note warning banner if notes exist */}
+          {contact.notes && (
+            <div
+              style={{
+                marginTop: '6px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                fontSize: '0.74rem',
+                color: '#b45309',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+            >
+              <span>⚠️</span>
+              <span>{contact.notes}</span>
+            </div>
+          )}
 
           {/* Badges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>

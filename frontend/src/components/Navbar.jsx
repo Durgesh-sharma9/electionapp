@@ -10,12 +10,14 @@ import {
 
 export default function Navbar({
   activeTab = 'contacts',
+  onTabChange,
   onOpenAddModal,
   onOpenBulkModal,
   onRefresh,
   onExportCSV,
   dbConnected = true,
   waConnected = false,
+  waSession = null,
   loading = false,
 }) {
   const getHeaderInfo = () => {
@@ -87,27 +89,41 @@ export default function Navbar({
 
         {/* Desktop Quick Header Actions */}
         <div className="desktop-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* WA Status Pill */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '5px 10px',
-            borderRadius: '8px',
-            background: waConnected ? '#ecfdf5' : '#f8fafc',
-            border: `1px solid ${waConnected ? '#a7f3d0' : '#e2e8f0'}`,
-            fontSize: '0.74rem',
-            fontWeight: 600,
-            color: waConnected ? '#059669' : '#64748b',
-          }}>
-            <span style={{
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              backgroundColor: waConnected ? '#10b981' : '#cbd5e1',
-            }} />
-            <span>{waConnected ? 'WA Connected' : 'WA Standby'}</span>
-          </div>
+          {/* Live WA Status Pill (Clickable) */}
+          <button
+            type="button"
+            onClick={() => onTabChange && onTabChange('whatsapp')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              background: waConnected ? '#ecfdf5' : '#fff7ed',
+              border: `1px solid ${waConnected ? '#a7f3d0' : '#fed7aa'}`,
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: waConnected ? '#059669' : '#c2410c',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            title={waConnected ? `Connected with: ${waSession?.phone || 'Linked Device'} (Click to manage)` : 'Click to scan QR code and link WhatsApp'}
+          >
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: waConnected ? '#10b981' : '#f97316',
+                boxShadow: waConnected ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none',
+              }}
+            />
+            <span>
+              {waConnected
+                ? `🟢 WA Connected${waSession?.phone ? ` (${waSession.phone})` : ''}`
+                : '🔴 WA Not Connected • Link Now'}
+            </span>
+          </button>
 
           <button 
             className="btn btn-secondary btn-icon" 

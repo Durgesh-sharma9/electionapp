@@ -26,6 +26,7 @@ import TemplatesManager from './components/TemplatesManager';
 import BottomTabBar from './components/BottomTabBar';
 import Sidebar from './components/Sidebar';
 import WhatsAppConnectView from './components/WhatsAppConnectView';
+import SendMessageModal from './components/SendMessageModal';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -33,7 +34,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState(false);
 
-  // Active Main View Tab ('contacts' | 'templates')
+  // Active Main View Tab ('contacts' | 'templates' | 'dashboard' | 'whatsapp')
   const [activeTab, setActiveTab] = useState('contacts');
 
   // Filters & Search
@@ -46,6 +47,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+  const [messageModalContact, setMessageModalContact] = useState(null);
 
   // Templates from Database
   const [templates, setTemplates] = useState([]);
@@ -60,6 +62,7 @@ export default function App() {
   // Toast & WA State
   const [toast, setToast] = useState(null);
   const [waConnected, setWaConnected] = useState(false);
+  const [waSession, setWaSession] = useState(null);
   const [sendingDirectId, setSendingDirectId] = useState(null);
 
   const showToast = (msg) => {
@@ -74,13 +77,14 @@ export default function App() {
       const data = await res.json();
       if (data.success) {
         setWaConnected(Boolean(data.active && data.session?.loggedIn));
+        if (data.session) setWaSession(data.session);
       }
     } catch {}
   };
 
   useEffect(() => {
     fetchWaStatus();
-    const interval = setInterval(fetchWaStatus, 4000);
+    const interval = setInterval(fetchWaStatus, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -169,23 +173,27 @@ export default function App() {
     });
   }, [contacts, categoryFilter, contactedFilter, searchQuery]);
 
-  // 1. Direct Live WhatsApp Dispatch (Via Linked Phone Socket)
-  const handleDirectWhatsAppSend = async (contact) => {
+  // Open Send Message Modal (allows template selection and custom message editing)
+  const handleOpenSendMessage = (contact) => {
+    setMessageModalContact(contact);
+  };
+
+  // 1. Direct Background WhatsApp Send from Modal
+  const handleSendDirectFromModal = async (contact, messageText) => {
     if (!waConnected) {
       const wantToConnect = window.confirm(
-        'WhatsApp device is not linked yet.\n\nClick "OK" to open the WhatsApp Link tab and scan the QR code.\nClick "Cancel" to redirect to WhatsApp Web instead.'
+        'WhatsApp account is not connected yet.\n\nClick "OK" to open the WhatsApp Link tab and scan the QR code.\nClick "Cancel" to send via WhatsApp Web instead.'
       );
       if (wantToConnect) {
         setActiveTab('whatsapp');
         return;
       } else {
-        handleWhatsAppRedirect(contact);
+        handleSendWebFromModal(contact, messageText);
         return;
       }
     }
 
     setSendingDirectId(contact._id);
-    const message = customText.replace(/{name}/g, contact.name || 'Friend');
 
     try {
       const res = await fetch('/api/whatsapp/send', {
@@ -193,7 +201,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: contact.phone,
-          message,
+          message: messageText,
           contactId: contact._id,
         }),
       });
@@ -209,8 +217,7 @@ export default function App() {
           )
         );
       } else {
-        alert(data.error || 'Failed to dispatch live WhatsApp message. Opening WhatsApp Web instead.');
-        handleWhatsAppRedirect(contact);
+        alert(data.error || 'Failed to dispatch live WhatsApp message.');
       }
     } catch (err) {
       alert('Error connecting to backend: ' + err.message);
@@ -219,10 +226,9 @@ export default function App() {
     }
   };
 
-  // 2. 1-Click WhatsApp Redirect (Opens wa.me)
-  const handleWhatsAppRedirect = async (contact) => {
-    const message = customText.replace(/{name}/g, contact.name || 'Friend');
-    const encodedMessage = encodeURIComponent(message);
+  // 2. WhatsApp Web Redirect from Modal
+  const handleSendWebFromModal = async (contact, messageText) => {
+    const encodedMessage = encodeURIComponent(messageText);
     const phone = contact.phone.replace(/\D/g, '');
     const fullPhone = phone.startsWith('91') && phone.length === 12 ? phone : `91${phone}`;
 
@@ -476,6 +482,7 @@ export default function App() {
           onExportCSV={handleExportCSV}
           dbConnected={dbConnected}
           waConnected={waConnected}
+          waSession={waSession}
           loading={loading}
         />
 
@@ -710,8 +717,8 @@ export default function App() {
                     else next.delete(id);
                     setSelectedIds(next);
                   }}
-                  onDirectWhatsAppSend={handleDirectWhatsAppSend}
-                  onWhatsAppRedirect={handleWhatsAppRedirect}
+                  onDirectWhatsAppSend={handleOpenSendMessage}
+                  onWhatsAppRedirect={handleOpenSendMessage}
                   onCallRedirect={handleCallRedirect}
                   onDelete={handleDeleteContact}
                   onEdit={(c) => {
@@ -738,7 +745,8 @@ export default function App() {
                         }}
                       />
                     </th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>NAME</th>
+                    <th style={{ padding: '12px 14px', width: '55px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>क्र.</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>NAME / DESCRIPTION</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>PHONE NUMBER</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>CATEGORY</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>STATUS</th>
@@ -746,7 +754,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredContacts.map((contact) => (
+                  {filteredContacts.map((contact, index) => (
                     <tr
                       key={contact._id}
                       style={{
@@ -766,8 +774,16 @@ export default function App() {
                           }}
                         />
                       </td>
+                      <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7' }}>
+                        #{contact.serialNo || index + 1}
+                      </td>
                       <td style={{ padding: '12px 14px', fontWeight: 600, color: '#0f172a' }}>
-                        {contact.name}
+                        <div>{contact.name}</div>
+                        {contact.notes && (
+                          <div style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 600, marginTop: '2px' }}>
+                            ⚠️ {contact.notes}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: '#334155', fontWeight: 600 }}>
                         +91 {contact.phone}
@@ -788,23 +804,23 @@ export default function App() {
                       </td>
                       <td style={{ padding: '12px 14px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
-                          {/* 1. Direct Send (Baileys) */}
+                          {/* 1. Direct Send (Opens Send Message Box with templates) */}
                           <button
                             className="btn btn-whatsapp"
-                            onClick={() => handleDirectWhatsAppSend(contact)}
+                            onClick={() => handleOpenSendMessage(contact)}
                             disabled={sendingDirectId === contact._id}
                             style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '4px' }}
-                            title="Direct WhatsApp Message"
+                            title="Open WhatsApp Message Box & Templates"
                           >
-                            <span>{sendingDirectId === contact._id ? '...' : '⚡ Direct'}</span>
+                            <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
                           </button>
 
                           {/* 2. WhatsApp Web Redirect */}
                           <button
                             className="btn btn-secondary"
-                            onClick={() => handleWhatsAppRedirect(contact)}
+                            onClick={() => handleOpenSendMessage(contact)}
                             style={{ padding: '6px 10px', fontSize: '0.78rem', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
-                            title="Open in WhatsApp Web"
+                            title="Open Message Box for Web / App"
                           >
                             <span>🔗 Web</span>
                           </button>
@@ -879,6 +895,20 @@ export default function App() {
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
         onBulkImport={handleBulkImport}
+      />
+
+      {/* Send WhatsApp Message Modal (Interactive Message Box & Templates) */}
+      <SendMessageModal
+        isOpen={Boolean(messageModalContact)}
+        onClose={() => setMessageModalContact(null)}
+        contact={messageModalContact}
+        templates={templates}
+        activeTemplateId={activeTemplateId}
+        waConnected={waConnected}
+        waSession={waSession}
+        onSendDirect={handleSendDirectFromModal}
+        onSendWeb={handleSendWebFromModal}
+        onNavigateToWhatsAppLink={() => setActiveTab('whatsapp')}
       />
 
       {/* Sticky Bottom Tab Bar (Mobile Navigation) */}

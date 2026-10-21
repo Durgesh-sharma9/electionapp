@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const contactSchema = new mongoose.Schema(
   {
+    serialNo: {
+      type: Number,
+      default: 0,
+    },
     name: {
       type: String,
       required: [true, 'Name is required'],
