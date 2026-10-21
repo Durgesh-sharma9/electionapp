@@ -518,13 +518,13 @@ body {
   flex-direction: column;
   background: #ffffff;
   border-right: 1px solid #e2e8f0;
-  width: 250px;
+  width: 215px;
   flex-shrink: 0;
   height: 100vh;
   position: sticky;
   top: 0;
-  padding: 20px 16px;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.02);
+  padding: 16px 12px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
   z-index: 50;
   overflow-y: auto;
 }
@@ -706,7 +706,7 @@ body {
 /* ============================================================== */
 /* RESPONSIVE BREAKPOINTS: DESKTOP/LAPTOP VS MOBILE               */
 /* ============================================================== */
-@media (min-width: 769px) {
+@media (min-width: 881px) {
   .app-shell {
     display: flex;
     flex-direction: row;
@@ -737,7 +737,7 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 880px) {
   .app-shell {
     display: block;
     width: 100%;
