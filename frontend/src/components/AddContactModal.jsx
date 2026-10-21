@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, UserPlus, Phone, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, UserPlus, Phone, User, Edit2 } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -10,13 +10,31 @@ const CATEGORIES = [
   'Other',
 ];
 
-export default function AddContactModal({ isOpen, onClose, onSave }) {
+export default function AddContactModal({ isOpen, onClose, onSave, contact = null }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const isEditing = Boolean(contact && contact._id);
+
+  // Sync state when modal opens or contact changes
+  useEffect(() => {
+    if (contact) {
+      setName(contact.name || '');
+      setPhone(contact.phone || '');
+      setCategory(contact.category || 'General');
+      setNotes(contact.notes || '');
+    } else {
+      setName('');
+      setPhone('');
+      setCategory('General');
+      setNotes('');
+    }
+    setError('');
+  }, [contact, isOpen]);
 
   if (!isOpen) return null;
 
@@ -36,14 +54,12 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
     setSubmitting(true);
     try {
       await onSave({
+        ...(contact?._id ? { _id: contact._id } : {}),
         name: name.trim(),
         phone: cleanDigits.slice(-10),
         category,
         notes: notes.trim(),
       });
-      setName('');
-      setPhone('');
-      setNotes('');
       onClose();
     } catch (err) {
       setError(err.message || 'Error saving contact');
@@ -63,20 +79,24 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              background: '#ecfdf5',
+              background: isEditing ? '#f0f9ff' : '#ecfdf5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #a7f3d0',
+              border: `1px solid ${isEditing ? '#bae6fd' : '#a7f3d0'}`,
             }}>
-              <UserPlus size={20} color="#059669" />
+              {isEditing ? (
+                <Edit2 size={19} color="#0284c7" />
+              ) : (
+                <UserPlus size={20} color="#059669" />
+              )}
             </div>
             <div>
               <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Add New Contact
+                {isEditing ? 'Edit Contact Details' : 'Add New Contact'}
               </h2>
               <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                Enter contact details for 1-click messaging
+                {isEditing ? 'Update contact name, phone or notes' : 'Enter contact details for 1-click messaging'}
               </span>
             </div>
           </div>
@@ -195,10 +215,13 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ flex: 2 }}
+              style={{
+                flex: 2,
+                background: isEditing ? 'linear-gradient(135deg, #0284c7, #0369a1)' : undefined,
+              }}
               disabled={submitting}
             >
-              {submitting ? 'Saving...' : 'Save Contact'}
+              {submitting ? 'Saving...' : isEditing ? 'Update Contact' : 'Save Contact'}
             </button>
           </div>
 

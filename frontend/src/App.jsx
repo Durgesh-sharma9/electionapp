@@ -298,18 +298,23 @@ export default function App() {
     }
   };
 
-  // Save Single Contact
+  // Save or Update Single Contact
   const handleSaveContact = async (contactData) => {
     try {
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
+      const isEdit = Boolean(contactData._id);
+      const url = isEdit ? `/api/contacts/${contactData._id}` : '/api/contacts';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactData),
       });
       const data = await res.json();
       if (data.success) {
-        showToast('Contact saved successfully! 🎉');
+        showToast(isEdit ? 'Contact updated successfully! ✅' : 'Contact saved successfully! 🎉');
         setIsAddModalOpen(false);
+        setEditingContact(null);
         fetchData();
       } else {
         alert(data.error || 'Failed to save contact');
@@ -490,7 +495,10 @@ export default function App() {
           onTabChange={setActiveTab}
           totalContacts={contacts.length}
           templatesCount={templates.length}
-          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenAddModal={() => {
+            setEditingContact(null);
+            setIsAddModalOpen(true);
+          }}
           onOpenBulkModal={() => setIsBulkModalOpen(true)}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
@@ -510,7 +518,10 @@ export default function App() {
           contactsCount={contacts.length}
           templatesCount={templates.length}
           onNavigateTab={setActiveTab}
-          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenAddModal={() => {
+            setEditingContact(null);
+            setIsAddModalOpen(true);
+          }}
           onOpenBulkModal={() => setIsBulkModalOpen(true)}
           onExportCSV={handleExportCSV}
         />
@@ -713,7 +724,10 @@ export default function App() {
                   <FileSpreadsheet size={16} />
                   <span>📋 Paste Bulk List</span>
                 </button>
-                <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
+                <button className="btn btn-primary" onClick={() => {
+                  setEditingContact(null);
+                  setIsAddModalOpen(true);
+                }}>
                   <UserPlus size={16} />
                   <span>+ Add Contact</span>
                 </button>
@@ -927,11 +941,15 @@ export default function App() {
 
       </div>
 
-      {/* Add Single Contact Modal */}
+      {/* Add / Edit Contact Modal */}
       <AddContactModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingContact(null);
+        }}
         onSave={handleSaveContact}
+        contact={editingContact}
       />
 
       {/* Bulk Import Modal */}
@@ -971,7 +989,10 @@ export default function App() {
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
         templatesCount={templates.length}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={() => {
+          setEditingContact(null);
+          setIsAddModalOpen(true);
+        }}
         waConnected={waConnected}
       />
 
