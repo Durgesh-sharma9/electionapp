@@ -87,11 +87,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [contactedFilter, setContactedFilter] = useState('ALL');
+  const [wardFilter, setWardFilter] = useState('ALL');
   const [localityFilter, setLocalityFilter] = useState('ALL');
   const [referenceFilter, setReferenceFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('table'); // Default: 'table' (Compact list view)
 
-  // Locality Master & Reference state
+  // Ward Master & Locality Master & Reference state
+  const [wards, setWards] = useState([]);
   const [localities, setLocalities] = useState([]);
   const [references, setReferences] = useState([]);
 
@@ -161,6 +163,19 @@ export default function App() {
     }
   };
 
+  // Fetch Wards from MongoDB
+  const fetchWards = async () => {
+    try {
+      const res = await fetch('/api/wards');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setWards(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching wards:', err);
+    }
+  };
+
   // Fetch Localities from MongoDB
   const fetchLocalities = async () => {
     try {
@@ -187,7 +202,7 @@ export default function App() {
     }
   };
 
-  // Fetch Stats & Contacts & Localities & References
+  // Fetch Stats & Contacts & Wards & Localities & References
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -210,7 +225,8 @@ export default function App() {
         setContacts(contactsData.data);
       }
 
-      // Refresh localities and references counts
+      // Refresh wards, localities and references counts
+      fetchWards();
       fetchLocalities();
       fetchReferences();
     } catch (err) {
@@ -224,6 +240,7 @@ export default function App() {
   useEffect(() => {
     fetchData();
     fetchTemplates();
+    fetchWards();
     fetchLocalities();
     fetchReferences();
   }, []);
@@ -231,9 +248,16 @@ export default function App() {
   // Filtered contacts
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
-      // Contacted filter
+      // Contacted & Sure filter
       if (contactedFilter === 'CONTACTED' && !c.contacted) return false;
       if (contactedFilter === 'PENDING' && c.contacted) return false;
+      if (contactedFilter === 'SURE' && !c.isSureVoter) return false;
+
+      // Ward filter
+      if (wardFilter !== 'ALL') {
+        const contactWard = c.ward || 'Ward 1';
+        if (contactWard !== wardFilter) return false;
+      }
 
       // Locality filter
       if (localityFilter !== 'ALL') {
@@ -268,7 +292,7 @@ export default function App() {
 
       return true;
     });
-  }, [contacts, categoryFilter, contactedFilter, localityFilter, referenceFilter, searchQuery]);
+  }, [contacts, categoryFilter, contactedFilter, wardFilter, localityFilter, referenceFilter, searchQuery]);
 
   // Open Send Message Modal (allows template selection and custom message editing)
   const handleOpenSendMessage = (contact) => {
@@ -378,6 +402,36 @@ export default function App() {
       }
     } catch (err) {
       console.error('Failed to toggle status:', err);
+    }
+  };
+
+  // Toggle Confirmed Sure Voter Status
+  const handleToggleSureVoter = async (id, currentStatus) => {
+    try {
+      const res = await fetch(`/api/contacts/${id}/sure`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSureVoter: !currentStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts((prev) =>
+          prev.map((c) => (c._id === id ? { ...c, isSureVoter: !currentStatus } : c))
+        );
+        setStats((prev) => {
+          if (!prev) return prev;
+          const delta = !currentStatus ? 1 : -1;
+          return {
+            ...prev,
+            sureCount: Math.max(0, (prev.sureCount || 0) + delta),
+          };
+        });
+        showToast(!currentStatus ? '⭐ Marked as Confirmed Sure Voter!' : 'Removed from Sure Voters');
+      } else {
+        alert(data.error || 'Failed to update sure voter status');
+      }
+    } catch (err) {
+      console.error('Failed to toggle sure status:', err);
     }
   };
 
@@ -584,6 +638,7 @@ export default function App() {
         <Navbar
           activeTab={activeTab}
           totalContacts={contacts.length}
+          sureCount={stats?.sureCount ?? contacts.filter((c) => c.isSureVoter).length}
           onOpenAddModal={() => {
             setEditingContact(null);
             setIsAddModalOpen(true);
@@ -650,7 +705,34 @@ export default function App() {
               {/* Filter Controls */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 
-                {/* Locality Filter */}
+                {/* Ward Filter */}
+                <select
+                  className="input-field"
+                  value={wardFilter}
+                  onChange={(e) => {
+                    setWardFilter(e.target.value);
+                    setLocalityFilter('ALL'); // Reset locality filter when ward changes
+                  }}
+                  style={{
+                    width: 'auto',
+                    padding: '4px 10px',
+                    fontSize: '0.8rem',
+                    height: '34px',
+                    borderColor: wardFilter !== 'ALL' ? '#2563eb' : undefined,
+                    background: wardFilter !== 'ALL' ? '#eff6ff' : '#ffffff',
+                    fontWeight: 600,
+                  }}
+                  title="Filter by Ward"
+                >
+                  <option value="ALL">🏛️ All Wards</option>
+                  {wards.map((w) => (
+                    <option key={w._id} value={w.name}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Locality Filter - dynamically filtered to selected Ward if one is picked */}
                 <select
                   className="input-field"
                   value={localityFilter}
@@ -660,7 +742,7 @@ export default function App() {
                 >
                   <option value="ALL">📍 All Localities</option>
                   <option value="UNASSIGNED">Unassigned Only</option>
-                  {localities.map((loc) => (
+                  {(wardFilter !== 'ALL' ? localities.filter((l) => l.ward === wardFilter) : localities).map((loc) => (
                     <option key={loc._id} value={loc.name}>
                       {loc.name}
                     </option>
@@ -686,15 +768,23 @@ export default function App() {
                   </select>
                 )}
 
-
-                {/* Contacted Filter */}
+                {/* Status / Sure Filter */}
                 <select
                   className="input-field"
                   value={contactedFilter}
                   onChange={(e) => setContactedFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.8rem', height: '34px' }}
+                  style={{
+                    width: 'auto',
+                    padding: '4px 8px',
+                    fontSize: '0.8rem',
+                    height: '34px',
+                    borderColor: contactedFilter === 'SURE' ? '#f59e0b' : undefined,
+                    background: contactedFilter === 'SURE' ? '#fef3c7' : '#ffffff',
+                    fontWeight: contactedFilter === 'SURE' ? 700 : 500,
+                  }}
                 >
                   <option value="ALL">All Status</option>
+                  <option value="SURE">⭐ Sure Voters Only</option>
                   <option value="PENDING">⏳ Pending</option>
                   <option value="CONTACTED">✅ Messaged</option>
                 </select>
@@ -860,6 +950,7 @@ export default function App() {
                           else next.delete(id);
                           setSelectedIds(next);
                         }}
+                        onToggleSureVoter={handleToggleSureVoter}
                         onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
                         onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
                         onOpenTemplateModal={(c) => setMessageModalContact(c)}
@@ -891,8 +982,10 @@ export default function App() {
                     </th>
                     <th style={{ width: '56px', textAlign: 'center', padding: '10px 10px' }}>#</th>
                     <th style={{ padding: '10px 12px' }}>NAME / DESCRIPTION</th>
-                    <th style={{ padding: '10px 12px' }}>PHONE NUMBER</th>
+                    <th style={{ padding: '10px 12px' }}>WARD</th>
                     <th style={{ padding: '10px 12px' }}>LOCALITY</th>
+                    <th style={{ padding: '10px 12px' }}>PHONE NUMBER</th>
+                    <th style={{ padding: '10px 12px' }}>SURE VOTER</th>
                     <th style={{ padding: '10px 12px' }}>REFERENCE</th>
                     <th style={{ padding: '10px 12px' }}>STATUS</th>
                     <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
@@ -931,21 +1024,23 @@ export default function App() {
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '9px 12px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.88rem' }}>+91 {contact.phone}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText(contact.phone);
-                              showToast(`Copied ${contact.phone}`);
-                            }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8' }}
-                            title="Copy number"
-                          >
-                            <Copy size={13} />
-                          </button>
-                        </div>
+                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                        <span
+                          className="badge"
+                          style={{
+                            fontSize: '0.74rem',
+                            padding: '2px 8px',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          🏛️ {contact.ward || 'Ward 1'}
+                        </span>
                       </td>
                       <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
                         {contact.locality ? (
@@ -968,6 +1063,46 @@ export default function App() {
                         ) : (
                           <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— Unassigned</span>
                         )}
+                      </td>
+                      <td style={{ padding: '9px 12px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.88rem' }}>+91 {contact.phone}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(contact.phone);
+                              showToast(`Copied ${contact.phone}`);
+                            }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8' }}
+                            title="Copy number"
+                          >
+                            <Copy size={13} />
+                          </button>
+                        </div>
+                      </td>
+                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSureVoter(contact._id, contact.isSureVoter)}
+                          style={{
+                            background: contact.isSureVoter ? '#fef3c7' : '#ffffff',
+                            border: contact.isSureVoter ? '1.5px solid #f59e0b' : '1px solid #cbd5e1',
+                            color: contact.isSureVoter ? '#b45309' : '#64748b',
+                            padding: '3px 9px',
+                            borderRadius: '6px',
+                            fontSize: '0.76rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            boxShadow: contact.isSureVoter ? '0 1px 3px rgba(245, 158, 11, 0.2)' : 'none',
+                            transition: 'all 0.15s ease',
+                          }}
+                          title={contact.isSureVoter ? 'Confirmed Sure Voter (Click to toggle)' : 'Click to mark as Confirmed Sure Voter'}
+                        >
+                          <span>{contact.isSureVoter ? '⭐ Sure' : '☆ Mark Sure'}</span>
+                        </button>
                       </td>
                       <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
                         {contact.reference ? (
@@ -1093,6 +1228,7 @@ export default function App() {
                         else next.delete(id);
                         setSelectedIds(next);
                       }}
+                      onToggleSureVoter={handleToggleSureVoter}
                       onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
                       onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
                       onOpenTemplateModal={(c) => setMessageModalContact(c)}
@@ -1140,12 +1276,14 @@ export default function App() {
       )}
 
       {/* ============================================================== */}
-      {/* TAB 5: LOCALITY MASTER VIEW (Area / Ward / Mohalla Master)     */}
+      {/* TAB 5: WARD & LOCALITY MASTER VIEW                             */}
       {/* ============================================================== */}
       {activeTab === 'localities' && (
         <LocalityMaster
+          wards={wards}
           localities={localities}
           onRefreshLocalities={() => {
+            fetchWards();
             fetchLocalities();
             fetchData();
           }}
@@ -1159,10 +1297,16 @@ export default function App() {
       )}
 
       {/* ============================================================== */}
-      {/* TAB 6: ANALYTICS VIEW (Share Link Stats, Caller Action Tracking) */}
+      {/* TAB 6: ANALYTICS VIEW (Campaign, Wards & Share Link Analytics) */}
       {/* ============================================================== */}
       {activeTab === 'analytics' && (
-        <AnalyticsView onToast={showToast} />
+        <AnalyticsView
+          contacts={contacts}
+          stats={stats}
+          wards={wards}
+          localities={localities}
+          onToast={showToast}
+        />
       )}
 
         </div>
@@ -1177,6 +1321,7 @@ export default function App() {
         }}
         onSave={handleSaveContact}
         contact={editingContact}
+        wards={wards}
         localities={localities}
         references={references}
         onLocalityCreated={() => fetchLocalities()}

@@ -27,7 +27,7 @@ export default function BottomTabBar({
           className={`bottom-tab-item ${activeTab === 'localities' ? 'active' : ''}`}
         >
           <MapPin size={20} />
-          <span className="bottom-tab-label">Locality</span>
+          <span className="bottom-tab-label">Wards</span>
         </button>
 
         {/* 3. CENTER FAB: Quick Add Contact */}

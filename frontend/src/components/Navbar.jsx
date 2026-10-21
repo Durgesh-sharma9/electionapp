@@ -10,6 +10,7 @@ import {
 export default function Navbar({
   activeTab = 'contacts',
   totalContacts = 0,
+  sureCount = 0,
   onOpenAddModal,
   onOpenShareModal,
   onRefresh,
@@ -21,7 +22,7 @@ export default function Navbar({
       case 'dashboard':
         return 'Overview Dashboard';
       case 'localities':
-        return 'Locality Master';
+        return 'Ward & Locality Master';
       case 'analytics':
         return 'Live Analytics';
       case 'templates':
@@ -108,7 +109,7 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* RIGHT: Quick Action Buttons & Circular Utilities (NO OFFLINE BADGE) */}
+      {/* RIGHT: Sure Voters Live Counter + Quick Action Buttons & Circular Utilities */}
       <div
         style={{
           display: 'flex',
@@ -117,6 +118,28 @@ export default function Navbar({
           flexShrink: 0,
         }}
       >
+        {/* Live Sure Voters Counter Pill */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: '1px solid #f59e0b',
+            padding: '5px 12px',
+            borderRadius: '20px',
+            boxShadow: '0 2px 6px rgba(245, 158, 11, 0.2)',
+          }}
+          title="Total Confirmed Sure Voters in Campaign"
+        >
+          <span style={{ fontSize: '0.85rem' }}>⭐</span>
+          <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#92400e', fontFamily: 'monospace' }}>
+            {sureCount}
+          </span>
+          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#b45309' }}>
+            Sure Voters
+          </span>
+        </div>
         {/* 1. Share Link Button */}
         <button
           type="button"

@@ -61,7 +61,7 @@ export default function Sidebar({
           )}
         </button>
 
-        {/* Tab 3: Locality Master */}
+        {/* Tab 3: Ward & Locality Master */}
         <button
           type="button"
           onClick={() => onTabChange('localities')}
@@ -69,7 +69,7 @@ export default function Sidebar({
         >
           <div className="sidebar-nav-left">
             <MapPin size={18} />
-            <span className="sidebar-nav-label">Locality Master</span>
+            <span className="sidebar-nav-label">Ward & Locality</span>
           </div>
           {localitiesCount > 0 && (
             <span className="sidebar-nav-badge" style={{ background: '#fef3c7', color: '#b45309' }}>

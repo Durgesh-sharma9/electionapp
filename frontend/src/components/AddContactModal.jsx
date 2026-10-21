@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus, Landmark, Star } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -16,16 +16,19 @@ export default function AddContactModal({
   onClose,
   onSave,
   contact = null,
+  wards = [],
   localities = [],
   references = [],
   onLocalityCreated,
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [ward, setWard] = useState('');
   const [locality, setLocality] = useState('');
   const [reference, setReference] = useState('');
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
+  const [isSureVoter, setIsSureVoter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,22 +46,51 @@ export default function AddContactModal({
     if (contact) {
       setName(contact.name || '');
       setPhone(contact.phone || '');
+      setWard(contact.ward || (wards[0]?.name || 'Ward 1'));
       setLocality(contact.locality || '');
       setReference(contact.reference || '');
       setCategory(contact.category || 'General');
       setNotes(contact.notes || '');
+      setIsSureVoter(Boolean(contact.isSureVoter));
     } else {
       setName('');
       setPhone('');
+      const defaultWard = wards[0]?.name || 'Ward 1';
+      setWard(defaultWard);
       setLocality('');
       setReference('');
       setCategory('General');
       setNotes('');
+      setIsSureVoter(false);
     }
     setError('');
-  }, [contact, isOpen]);
+  }, [contact, isOpen, wards]);
 
-  // Handle direct inline locality creation
+  // Dynamically filter localities strictly belonging to the chosen Ward
+  const filteredLocalities = useMemo(() => {
+    if (!ward) return localities;
+    const targetWard = ward.trim().toLowerCase();
+    return localities.filter(
+      (loc) => (loc.ward || '').trim().toLowerCase() === targetWard
+    );
+  }, [localities, ward]);
+
+  // When ward changes, ensure locality is valid for that ward
+  const handleWardChange = (newWard) => {
+    setWard(newWard);
+    setIsAddingNewLocality(false);
+    setNewLocalityInput('');
+    // Check if current locality belongs to this new ward
+    const target = newWard.trim().toLowerCase();
+    const belongs = localities.some(
+      (l) => l.name === locality && (l.ward || '').trim().toLowerCase() === target
+    );
+    if (!belongs) {
+      setLocality('');
+    }
+  };
+
+  // Handle direct inline locality creation for this ward
   const handleCreateDirectLocality = async () => {
     const trimmed = newLocalityInput.trim();
     if (!trimmed) return;
@@ -67,7 +99,7 @@ export default function AddContactModal({
       const res = await fetch('/api/localities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify({ name: trimmed, ward: ward || 'Ward 1' }),
       });
       const data = await res.json();
       if (data.success && data.data) {
@@ -110,10 +142,12 @@ export default function AddContactModal({
         ...(contact?._id ? { _id: contact._id } : {}),
         name: name.trim(),
         phone: cleanDigits.slice(-10),
+        ward: ward.trim(),
         locality: locality.trim(),
         reference: reference.trim(),
         category,
         notes: notes.trim(),
+        isSureVoter,
       });
       onClose();
     } catch (err) {
@@ -138,54 +172,56 @@ export default function AddContactModal({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: `1px solid ${isEditing ? '#bae6fd' : '#a7f3d0'}`,
+              color: isEditing ? '#0284c7' : '#059669',
             }}>
-              {isEditing ? (
-                <Edit2 size={18} color="#0284c7" />
-              ) : (
-                <UserPlus size={19} color="#059669" />
-              )}
+              {isEditing ? <Edit2 size={18} /> : <UserPlus size={18} />}
             </div>
             <div>
-              <h2 style={{ fontSize: '1.12rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                {isEditing ? 'Edit Contact Details' : 'Add New Contact'}
-              </h2>
-              <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                {isEditing ? 'Update name, locality, reference, or phone' : 'Enter contact details with locality & reference'}
-              </span>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+                {isEditing ? 'Edit Contact' : 'Add New Contact'}
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b' }}>
+                {isEditing ? 'Update contact & ward details' : 'Enter voter info with assigned ward & area'}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="btn btn-secondary btn-icon"
-            style={{ width: '30px', height: '30px' }}
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              padding: '6px',
+              cursor: 'pointer',
+              color: '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <X size={15} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Error Notice */}
         {error && (
           <div style={{
-            padding: '9px 12px',
-            borderRadius: '6px',
             background: '#fef2f2',
             border: '1px solid #fecaca',
             color: '#dc2626',
-            fontSize: '0.82rem',
+            borderRadius: '8px',
+            padding: '9px 12px',
             marginBottom: '14px',
+            fontSize: '0.8rem',
             fontWeight: 500,
           }}>
             {error}
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
-          {/* Name & Phone in 2 Columns */}
+          {/* Row 1: Name & Phone */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {/* Name */}
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
                 Full Name *
@@ -205,7 +241,6 @@ export default function AddContactModal({
               </div>
             </div>
 
-            {/* Phone */}
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
                 Mobile Number *
@@ -225,13 +260,46 @@ export default function AddContactModal({
             </div>
           </div>
 
-          {/* Locality & Reference in 2 Columns */}
+          {/* Row 2: Ward & Locality Hierarchy */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {/* Locality (Dropdown or Direct Add) */}
+            {/* Step 1: Choose Ward */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                Ward *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Landmark size={15} color="#0284c7" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                <select
+                  className="input-field"
+                  value={ward}
+                  onChange={(e) => handleWardChange(e.target.value)}
+                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, color: '#0369a1' }}
+                  required
+                >
+                  <option value="">— Select Ward —</option>
+                  {wards.length > 0 ? (
+                    wards.map((w) => (
+                      <option key={w._id || w.name} value={w.name}>
+                        🏛️ {w.name}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Ward 1">🏛️ Ward 1</option>
+                      <option value="Ward 2">🏛️ Ward 2</option>
+                      <option value="Ward 3">🏛️ Ward 3</option>
+                      <option value="Ward 4">🏛️ Ward 4</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
+
+            {/* Step 2: Locality (Filtered strictly by selected Ward) */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 600, color: isAddingNewLocality ? '#ea580c' : '#334155' }}>
-                  {isAddingNewLocality ? '+ Add New Area' : 'Locality / Area'}
+                  {isAddingNewLocality ? `+ Add to ${ward || 'Ward'}` : 'Locality / Area'}
                 </label>
                 {!isAddingNewLocality ? (
                   <button
@@ -250,7 +318,7 @@ export default function AddContactModal({
                       alignItems: 'center',
                       gap: '3px',
                     }}
-                    title="Add a new locality directly"
+                    title={`Add a new locality for ${ward || 'this ward'}`}
                   >
                     <Plus size={11} />
                     <span>New</span>
@@ -283,7 +351,7 @@ export default function AddContactModal({
                     <input
                       type="text"
                       className="input-field"
-                      placeholder="e.g. Brahmin Basti..."
+                      placeholder={`New area for ${ward || 'ward'}...`}
                       value={newLocalityInput}
                       onChange={(e) => setNewLocalityInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -322,11 +390,11 @@ export default function AddContactModal({
                     }}
                     style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
                   >
-                    <option value="">— Unassigned (None) —</option>
+                    <option value="">— Select Area in {ward || 'Ward'} —</option>
                     <option value="__NEW__" style={{ fontWeight: 600, color: '#ea580c' }}>
-                      + Add New Locality...
+                      + Add New Area in {ward || 'this ward'}...
                     </option>
-                    {localities.map((loc) => (
+                    {filteredLocalities.map((loc) => (
                       <option key={loc._id || loc.name} value={loc.name}>
                         📍 {loc.name}
                       </option>
@@ -335,8 +403,10 @@ export default function AddContactModal({
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Reference (Input with Datalist) */}
+          {/* Row 3: Reference & Category */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
                 Reference Person (Optional)
@@ -359,10 +429,76 @@ export default function AddContactModal({
                 </datalist>
               </div>
             </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                Voter Category
+              </label>
+              <select
+                className="input-field"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{ height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
+          {/* Row 4: Sure Voter Toggle (Prominent) */}
+          <div
+            onClick={() => setIsSureVoter(!isSureVoter)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: `1.5px solid ${isSureVoter ? '#f59e0b' : '#e2e8f0'}`,
+              background: isSureVoter ? '#fef3c7' : '#f8fafc',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  background: isSureVoter ? '#f59e0b' : '#e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: isSureVoter ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Star size={16} fill={isSureVoter ? '#ffffff' : 'none'} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.86rem', fontWeight: 700, color: isSureVoter ? '#92400e' : '#1e293b' }}>
+                  Confirmed Sure Voter ⭐
+                </div>
+                <div style={{ fontSize: '0.72rem', color: isSureVoter ? '#b45309' : '#64748b' }}>
+                  {isSureVoter ? 'Marked as guaranteed campaign voter' : 'Click to mark as confirmed supporter/voter'}
+                </div>
+              </div>
+            </div>
 
-          {/* Notes */}
+            <input
+              type="checkbox"
+              checked={isSureVoter}
+              onChange={(e) => setIsSureVoter(e.target.checked)}
+              onClick={(e) => e.stopPropagation()}
+              style={{ width: '18px', height: '18px', accentColor: '#f59e0b', cursor: 'pointer' }}
+            />
+          </div>
+
+          {/* Row 5: Notes */}
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
               Notes / Remarks (Optional)
@@ -370,7 +506,7 @@ export default function AddContactModal({
             <textarea
               className="input-field"
               rows={2}
-              placeholder="e.g. Contact remarks, specific instructions..."
+              placeholder="e.g. Specific request, family head, remarks..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               style={{ fontSize: '0.82rem', resize: 'vertical' }}
@@ -378,7 +514,7 @@ export default function AddContactModal({
           </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
             <button
               type="button"
               className="btn btn-secondary"

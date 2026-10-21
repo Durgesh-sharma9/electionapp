@@ -45,6 +45,10 @@ const contactSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isSureVoter: {
+      type: Boolean,
+      default: false,
+    },
     contactCount: {
       type: Number,
       default: 0,

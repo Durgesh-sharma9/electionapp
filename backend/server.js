@@ -7,6 +7,7 @@ const Contact = require('./models/Contact');
 const Template = require('./models/Template');
 const ShareLink = require('./models/ShareLink');
 const Locality = require('./models/Locality');
+const Ward = require('./models/Ward');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
@@ -57,9 +58,38 @@ app.get('/api/stats', async (req, res) => {
     const total = await Contact.countDocuments();
     const contactedCount = await Contact.countDocuments({ contacted: true });
     const pendingCount = total - contactedCount;
+    const sureCount = await Contact.countDocuments({ isSureVoter: true });
 
+    // Category breakdown
     const categoryStats = await Contact.aggregate([
       { $group: { _id: '$category', count: { $sum: 1 } } },
+    ]);
+
+    // Ward-wise aggregation
+    const wardStats = await Contact.aggregate([
+      {
+        $group: {
+          _id: { $ifNull: ['$ward', 'Unassigned'] },
+          total: { $sum: 1 },
+          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
+          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, 1, 0] } },
+        },
+      },
+      { $sort: { total: -1 } },
+    ]);
+
+    // Locality-wise aggregation
+    const localityStats = await Contact.aggregate([
+      {
+        $group: {
+          _id: { $ifNull: ['$locality', 'Unassigned'] },
+          ward: { $first: '$ward' },
+          total: { $sum: 1 },
+          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
+          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, 1, 0] } },
+        },
+      },
+      { $sort: { total: -1 } },
     ]);
 
     res.json({
@@ -68,7 +98,10 @@ app.get('/api/stats', async (req, res) => {
         total,
         contactedCount,
         pendingCount,
+        sureCount,
         categoryStats,
+        wardStats,
+        localityStats,
       },
     });
   } catch (error) {
@@ -79,7 +112,7 @@ app.get('/api/stats', async (req, res) => {
 // GET /api/contacts
 app.get('/api/contacts', async (req, res) => {
   try {
-    const { search, category, ward, locality, reference, contacted, sort = 'createdAt', order = 'desc' } = req.query;
+    const { search, category, ward, locality, reference, contacted, isSureVoter, sort = 'createdAt', order = 'desc' } = req.query;
 
     const filter = {};
 
@@ -101,6 +134,10 @@ app.get('/api/contacts', async (req, res) => {
 
     if (contacted !== undefined && contacted !== 'ALL') {
       filter.contacted = contacted === 'true';
+    }
+
+    if (isSureVoter !== undefined && isSureVoter !== 'ALL') {
+      filter.isSureVoter = isSureVoter === 'true';
     }
 
     if (search && search.trim()) {
@@ -140,7 +177,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { serialNo, name, phone, ward, locality, reference, category, notes } = req.body;
+    const { serialNo, name, phone, ward, locality, reference, category, notes, isSureVoter } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -160,6 +197,7 @@ app.post('/api/contacts', async (req, res) => {
       reference: reference?.trim() || '',
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
+      isSureVoter: Boolean(isSureVoter),
     });
 
     const saved = await contact.save();
@@ -260,11 +298,39 @@ app.patch('/api/contacts/:id/contacted', async (req, res) => {
   }
 });
 
+// PATCH /api/contacts/:id/sure (Toggle Sure Voter status)
+app.patch('/api/contacts/:id/sure', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isSureVoter } = req.body;
+
+    const contact = await Contact.findById(id);
+    if (!contact) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+
+    if (isSureVoter !== undefined) {
+      contact.isSureVoter = Boolean(isSureVoter);
+    } else {
+      contact.isSureVoter = !contact.isSureVoter;
+    }
+
+    await contact.save();
+    res.json({
+      success: true,
+      message: contact.isSureVoter ? 'Marked as Sure Voter ⭐' : 'Unmarked Sure Voter',
+      data: contact,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // PUT /api/contacts/:id (Update contact)
 app.put('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, ward, locality, reference, category, notes, contacted } = req.body;
+    const { name, phone, ward, locality, reference, category, notes, contacted, isSureVoter } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
@@ -275,6 +341,7 @@ app.put('/api/contacts/:id', async (req, res) => {
     if (category !== undefined) updateData.category = category.trim();
     if (notes !== undefined) updateData.notes = notes.trim();
     if (contacted !== undefined) updateData.contacted = Boolean(contacted);
+    if (isSureVoter !== undefined) updateData.isSureVoter = Boolean(isSureVoter);
 
     const updated = await Contact.findByIdAndUpdate(id, updateData, { new: true });
     if (!updated) {
@@ -436,10 +503,120 @@ app.delete('/api/templates/:id', async (req, res) => {
 });
 
 // ==============================================================
-// LOCALITY MASTER CRUD API (क्षेत्र / मोहल्ला मास्टर)
+// WARD MASTER CRUD API
+// ==============================================================
+const defaultWardsSeed = [
+  { name: 'Ward 1', description: 'Ward 1' },
+  { name: 'Ward 2', description: 'Ward 2' },
+  { name: 'Ward 3', description: 'Ward 3' },
+  { name: 'Ward 4', description: 'Ward 4' },
+];
+
+app.get('/api/wards', async (req, res) => {
+  try {
+    let wards = await Ward.find().sort({ name: 1 }).lean();
+    if (wards.length === 0) {
+      await Ward.insertMany(defaultWardsSeed);
+      wards = await Ward.find().sort({ name: 1 }).lean();
+    }
+
+    const contactCounts = await Contact.aggregate([
+      { $match: { ward: { $exists: true, $ne: '' } } },
+      {
+        $group: {
+          _id: '$ward',
+          count: { $sum: 1 },
+          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
+        },
+      },
+    ]);
+    const localityCounts = await Locality.aggregate([
+      { $match: { ward: { $exists: true, $ne: '' } } },
+      { $group: { _id: '$ward', count: { $sum: 1 } } },
+    ]);
+
+    const cMap = {};
+    contactCounts.forEach((c) => { cMap[c._id] = c; });
+    const lMap = {};
+    localityCounts.forEach((l) => { lMap[l._id] = l.count; });
+
+    const enriched = wards.map((w) => ({
+      ...w,
+      contactCount: cMap[w.name]?.count || 0,
+      sureCount: cMap[w.name]?.sureCount || 0,
+      localityCount: lMap[w.name] || 0,
+    }));
+
+    res.json({ success: true, data: enriched });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/wards', async (req, res) => {
+  try {
+    const { name, description, targetVoters } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Ward name is required' });
+    }
+    const trimmed = name.trim();
+    const existing = await Ward.findOne({ name: { $regex: new RegExp(`^${trimmed}$`, 'i') } });
+    if (existing) {
+      return res.status(400).json({ success: false, error: 'Ward already exists' });
+    }
+    const ward = new Ward({
+      name: trimmed,
+      description: description?.trim() || '',
+      targetVoters: targetVoters ? Number(targetVoters) : 0,
+    });
+    const saved = await ward.save();
+    res.status(201).json({ success: true, data: saved });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.put('/api/wards/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, targetVoters } = req.body;
+    const ward = await Ward.findById(id);
+    if (!ward) return res.status(404).json({ success: false, error: 'Ward not found' });
+    const oldName = ward.name;
+    const newName = name?.trim() || oldName;
+
+    ward.name = newName;
+    ward.description = description !== undefined ? description.trim() : ward.description;
+    ward.targetVoters = targetVoters !== undefined ? Number(targetVoters) : ward.targetVoters;
+    await ward.save();
+
+    if (oldName !== newName) {
+      await Locality.updateMany({ ward: oldName }, { ward: newName });
+      await Contact.updateMany({ ward: oldName }, { ward: newName });
+    }
+
+    res.json({ success: true, data: ward });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.delete('/api/wards/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Ward.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ success: false, error: 'Ward not found' });
+    res.json({ success: true, message: 'Ward deleted successfully', data: deleted });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==============================================================
+// LOCALITY MASTER CRUD API
 // ==============================================================
 const defaultLocalitiesSeed = [
-  { name: 'Mahima', color: '#ea580c', description: 'Mahima' },
+  { name: 'Mahima', ward: 'Ward 1', color: '#ea580c', description: 'Mahima' },
 ];
 
 // GET /api/localities (List all localities with contact counts)

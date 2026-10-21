@@ -23,6 +23,7 @@ export default function ContactCard({
   onEdit,
   isSelected,
   onSelectToggle,
+  onToggleSureVoter,
   isSendingDirect = false,
   waConnected = false,
 }) {
@@ -219,13 +220,42 @@ export default function ContactCard({
           )}
 
           {/* Badges */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px', alignItems: 'center' }}>
+
+            {contact.ward && (
+              <span className="badge" style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', display: 'inline-flex', alignItems: 'center', gap: '3px', fontWeight: 700 }}>
+                🏛️ {contact.ward}
+              </span>
+            )}
 
             {contact.locality && (
               <span className="badge" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                 📍 {contact.locality}
               </span>
             )}
+
+            {/* Sure Voter Toggle Button */}
+            <button
+              type="button"
+              onClick={() => onToggleSureVoter && onToggleSureVoter(contact._id, contact.isSureVoter)}
+              style={{
+                padding: '2px 8px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: contact.isSureVoter ? '1.5px solid #f59e0b' : '1px solid #cbd5e1',
+                background: contact.isSureVoter ? '#fef3c7' : '#ffffff',
+                color: contact.isSureVoter ? '#b45309' : '#64748b',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                transition: 'all 0.15s ease',
+              }}
+              title={contact.isSureVoter ? 'Confirmed Sure Voter (Click to toggle)' : 'Click to mark as Confirmed Sure Voter'}
+            >
+              <span>{contact.isSureVoter ? '⭐ Sure Voter' : '☆ Mark Sure'}</span>
+            </button>
 
             {contact.reference && (
               <span className="badge" style={{ background: '#ede9fe', color: '#5b21b6', border: '1px solid #ddd6fe', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
