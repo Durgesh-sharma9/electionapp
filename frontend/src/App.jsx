@@ -976,7 +976,7 @@ export default function App() {
                   setIsAddModalOpen(true);
                 }}>
                   <UserPlus size={16} />
-                  <span>+ Add Contact</span>
+                  <span>Add Contact</span>
                 </button>
               </div>
             </div>

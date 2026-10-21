@@ -211,7 +211,7 @@ export default function Navbar({
           <span className="hide-on-mobile">Share</span>
         </button>
 
-        {/* 2. + Add Contact Button */}
+        {/* 2. Add Contact Button */}
         <button
           type="button"
           className="btn btn-primary"
@@ -229,7 +229,7 @@ export default function Navbar({
           title="Add a new contact"
         >
           <UserPlus size={13} />
-          <span>+ Add</span>
+          <span>Add Contact</span>
         </button>
 
         {/* 3. Refresh */}

@@ -372,7 +372,7 @@ export default function LocalityMaster({
               style={{ padding: '7px 14px', fontSize: '0.82rem', gap: '6px' }}
             >
               <Plus size={15} />
-              <span>+ Add Ward</span>
+              <span>Add Ward</span>
             </button>
           ) : (
             <button
@@ -382,7 +382,7 @@ export default function LocalityMaster({
               style={{ padding: '7px 14px', fontSize: '0.82rem', gap: '6px' }}
             >
               <Plus size={15} />
-              <span>+ Add Locality</span>
+              <span>Add Locality</span>
             </button>
           )}
         </div>
@@ -571,7 +571,7 @@ export default function LocalityMaster({
               <h4 style={{ margin: 0, fontSize: '1rem', color: '#334155' }}>No Localities Found</h4>
               <p style={{ margin: '4px 0 16px 0', fontSize: '0.82rem' }}>Add a locality under a specific ward</p>
               <button type="button" className="btn btn-primary" onClick={openAddLocalityModal} style={{ fontSize: '0.82rem' }}>
-                <Plus size={14} /> + Add Locality
+                <Plus size={14} /> Add Locality
               </button>
             </div>
           ) : (
