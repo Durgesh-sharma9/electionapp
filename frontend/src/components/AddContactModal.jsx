@@ -225,14 +225,14 @@ export default function AddContactModal({
                 Full Name *
               </label>
               <div style={{ position: 'relative' }}>
-                <User size={15} color="#64748b" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                <User size={15} color="#64748b" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   type="text"
                   className="input-field"
                   placeholder="e.g. Ramesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.85rem' }}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
                   required
                   autoFocus
                 />
@@ -244,14 +244,14 @@ export default function AddContactModal({
                 Mobile Number *
               </label>
               <div style={{ position: 'relative' }}>
-                <Phone size={15} color="#059669" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                <Phone size={15} color="#059669" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   type="tel"
                   className="input-field"
                   placeholder="9829012345"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.85rem' }}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
                   required
                 />
               </div>
@@ -266,12 +266,12 @@ export default function AddContactModal({
                 Ward (Optional)
               </label>
               <div style={{ position: 'relative' }}>
-                <Landmark size={15} color="#0284c7" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                <Landmark size={15} color="#0284c7" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <select
                   className="input-field"
                   value={ward}
                   onChange={(e) => handleWardChange(e.target.value)}
-                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, color: '#0369a1' }}
+                  style={{ padding: '0 24px 0 34px', height: '40px', fontSize: '0.84rem', cursor: 'pointer', fontWeight: 600, color: '#0369a1' }}
                 >
                   <option value="">Select Ward</option>
                   {wards.length > 0 ? (
@@ -344,7 +344,7 @@ export default function AddContactModal({
               {isAddingNewLocality ? (
                 <div style={{ display: 'flex', gap: '5px' }}>
                   <div style={{ position: 'relative', flex: 1 }}>
-                    <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                    <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                     <input
                       type="text"
                       className="input-field"
@@ -357,7 +357,7 @@ export default function AddContactModal({
                           handleCreateDirectLocality();
                         }
                       }}
-                      style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem' }}
+                      style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
                       autoFocus
                     />
                   </div>
@@ -366,7 +366,7 @@ export default function AddContactModal({
                     className="btn btn-primary"
                     onClick={handleCreateDirectLocality}
                     disabled={creatingLocality || !newLocalityInput.trim()}
-                    style={{ height: '36px', padding: '0 10px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                    style={{ height: '40px', padding: '0 12px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                     title="Save locality"
                   >
                     {creatingLocality ? '...' : <Check size={14} />}
@@ -374,7 +374,7 @@ export default function AddContactModal({
                 </div>
               ) : (
                 <div style={{ position: 'relative' }}>
-                  <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                  <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   <select
                     className="input-field"
                     value={locality}
@@ -385,9 +385,9 @@ export default function AddContactModal({
                         setLocality(e.target.value);
                       }
                     }}
-                    style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
+                    style={{ padding: '0 24px 0 34px', height: '40px', fontSize: '0.84rem', cursor: 'pointer' }}
                   >
-                    <option value="">Select Locality</option>
+                    <option value="">Select Area</option>
                     <option value="__NEW__" style={{ fontWeight: 600, color: '#ea580c' }}>
                       + Add New Area in {ward || 'this ward'}...
                     </option>
@@ -409,7 +409,7 @@ export default function AddContactModal({
                 Reference Person (Optional)
               </label>
               <div style={{ position: 'relative' }}>
-                <UserCheck size={15} color="#7c3aed" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                <UserCheck size={15} color="#7c3aed" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   type="text"
                   list="references-datalist"
@@ -417,7 +417,7 @@ export default function AddContactModal({
                   placeholder="e.g. Sarita Ma'am, Self..."
                   value={reference}
                   onChange={(e) => setReference(e.target.value)}
-                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem' }}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
                 />
                 <datalist id="references-datalist">
                   {references.map((r) => (
@@ -435,7 +435,7 @@ export default function AddContactModal({
                 className="input-field"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                style={{ height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
+                style={{ padding: '0 12px', height: '40px', fontSize: '0.84rem', cursor: 'pointer' }}
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>

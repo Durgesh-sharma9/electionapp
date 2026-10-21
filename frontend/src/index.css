@@ -216,6 +216,11 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
 }
+select.input-field {
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: normal;
+}
 .input-field::placeholder {
   color: #94a3b8;
 }
