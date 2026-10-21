@@ -23,6 +23,7 @@ import BulkImportModal from './components/BulkImportModal';
 import ContactCard from './components/ContactCard';
 import TemplatesManager from './components/TemplatesManager';
 import BottomTabBar from './components/BottomTabBar';
+import Sidebar from './components/Sidebar';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -367,7 +368,7 @@ export default function App() {
   }, [templates, activeTemplateId]);
 
   return (
-    <div className="main-app-container">
+    <div className="app-shell">
       {/* Toast Notification */}
       {toast && (
         <div className="toast-notice">
@@ -376,8 +377,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Navbar with Tab switcher */}
-      <Navbar
+      {/* Desktop / Laptop Left Sidebar */}
+      <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
@@ -389,6 +390,22 @@ export default function App() {
         dbConnected={dbConnected}
         loading={loading}
       />
+
+      {/* Main Content Area */}
+      <div className="app-main-content">
+        {/* Top Navbar */}
+        <Navbar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          totalContacts={contacts.length}
+          templatesCount={templates.length}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenBulkModal={() => setIsBulkModalOpen(true)}
+          onRefresh={fetchData}
+          onExportCSV={handleExportCSV}
+          dbConnected={dbConnected}
+          loading={loading}
+        />
 
       {/* ============================================================== */}
       {/* TAB 1: CONTACTS & OUTREACH VIEW                                 */}
@@ -727,6 +744,8 @@ export default function App() {
           loading={loading}
         />
       )}
+
+      </div>
 
       {/* Add Single Contact Modal */}
       <AddContactModal

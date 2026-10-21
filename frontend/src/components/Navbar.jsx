@@ -14,37 +14,38 @@ export default function Navbar({
   loading,
 }) {
   return (
-    <header className="glass-panel nav-header-mobile" style={{ padding: '14px 20px', marginBottom: '18px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+    <header className="glass-panel main-top-header" style={{ padding: '14px 18px', marginBottom: '18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
+        {/* Mobile Brand / Desktop Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="mobile-only-logo" style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #10b981, #059669)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
             flexShrink: 0,
           }}>
-            <MessageCircle size={22} color="#ffffff" />
+            <MessageCircle size={20} color="#ffffff" />
           </div>
+
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h1 style={{
                 fontFamily: 'var(--font-heading)',
-                fontSize: '1.28rem',
+                fontSize: '1.25rem',
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 color: '#0f172a',
                 margin: 0,
               }}>
-                WhatsApp Outreach Portal
+                {activeTab === 'contacts' ? 'Contacts & Outreach' : 'WhatsApp Message Templates'}
               </h1>
-              <span style={{
+              <span className="mobile-only-badge" style={{
                 fontSize: '0.68rem',
                 padding: '2px 8px',
                 borderRadius: '6px',
@@ -53,70 +54,26 @@ export default function Navbar({
                 fontWeight: 600,
                 border: '1px solid #a7f3d0',
               }}>
-                INTERNAL TOOL
+                INTERNAL
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '3px' }}>
-              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                Add contacts, paste lists & 1-click WhatsApp redirect
-              </span>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '0.72rem',
-                color: dbConnected ? '#059669' : '#dc2626',
-                fontWeight: 600,
-                background: dbConnected ? '#ecfdf5' : '#fef2f2',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                border: `1px solid ${dbConnected ? '#a7f3d0' : '#fecaca'}`,
-              }}>
-                <span style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: dbConnected ? '#10b981' : '#ef4444',
-                }} />
-                {dbConnected ? 'Database Live' : 'Connecting...'}
-              </span>
-            </div>
+            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
+              {activeTab === 'contacts'
+                ? 'Manage contacts and launch 1-click WhatsApp redirects'
+                : 'Create, test, and save reusable WhatsApp messages'}
+            </p>
           </div>
         </div>
 
-        {/* Center / Navigation Tabs for Desktop */}
-        <div className="nav-tabs-container">
-          <button
-            type="button"
-            onClick={() => onTabChange && onTabChange('contacts')}
-            className={`nav-tab-btn ${activeTab === 'contacts' ? 'active' : ''}`}
-          >
-            <Users size={16} />
-            <span>Contacts</span>
-            {totalContacts > 0 && <span className="nav-tab-badge">{totalContacts}</span>}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onTabChange && onTabChange('templates')}
-            className={`nav-tab-btn ${activeTab === 'templates' ? 'active' : ''}`}
-          >
-            <FileText size={16} />
-            <span>Templates</span>
-            {templatesCount > 0 && <span className="nav-tab-badge nav-tab-badge-emerald">{templatesCount}</span>}
-          </button>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="nav-actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          
+        {/* Desktop Quick Header Actions */}
+        <div className="desktop-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button 
             className="btn btn-secondary btn-icon" 
             onClick={onRefresh}
             title="Refresh List"
             disabled={loading}
           >
-            <RefreshCw size={15} />
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           </button>
 
           <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '7px 12px', fontSize: '0.82rem' }}>
@@ -137,7 +94,30 @@ export default function Navbar({
             <UserPlus size={15} />
             <span>+ Add Contact</span>
           </button>
+        </div>
 
+        {/* Mobile DB status pill */}
+        <div className="mobile-only-status" style={{ display: 'none' }}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '0.72rem',
+            color: dbConnected ? '#059669' : '#dc2626',
+            fontWeight: 600,
+            background: dbConnected ? '#ecfdf5' : '#fef2f2',
+            padding: '2px 8px',
+            borderRadius: '6px',
+            border: `1px solid ${dbConnected ? '#a7f3d0' : '#fecaca'}`,
+          }}>
+            <span style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: dbConnected ? '#10b981' : '#ef4444',
+            }} />
+            {dbConnected ? 'Live' : 'Connecting'}
+          </span>
         </div>
 
       </div>
