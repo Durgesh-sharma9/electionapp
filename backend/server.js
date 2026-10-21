@@ -437,12 +437,12 @@ app.delete('/api/templates/:id', async (req, res) => {
 // LOCALITY MASTER CRUD API (क्षेत्र / मोहल्ला मास्टर)
 // ==============================================================
 const defaultLocalitiesSeed = [
-  { name: 'Mahapura Main', ward: 'Ward 1', color: '#ea580c', description: 'Central village area' },
-  { name: 'Sharma Mohalla', ward: 'Ward 1', color: '#2563eb', description: 'Sharma Mohalla locality' },
-  { name: 'Jangid Mohalla', ward: 'Ward 2', color: '#7c3aed', description: 'Jangid Mohalla area' },
-  { name: 'Main Market', ward: 'Ward 1', color: '#059669', description: 'Market & Shops' },
-  { name: 'Bheel Basti', ward: 'Ward 3', color: '#d97706', description: 'Bheel Basti' },
-  { name: 'School Road', ward: 'Ward 2', color: '#0891b2', description: 'Near Govt School' },
+  { name: 'Mahapura Main', color: '#ea580c', description: 'Central village area' },
+  { name: 'Sharma Mohalla', color: '#2563eb', description: 'Sharma Mohalla locality' },
+  { name: 'Jangid Mohalla', color: '#7c3aed', description: 'Jangid Mohalla area' },
+  { name: 'Main Market', color: '#059669', description: 'Market & Shops' },
+  { name: 'Bheel Basti', color: '#d97706', description: 'Bheel Basti' },
+  { name: 'School Road', color: '#0891b2', description: 'Near Govt School' },
 ];
 
 // GET /api/localities (List all localities with contact counts)

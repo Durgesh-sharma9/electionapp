@@ -87,7 +87,6 @@ export default function LocalityMaster({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          ward: ward.trim(),
           description: description.trim(),
           color,
         }),
@@ -134,7 +133,6 @@ export default function LocalityMaster({
     const q = search.toLowerCase();
     return (
       loc.name.toLowerCase().includes(q) ||
-      (loc.ward && loc.ward.toLowerCase().includes(q)) ||
       (loc.description && loc.description.toLowerCase().includes(q))
     );
   });
@@ -306,22 +304,6 @@ export default function LocalityMaster({
                       {loc.name}
                     </h3>
                   </div>
-
-                  {loc.ward && (
-                    <span
-                      style={{
-                        fontSize: '0.72rem',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        background: '#f1f5f9',
-                        color: '#475569',
-                        fontWeight: 600,
-                        border: '1px solid #e2e8f0',
-                      }}
-                    >
-                      {loc.ward}
-                    </span>
-                  )}
                 </div>
 
                 {/* Description */}
@@ -493,20 +475,6 @@ export default function LocalityMaster({
                   style={{ height: '36px', fontSize: '0.85rem' }}
                   required
                   autoFocus
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
-                  Ward / Sector (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ward 1, Sector 4..."
-                  value={ward}
-                  onChange={(e) => setWard(e.target.value)}
-                  className="input-field"
-                  style={{ height: '36px', fontSize: '0.85rem' }}
                 />
               </div>
 

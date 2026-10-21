@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck } from 'lucide-react';
+import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -18,6 +18,7 @@ export default function AddContactModal({
   contact = null,
   localities = [],
   references = [],
+  onLocalityCreated,
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -28,10 +29,17 @@ export default function AddContactModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Inline Direct Locality Creation State
+  const [isAddingNewLocality, setIsAddingNewLocality] = useState(false);
+  const [newLocalityInput, setNewLocalityInput] = useState('');
+  const [creatingLocality, setCreatingLocality] = useState(false);
+
   const isEditing = Boolean(contact && contact._id);
 
   // Sync state when modal opens or contact changes
   useEffect(() => {
+    setIsAddingNewLocality(false);
+    setNewLocalityInput('');
     if (contact) {
       setName(contact.name || '');
       setPhone(contact.phone || '');
@@ -49,6 +57,37 @@ export default function AddContactModal({
     }
     setError('');
   }, [contact, isOpen]);
+
+  // Handle direct inline locality creation
+  const handleCreateDirectLocality = async () => {
+    const trimmed = newLocalityInput.trim();
+    if (!trimmed) return;
+    setCreatingLocality(true);
+    try {
+      const res = await fetch('/api/localities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (onLocalityCreated) {
+          onLocalityCreated(data.data);
+        }
+        setLocality(data.data.name);
+        setIsAddingNewLocality(false);
+        setNewLocalityInput('');
+      } else {
+        alert(data.error || 'Failed to add locality');
+      }
+    } catch (err) {
+      setLocality(trimmed);
+      setIsAddingNewLocality(false);
+      setNewLocalityInput('');
+    } finally {
+      setCreatingLocality(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -188,27 +227,113 @@ export default function AddContactModal({
 
           {/* Locality & Reference in 2 Columns */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {/* Locality (Dropdown) */}
+            {/* Locality (Dropdown or Direct Add) */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Locality / क्षेत्र (Mohalla)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '11px' }} />
-                <select
-                  className="input-field"
-                  value={locality}
-                  onChange={(e) => setLocality(e.target.value)}
-                  style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
-                >
-                  <option value="">— Unassigned (None) —</option>
-                  {localities.map((loc) => (
-                    <option key={loc._id || loc.name} value={loc.name}>
-                      📍 {loc.name} {loc.ward ? `(${loc.ward})` : ''}
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: isAddingNewLocality ? '#ea580c' : '#334155' }}>
+                  {isAddingNewLocality ? '+ Add New Area' : 'Locality / क्षेत्र (Mohalla)'}
+                </label>
+                {!isAddingNewLocality ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNewLocality(true)}
+                    style={{
+                      background: '#fff7ed',
+                      border: '1px solid #fed7aa',
+                      color: '#ea580c',
+                      borderRadius: '5px',
+                      padding: '1px 7px',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                    }}
+                    title="Add a new locality directly"
+                  >
+                    <Plus size={11} />
+                    <span>New</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingNewLocality(false);
+                      setNewLocalityInput('');
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#64748b',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    Cancel
+                  </button>
+                )}
               </div>
+
+              {isAddingNewLocality ? (
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="e.g. Brahmin Basti..."
+                      value={newLocalityInput}
+                      onChange={(e) => setNewLocalityInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleCreateDirectLocality();
+                        }
+                      }}
+                      style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem' }}
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleCreateDirectLocality}
+                    disabled={creatingLocality || !newLocalityInput.trim()}
+                    style={{ height: '36px', padding: '0 10px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                    title="Save locality"
+                  >
+                    {creatingLocality ? '...' : <Check size={14} />}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <MapPin size={15} color="#ea580c" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                  <select
+                    className="input-field"
+                    value={locality}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setIsAddingNewLocality(true);
+                      } else {
+                        setLocality(e.target.value);
+                      }
+                    }}
+                    style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
+                  >
+                    <option value="">— Unassigned (None) —</option>
+                    <option value="__NEW__" style={{ fontWeight: 700, color: '#ea580c' }}>
+                      ➕ + Add New Locality (नया क्षेत्र जोड़ें)...
+                    </option>
+                    {localities.map((loc) => (
+                      <option key={loc._id || loc.name} value={loc.name}>
+                        📍 {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Reference (Input with Datalist) */}

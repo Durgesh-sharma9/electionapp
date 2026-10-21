@@ -636,7 +636,7 @@ export default function App() {
                   <option value="UNASSIGNED">Unassigned Only</option>
                   {localities.map((loc) => (
                     <option key={loc._id} value={loc.name}>
-                      {loc.name} {loc.ward ? `(Ward ${loc.ward})` : ''}
+                      {loc.name}
                     </option>
                   ))}
                 </select>
@@ -1115,6 +1115,7 @@ export default function App() {
         contact={editingContact}
         localities={localities}
         references={references}
+        onLocalityCreated={() => fetchLocalities()}
       />
 
       {/* Bulk Import Modal */}
