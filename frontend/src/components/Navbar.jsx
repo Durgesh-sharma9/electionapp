@@ -171,22 +171,23 @@ export default function Navbar({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '7px',
-              padding: '7px 14px',
+              gap: '6px',
+              padding: '6px 12px',
               borderRadius: '8px',
               background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
               color: '#ffffff',
               border: 'none',
-              fontSize: '0.82rem',
+              fontSize: '0.8rem',
               fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: '0 3px 12px rgba(2, 132, 199, 0.35)',
+              boxShadow: '0 3px 10px rgba(2, 132, 199, 0.3)',
               transition: 'all 0.15s ease',
+              whiteSpace: 'nowrap',
             }}
             title="Generate public caller link (All, By Locality, or Selected Contacts)"
           >
-            <Share2 size={15} color="#ffffff" />
-            <span>🔗 Share Link (शेयर करें)</span>
+            <Share2 size={14} color="#ffffff" />
+            <span>Share Link</span>
           </button>
 
           {/* 2. + Add Contact Button */}
@@ -195,17 +196,18 @@ export default function Navbar({
             className="btn btn-primary"
             onClick={onOpenAddModal}
             style={{
-              padding: '7px 13px',
-              fontSize: '0.82rem',
+              padding: '6px 11px',
+              fontSize: '0.8rem',
               fontWeight: 600,
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '5px',
+              whiteSpace: 'nowrap',
             }}
             title="Add a new contact"
           >
-            <UserPlus size={15} />
-            <span>+ Add Contact</span>
+            <UserPlus size={14} />
+            <span>+ Add</span>
           </button>
 
           {/* 3. WhatsApp Status Indicator (Clickable to open WA tab) */}
@@ -216,15 +218,16 @@ export default function Navbar({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '5px 10px',
               borderRadius: '8px',
               background: waConnected ? '#ecfdf5' : '#fff7ed',
               border: `1px solid ${waConnected ? '#a7f3d0' : '#fed7aa'}`,
-              fontSize: '0.78rem',
+              fontSize: '0.76rem',
               fontWeight: 700,
               color: waConnected ? '#059669' : '#c2410c',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
+              whiteSpace: 'nowrap',
             }}
             title={
               waConnected
@@ -234,19 +237,18 @@ export default function Navbar({
           >
             <span
               style={{
-                width: '8px',
-                height: '8px',
+                width: '7px',
+                height: '7px',
                 borderRadius: '50%',
                 backgroundColor: waConnected ? '#10b981' : '#f97316',
-                boxShadow: waConnected ? '0 0 8px rgba(16, 185, 129, 0.7)' : 'none',
+                boxShadow: waConnected ? '0 0 6px rgba(16, 185, 129, 0.7)' : 'none',
               }}
             />
             <span>
-              {waConnected
-                ? `🟢 WA Active${waSession?.phone ? ` (${waSession.phone.slice(-4)})` : ''}`
-                : '🔴 Link WA'}
+              {waConnected ? 'Active' : 'Offline'}
             </span>
           </button>
+
 
           {/* 4. Secondary actions on contacts tab */}
           {activeTab === 'contacts' && (
@@ -305,8 +307,9 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* BOTTOM ROW: Integrated Horizontal Navigation Tabs */}
+      {/* BOTTOM ROW: Integrated Horizontal Navigation Tabs (Hidden on mobile - BottomTabBar navigates) */}
       <div
+        className="hide-on-mobile"
         style={{
           display: 'flex',
           alignItems: 'center',

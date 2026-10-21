@@ -179,8 +179,8 @@ export default function AnalyticsView({ onToast }) {
   return (
     <div className="view-container animate-fade-in" style={{ paddingBottom: '90px' }}>
       
-      {/* Page Header */}
-      <div className="view-header" style={{ marginBottom: '14px', gap: '10px' }}>
+      {/* Desktop Header (Hidden on mobile to prevent duplicate title clutter) */}
+      <div className="view-header hide-on-mobile" style={{ marginBottom: '14px', gap: '10px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div
@@ -207,7 +207,7 @@ export default function AnalyticsView({ onToast }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <button
             onClick={() => {
               fetchShareLinks();
@@ -236,72 +236,106 @@ export default function AnalyticsView({ onToast }) {
         </div>
       </div>
 
-      {/* Share Link Selector Banner */}
+      {/* Share Link Selector Banner (Compact, self-contained for mobile & desktop) */}
       <div
         className="glass-panel"
         style={{
           padding: '12px 14px',
           marginBottom: '14px',
           background: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '10px',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: '520px' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap' }}>
-            📌 Shared Link:
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a' }}>
+              📌 Select Shared Link:
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#0284c7', background: '#f0f9ff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+              {shareLinks.length} Links
+            </span>
+          </div>
 
-          {shareLinks.length > 0 ? (
-            <select
-              value={selectedShareId}
-              onChange={(e) => setSelectedShareId(e.target.value)}
-              className="input-field"
-              style={{ height: '36px', fontSize: '0.82rem', padding: '4px 8px', flex: '1 1 200px', width: '100%', fontWeight: 600 }}
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                fetchShareLinks();
+                if (selectedShareId) fetchAnalyticsDetails(selectedShareId);
+              }}
+              disabled={loading || loadingDetails}
+              className="btn btn-secondary"
+              style={{ padding: '4px 8px', fontSize: '0.74rem', gap: '4px' }}
+              title="Refresh Live Analytics"
             >
-              {shareLinks.map((s) => (
-                <option key={s.shareId} value={s.shareId}>
-                  {s.title} ({s.totalCount} Contacts) • {new Date(s.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>No links generated yet</span>
-          )}
+              <RefreshCw size={12} className={loading || loadingDetails ? 'animate-spin' : ''} />
+              <span>Refresh</span>
+            </button>
+
+            {analyticsData && (
+              <button
+                onClick={handleExportCSV}
+                className="btn btn-secondary"
+                style={{ padding: '4px 8px', fontSize: '0.74rem', gap: '4px' }}
+                title="Download CSV Report"
+              >
+                <Download size={12} />
+                <span>CSV</span>
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* Dropdown Selector */}
+        {shareLinks.length > 0 ? (
+          <select
+            value={selectedShareId}
+            onChange={(e) => setSelectedShareId(e.target.value)}
+            className="input-field"
+            style={{ height: '36px', fontSize: '0.82rem', padding: '4px 8px', width: '100%', fontWeight: 600, marginBottom: '8px' }}
+          >
+            {shareLinks.map((s) => (
+              <option key={s.shareId} value={s.shareId}>
+                {s.title} ({s.totalCount} Contacts) • {new Date(s.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div style={{ fontSize: '0.82rem', color: '#94a3b8', padding: '6px 0' }}>
+            No links generated yet. Click "Share Link" in top navbar.
+          </div>
+        )}
+
+        {/* Action Buttons for Selected Link */}
         {selectedShareId && (
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', width: '100%' }}>
             <button
               onClick={() => handleCopyLink(selectedShareId)}
               className="btn btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px', flex: '1 1 auto' }}
+              style={{ padding: '6px 10px', fontSize: '0.76rem', gap: '4px', flex: 1, justifyContent: 'center' }}
               title="Copy Public Link URL"
             >
-              {copiedId === selectedShareId ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+              {copiedId === selectedShareId ? <Check size={13} color="#059669" /> : <Copy size={13} />}
               <span>Copy Link</span>
             </button>
 
             <button
               onClick={() => handleOpenLink(selectedShareId)}
               className="btn btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px', flex: '1 1 auto' }}
+              style={{ padding: '6px 10px', fontSize: '0.76rem', gap: '4px', flex: 1, justifyContent: 'center' }}
               title="Open Public Caller Page in New Tab"
             >
-              <ExternalLink size={14} color="#0284c7" />
-              <span>Open Caller Page</span>
+              <ExternalLink size={13} color="#0284c7" />
+              <span>Open Page</span>
             </button>
 
             <button
               onClick={() => handleDeleteShare(selectedShareId)}
               className="btn btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.78rem', color: '#dc2626', borderColor: '#fecaca' }}
+              style={{ padding: '6px 8px', fontSize: '0.76rem', color: '#dc2626', borderColor: '#fecaca' }}
               title="Delete this link"
             >
-              <Trash2 size={14} />
+              <Trash2 size={13} />
             </button>
           </div>
         )}
@@ -316,97 +350,97 @@ export default function AnalyticsView({ onToast }) {
             No Outreach Share Links Yet
           </h3>
           <p style={{ margin: '6px auto 16px', color: '#64748b', fontSize: '0.82rem', maxWidth: '400px' }}>
-            Create your first public webpage link by clicking <strong>"🔗 Share Link"</strong> in the top navigation bar.
+            Create your first public webpage link by clicking <strong>"Share Link"</strong> in the top navigation bar.
           </p>
         </div>
       ) : (
         <>
-          {/* 4 Summary Metric Cards - Responsive 2x2 grid on mobile */}
+          {/* 4 Summary Metric Cards - Responsive 2x2 grid */}
           <div
             className="metric-cards-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '10px',
-              marginBottom: '14px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))',
+              gap: '8px',
+              marginBottom: '12px',
             }}
           >
             {/* 1. Total Contacts */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
                   Total (कुल)
                 </span>
-                <Users size={15} color="#0284c7" />
+                <Users size={14} color="#0284c7" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginTop: '2px', lineHeight: 1.1 }}>
                 {summary.total}
               </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+              <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '2px' }}>
                 Assigned contacts
               </div>
             </div>
 
             {/* 2. Called Contacts */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
                   📞 Called
                 </span>
-                <Phone size={15} color="#059669" />
+                <Phone size={14} color="#059669" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#059669', marginTop: '4px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#059669', marginTop: '2px', lineHeight: 1.1 }}>
                 {summary.called}
               </div>
-              <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.68rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
                 {summary.total > 0 ? Math.round((summary.called / summary.total) * 100) : 0}% Complete
               </div>
             </div>
 
             {/* 3. Messaged Contacts */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
                   💬 Messaged
                 </span>
-                <MessageCircle size={15} color="#15803d" />
+                <MessageCircle size={14} color="#15803d" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#15803d', marginTop: '4px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#15803d', marginTop: '2px', lineHeight: 1.1 }}>
                 {summary.messaged}
               </div>
-              <div style={{ fontSize: '0.7rem', color: '#166534', marginTop: '2px', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.68rem', color: '#166534', marginTop: '2px', fontWeight: 600 }}>
                 {summary.total > 0 ? Math.round((summary.messaged / summary.total) * 100) : 0}% Reached
               </div>
             </div>
 
             {/* 4. Untouched Contacts */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
                   ⚪ Untouched
                 </span>
-                <Clock size={15} color="#ea580c" />
+                <Clock size={14} color="#ea580c" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ea580c', marginTop: '4px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ea580c', marginTop: '2px', lineHeight: 1.1 }}>
                 {summary.untouched}
               </div>
-              <div style={{ fontSize: '0.7rem', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.68rem', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>
                 {summary.total > 0 ? Math.round((summary.untouched / summary.total) * 100) : 0}% Remaining
               </div>
             </div>
           </div>
 
           {/* Progress Bar Strip */}
-          <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '14px', background: '#ffffff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0f172a' }}>
-                Overall Outreach Progress: {summary.percentComplete}%
+          <div className="glass-panel" style={{ padding: '10px 14px', marginBottom: '12px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a' }}>
+                Progress: {summary.percentComplete}%
               </span>
-              <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                {summary.called + summary.messaged} of {summary.total} contacts touched
+              <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                {summary.called + summary.messaged} of {summary.total} touched
               </span>
             </div>
-            <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '7px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${Math.min(100, Math.max(0, summary.percentComplete))}%`,
@@ -419,22 +453,22 @@ export default function AnalyticsView({ onToast }) {
             </div>
           </div>
 
-          {/* Contacts Table Card */}
-          <div className="glass-panel" style={{ padding: '12px 14px', background: '#ffffff' }}>
+          {/* Contacts List Card */}
+          <div className="glass-panel" style={{ padding: '12px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             
-            {/* Table Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+            {/* Toolbar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
               
               {/* Search */}
-              <div style={{ position: 'relative', flex: '1 1 200px' }}>
-                <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <div style={{ position: 'relative', flex: '1 1 180px' }}>
+                <Search size={13} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Search name, phone, locality..."
+                  placeholder="Search name, phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-field"
-                  style={{ paddingLeft: '32px', height: '34px', fontSize: '0.82rem', width: '100%' }}
+                  style={{ paddingLeft: '30px', height: '32px', fontSize: '0.8rem', width: '100%' }}
                 />
               </div>
 
@@ -442,10 +476,10 @@ export default function AnalyticsView({ onToast }) {
               <div
                 style={{
                   display: 'flex',
-                  gap: '4px',
+                  gap: '3px',
                   background: '#f1f5f9',
-                  padding: '3px',
-                  borderRadius: '8px',
+                  padding: '2px',
+                  borderRadius: '6px',
                   overflowX: 'auto',
                   WebkitOverflowScrolling: 'touch',
                   maxWidth: '100%',
@@ -454,14 +488,14 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('ALL')}
                   style={{
-                    padding: '5px 9px',
-                    borderRadius: '6px',
-                    fontSize: '0.74rem',
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    fontSize: '0.72rem',
                     fontWeight: statusFilter === 'ALL' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'ALL' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'ALL' ? '#0f172a' : '#64748b',
-                    boxShadow: statusFilter === 'ALL' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                    boxShadow: statusFilter === 'ALL' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                   }}
@@ -471,14 +505,14 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('CALLED')}
                   style={{
-                    padding: '5px 9px',
-                    borderRadius: '6px',
-                    fontSize: '0.74rem',
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    fontSize: '0.72rem',
                     fontWeight: statusFilter === 'CALLED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'CALLED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'CALLED' ? '#047857' : '#64748b',
-                    boxShadow: statusFilter === 'CALLED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                    boxShadow: statusFilter === 'CALLED' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                   }}
@@ -488,14 +522,14 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('MESSAGED')}
                   style={{
-                    padding: '5px 9px',
-                    borderRadius: '6px',
-                    fontSize: '0.74rem',
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    fontSize: '0.72rem',
                     fontWeight: statusFilter === 'MESSAGED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'MESSAGED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'MESSAGED' ? '#166534' : '#64748b',
-                    boxShadow: statusFilter === 'MESSAGED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                    boxShadow: statusFilter === 'MESSAGED' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                   }}
@@ -505,14 +539,14 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('UNTOUCHED')}
                   style={{
-                    padding: '5px 9px',
-                    borderRadius: '6px',
-                    fontSize: '0.74rem',
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    fontSize: '0.72rem',
                     fontWeight: statusFilter === 'UNTOUCHED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'UNTOUCHED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'UNTOUCHED' ? '#c2410c' : '#64748b',
-                    boxShadow: statusFilter === 'UNTOUCHED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                    boxShadow: statusFilter === 'UNTOUCHED' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                   }}
@@ -523,8 +557,8 @@ export default function AnalyticsView({ onToast }) {
 
             </div>
 
-            {/* Table with smooth horizontal scroll */}
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' }}>
+            {/* Desktop Table View (Hidden on mobile) */}
+            <div className="hide-on-mobile" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' }}>
               <table className="contacts-table" style={{ width: '100%', fontSize: '0.8rem', minWidth: '600px' }}>
                 <thead>
                   <tr>
@@ -614,6 +648,65 @@ export default function AnalyticsView({ onToast }) {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Contact Cards (Clean, readable on phone without side scrolling) */}
+            <div className="mobile-only-cards" style={{ display: 'none', flexDirection: 'column', gap: '8px' }}>
+              {filteredContacts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#94a3b8', fontSize: '0.82rem' }}>
+                  No contacts match the filter criteria.
+                </div>
+              ) : (
+                filteredContacts.map((c, i) => (
+                  <div
+                    key={c.phone + i}
+                    style={{
+                      background: '#fafafa',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '9px 11px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284c7', fontFamily: 'monospace' }}>
+                          #{c.serialNo || i + 1}
+                        </span>
+                        <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {c.name}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.68rem', background: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, flexShrink: 0 }}>
+                        📍 {c.locality || 'Mahima'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', flexWrap: 'wrap', gap: '4px' }}>
+                      <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', fontWeight: 600, color: '#334155' }}>
+                        +91 {c.phone}
+                      </span>
+
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        {c.called && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#047857', background: '#ecfdf5', padding: '1px 5px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
+                            📞 Called
+                          </span>
+                        )}
+                        {c.messaged && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#166534', background: '#f0fdf4', padding: '1px 5px', borderRadius: '4px', border: '1px solid #bbf7d0' }}>
+                            💬 Messaged
+                          </span>
+                        )}
+                        {!c.called && !c.messaged && !c.contacted && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c2410c', background: '#fff7ed', padding: '1px 5px', borderRadius: '4px', border: '1px solid #fed7aa' }}>
+                            ⚪ Untouched
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
           </div>

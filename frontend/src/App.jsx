@@ -811,35 +811,39 @@ export default function App() {
                 </button>
               </div>
             </div>
-          ) : viewMode === 'cards' ? (
-            <div className="contact-grid">
-              {filteredContacts.map((contact) => (
-                <ContactCard
-                  key={contact._id}
-                  contact={contact}
-                  isSelected={selectedIds.has(contact._id)}
-                  onSelectToggle={(id, checked) => {
-                    const next = new Set(selectedIds);
-                    if (checked) next.add(id);
-                    else next.delete(id);
-                    setSelectedIds(next);
-                  }}
-                  onDirectWhatsAppSend={handleOpenSendMessage}
-                  onWhatsAppRedirect={handleOpenSendMessage}
-                  onCallRedirect={handleCallRedirect}
-                  onDelete={handleDeleteContact}
-                  onEdit={(c) => {
-                    setEditingContact(c);
-                    setIsAddModalOpen(true);
-                  }}
-                  isSendingDirect={sendingDirectId === contact._id}
-                  waConnected={waConnected}
-                />
-              ))}
-            </div>
           ) : (
-            <div className="compact-table-container" style={{ overflowX: 'auto' }}>
-              <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <>
+              {/* Desktop / Tablet View (Switchable Cards or Table) */}
+              <div className="hide-on-mobile">
+                {viewMode === 'cards' ? (
+                  <div className="contact-grid">
+                    {filteredContacts.map((contact) => (
+                      <ContactCard
+                        key={contact._id}
+                        contact={contact}
+                        isSelected={selectedIds.has(contact._id)}
+                        onSelectToggle={(id, checked) => {
+                          const next = new Set(selectedIds);
+                          if (checked) next.add(id);
+                          else next.delete(id);
+                          setSelectedIds(next);
+                        }}
+                        onDirectWhatsAppSend={handleOpenSendMessage}
+                        onWhatsAppRedirect={handleOpenSendMessage}
+                        onCallRedirect={handleCallRedirect}
+                        onDelete={handleDeleteContact}
+                        onEdit={(c) => {
+                          setEditingContact(c);
+                          setIsAddModalOpen(true);
+                        }}
+                        isSendingDirect={sendingDirectId === contact._id}
+                        waConnected={waConnected}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="compact-table-container" style={{ overflowX: 'auto' }}>
+                    <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr>
                     <th style={{ width: '40px', textAlign: 'center', padding: '10px 10px' }}>
@@ -1041,6 +1045,38 @@ export default function App() {
                 </tbody>
               </table>
             </div>
+          )}
+        </div>
+
+              {/* Mobile View: Clean, Native Responsive Contact Cards */}
+              <div className="mobile-only-cards" style={{ display: 'none', flexDirection: 'column', gap: '12px' }}>
+                <div className="contact-grid">
+                  {filteredContacts.map((contact) => (
+                    <ContactCard
+                      key={contact._id}
+                      contact={contact}
+                      isSelected={selectedIds.has(contact._id)}
+                      onSelectToggle={(id, checked) => {
+                        const next = new Set(selectedIds);
+                        if (checked) next.add(id);
+                        else next.delete(id);
+                        setSelectedIds(next);
+                      }}
+                      onDirectWhatsAppSend={handleOpenSendMessage}
+                      onWhatsAppRedirect={handleOpenSendMessage}
+                      onCallRedirect={handleCallRedirect}
+                      onDelete={handleDeleteContact}
+                      onEdit={(c) => {
+                        setEditingContact(c);
+                        setIsAddModalOpen(true);
+                      }}
+                      isSendingDirect={sendingDirectId === contact._id}
+                      waConnected={waConnected}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </>
       )}

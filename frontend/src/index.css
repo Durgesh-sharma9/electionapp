@@ -437,28 +437,27 @@ body {
 }
 
 /* ============================================================== */
-/* Sticky Bottom Tab Bar (Tabs for Contacts, Templates, Paste)   */
+/* Sticky Bottom Tab Bar (Clean, Solid, Native Mobile Feel) */
 /* ============================================================== */
 .bottom-tab-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 900;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
+  z-index: 999;
+  background: #ffffff !important;
   border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
-  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)) 12px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px)) 10px;
 }
 
 .bottom-tab-container {
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  gap: 4px;
+  gap: 2px;
 }
 
 .bottom-tab-item {
@@ -467,23 +466,21 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
+  padding: 4px 2px;
   border: none;
   background: transparent;
   color: #64748b;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  position: relative;
 }
 
-.bottom-tab-item:hover {
-  color: #0f172a;
+.bottom-tab-item:active {
+  transform: scale(0.95);
 }
 
 .bottom-tab-item.active {
   color: #059669;
-  background: #ecfdf5;
 }
 
 .bottom-tab-fab {
@@ -499,8 +496,8 @@ body {
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
   cursor: pointer;
   flex-shrink: 0;
-  margin-top: -14px;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 6px;
+  transition: all 0.15s ease;
 }
 
 .bottom-tab-fab:hover {
@@ -513,9 +510,9 @@ body {
 }
 
 .bottom-tab-label {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  margin-top: 3px;
+  margin-top: 2px;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
@@ -921,6 +918,14 @@ body {
   .hide-on-mobile {
     display: none !important;
   }
+
+  .mobile-only-cards {
+    display: flex !important;
+  }
+}
+
+.mobile-only-cards {
+  display: none;
 }
 
 @media (max-width: 640px) {

@@ -1,11 +1,9 @@
 import React from 'react';
-import { Users, MapPin, BarChart3, Smartphone, UserPlus } from 'lucide-react';
+import { Users, MapPin, BarChart3, Smartphone, Plus } from 'lucide-react';
 
 export default function BottomTabBar({
   activeTab,
   onTabChange,
-  totalContacts = 0,
-  localitiesCount = 0,
   onOpenAddModal,
   waConnected = false,
 }) {
@@ -18,12 +16,7 @@ export default function BottomTabBar({
           onClick={() => onTabChange('contacts')}
           className={`bottom-tab-item ${activeTab === 'contacts' ? 'active' : ''}`}
         >
-          <div style={{ position: 'relative', display: 'inline-flex' }}>
-            <Users size={18} />
-            {totalContacts > 0 && (
-              <span className="bottom-tab-badge">{totalContacts}</span>
-            )}
-          </div>
+          <Users size={20} />
           <span className="bottom-tab-label">Contacts</span>
         </button>
 
@@ -33,18 +26,11 @@ export default function BottomTabBar({
           onClick={() => onTabChange('localities')}
           className={`bottom-tab-item ${activeTab === 'localities' ? 'active' : ''}`}
         >
-          <div style={{ position: 'relative', display: 'inline-flex' }}>
-            <MapPin size={18} />
-            {localitiesCount > 0 && (
-              <span className="bottom-tab-badge" style={{ background: '#fef3c7', color: '#b45309' }}>
-                {localitiesCount}
-              </span>
-            )}
-          </div>
+          <MapPin size={20} />
           <span className="bottom-tab-label">Locality</span>
         </button>
 
-        {/* 3. CENTER FAB: + Add Contact */}
+        {/* 3. CENTER FAB: Quick Add Contact */}
         <button
           type="button"
           onClick={onOpenAddModal}
@@ -52,7 +38,7 @@ export default function BottomTabBar({
           title="Add New Contact"
           aria-label="Add Contact"
         >
-          <UserPlus size={20} color="#ffffff" />
+          <Plus size={22} color="#ffffff" strokeWidth={2.5} />
         </button>
 
         {/* 4. Analytics Tab */}
@@ -61,7 +47,7 @@ export default function BottomTabBar({
           onClick={() => onTabChange('analytics')}
           className={`bottom-tab-item ${activeTab === 'analytics' ? 'active' : ''}`}
         >
-          <BarChart3 size={18} />
+          <BarChart3 size={20} />
           <span className="bottom-tab-label">Analytics</span>
         </button>
 
@@ -72,17 +58,17 @@ export default function BottomTabBar({
           className={`bottom-tab-item ${activeTab === 'whatsapp' ? 'active' : ''}`}
         >
           <div style={{ position: 'relative', display: 'inline-flex' }}>
-            <Smartphone size={18} />
+            <Smartphone size={20} />
             <span
               style={{
                 position: 'absolute',
-                top: '-2px',
-                right: '-3px',
+                top: '-1px',
+                right: '-2px',
                 width: '7px',
                 height: '7px',
                 borderRadius: '50%',
                 backgroundColor: waConnected ? '#10b981' : '#f97316',
-                border: '1px solid #ffffff',
+                border: '1.5px solid #ffffff',
               }}
             />
           </div>
