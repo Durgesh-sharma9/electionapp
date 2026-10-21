@@ -57,9 +57,10 @@ export default function App() {
   // Selection
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  // Toast
+  // Toast & WA State
   const [toast, setToast] = useState(null);
   const [waConnected, setWaConnected] = useState(false);
+  const [sendingDirectId, setSendingDirectId] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -168,7 +169,57 @@ export default function App() {
     });
   }, [contacts, categoryFilter, contactedFilter, searchQuery]);
 
-  // 1-Click WhatsApp Redirect
+  // 1. Direct Live WhatsApp Dispatch (Via Linked Phone Socket)
+  const handleDirectWhatsAppSend = async (contact) => {
+    if (!waConnected) {
+      const wantToConnect = window.confirm(
+        'WhatsApp device is not linked yet.\n\nClick "OK" to open the WhatsApp Link tab and scan the QR code.\nClick "Cancel" to redirect to WhatsApp Web instead.'
+      );
+      if (wantToConnect) {
+        setActiveTab('whatsapp');
+        return;
+      } else {
+        handleWhatsAppRedirect(contact);
+        return;
+      }
+    }
+
+    setSendingDirectId(contact._id);
+    const message = customText.replace(/{name}/g, contact.name || 'Friend');
+
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: contact.phone,
+          message,
+          contactId: contact._id,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast(`✅ Direct WhatsApp delivered to ${contact.name}!`);
+        setContacts((prev) =>
+          prev.map((c) =>
+            c._id === contact._id
+              ? { ...c, contacted: true, contactCount: (c.contactCount || 0) + 1 }
+              : c
+          )
+        );
+      } else {
+        alert(data.error || 'Failed to dispatch live WhatsApp message. Opening WhatsApp Web instead.');
+        handleWhatsAppRedirect(contact);
+      }
+    } catch (err) {
+      alert('Error connecting to backend: ' + err.message);
+    } finally {
+      setSendingDirectId(null);
+    }
+  };
+
+  // 2. 1-Click WhatsApp Redirect (Opens wa.me)
   const handleWhatsAppRedirect = async (contact) => {
     const message = customText.replace(/{name}/g, contact.name || 'Friend');
     const encodedMessage = encodeURIComponent(message);
@@ -189,6 +240,7 @@ export default function App() {
             : c
         )
       );
+      showToast(`🔗 Opening WhatsApp for ${contact.name}...`);
     } catch (e) {
       console.error('Failed to update contact status:', e);
     }
@@ -197,9 +249,13 @@ export default function App() {
     window.open(`https://wa.me/${fullPhone}?text=${encodedMessage}`, '_blank');
   };
 
-  // 1-Click Phone Call Redirect
+  // 3. Direct Phone Call Redirect
   const handleCallRedirect = (contact) => {
-    window.location.href = `tel:${contact.phone}`;
+    const cleanDigits = contact.phone.replace(/\D/g, '');
+    const fullPhone = cleanDigits.length === 10 ? `+91${cleanDigits}` : `+${cleanDigits}`;
+    navigator.clipboard.writeText(cleanDigits);
+    showToast(`📞 Calling ${contact.name} (${fullPhone} copied)`);
+    window.location.href = `tel:${fullPhone}`;
   };
 
   // Toggle Contacted Status
@@ -648,16 +704,22 @@ export default function App() {
                   key={contact._id}
                   contact={contact}
                   isSelected={selectedIds.has(contact._id)}
-                  onToggleSelect={(id) => {
+                  onSelectToggle={(id, checked) => {
                     const next = new Set(selectedIds);
-                    if (next.has(id)) next.delete(id);
-                    else next.add(id);
+                    if (checked) next.add(id);
+                    else next.delete(id);
                     setSelectedIds(next);
                   }}
-                  onWhatsApp={handleWhatsAppRedirect}
-                  onCall={handleCallRedirect}
-                  onToggleContacted={handleToggleContacted}
+                  onDirectWhatsAppSend={handleDirectWhatsAppSend}
+                  onWhatsAppRedirect={handleWhatsAppRedirect}
+                  onCallRedirect={handleCallRedirect}
                   onDelete={handleDeleteContact}
+                  onEdit={(c) => {
+                    setEditingContact(c);
+                    setIsAddModalOpen(true);
+                  }}
+                  isSendingDirect={sendingDirectId === contact._id}
+                  waConnected={waConnected}
                 />
               ))}
             </div>
@@ -680,7 +742,7 @@ export default function App() {
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>PHONE NUMBER</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>CATEGORY</th>
                     <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>STATUS</th>
-                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600, textAlign: 'right' }}>ACTIONS</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569', fontWeight: 600, textAlign: 'right' }}>OUTREACH ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -717,6 +779,7 @@ export default function App() {
                         <button
                           onClick={() => handleToggleContacted(contact._id, contact.contacted)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          title="Click to toggle status"
                         >
                           <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'}>
                             {contact.contacted ? '✅ Contacted' : '⏳ Pending'}
@@ -725,25 +788,43 @@ export default function App() {
                       </td>
                       <td style={{ padding: '12px 14px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
+                          {/* 1. Direct Send (Baileys) */}
                           <button
                             className="btn btn-whatsapp"
-                            onClick={() => handleWhatsAppRedirect(contact)}
-                            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                            onClick={() => handleDirectWhatsAppSend(contact)}
+                            disabled={sendingDirectId === contact._id}
+                            style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '4px' }}
+                            title="Direct WhatsApp Message"
                           >
-                            <MessageCircle size={14} />
-                            <span>WhatsApp</span>
+                            <span>{sendingDirectId === contact._id ? '...' : '⚡ Direct'}</span>
                           </button>
+
+                          {/* 2. WhatsApp Web Redirect */}
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => handleWhatsAppRedirect(contact)}
+                            style={{ padding: '6px 10px', fontSize: '0.78rem', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
+                            title="Open in WhatsApp Web"
+                          >
+                            <span>🔗 Web</span>
+                          </button>
+
+                          {/* 3. Call */}
                           <button
                             className="btn btn-call"
                             onClick={() => handleCallRedirect(contact)}
-                            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                            style={{ padding: '6px 10px', fontSize: '0.78rem' }}
+                            title="Call Phone Number"
                           >
-                            <Phone size={14} />
+                            <Phone size={13} />
                           </button>
+
+                          {/* 4. Delete */}
                           <button
                             className="btn btn-secondary btn-icon"
                             onClick={() => handleDeleteContact(contact._id)}
-                            style={{ width: '30px', height: '30px', color: '#ef4444' }}
+                            style={{ width: '28px', height: '28px', color: '#ef4444' }}
+                            title="Delete"
                           >
                             <Trash2 size={13} />
                           </button>

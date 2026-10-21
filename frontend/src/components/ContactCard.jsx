@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
-import { Phone, MessageCircle, Copy, Check, Trash2, Edit2, MapPin, CheckCircle2 } from 'lucide-react';
+import {
+  Phone,
+  MessageCircle,
+  Copy,
+  Check,
+  Trash2,
+  Edit2,
+  CheckCircle2,
+  Zap,
+  ExternalLink,
+  RefreshCw,
+} from 'lucide-react';
 
 export default function ContactCard({
   contact,
+  onDirectWhatsAppSend,
   onWhatsAppRedirect,
   onCallRedirect,
   onDelete,
   onEdit,
   isSelected,
   onSelectToggle,
+  isSendingDirect = false,
+  waConnected = false,
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -53,7 +67,7 @@ export default function ContactCard({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gap: '14px',
+        gap: '12px',
         border: isSelected
           ? '2px solid #ea580c'
           : contact.contacted
@@ -141,7 +155,7 @@ export default function ContactCard({
 
           {/* Phone row with quick copy */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-            <span style={{ fontSize: '0.94rem', color: '#0369a1', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.94rem', color: '#0369a1', fontWeight: 600, fontFamily: 'monospace' }}>
               +91 {contact.phone}
             </span>
             <button
@@ -162,7 +176,7 @@ export default function ContactCard({
           </div>
 
           {/* Badges */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
             <span className={`badge ${getCategoryClass(contact.category)}`}>
               {contact.category || 'General'}
             </span>
@@ -189,28 +203,57 @@ export default function ContactCard({
 
       </div>
 
-      {/* Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+      {/* 2 Types of WhatsApp + 1 Call Action */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 0.9fr', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
         
-        {/* WhatsApp Button */}
+        {/* 1. Direct WhatsApp Dispatch (Baileys Engine) */}
         <button
           className="btn btn-whatsapp"
-          onClick={() => onWhatsAppRedirect(contact)}
-          style={{ padding: '10px 12px', minHeight: '42px', fontSize: '0.88rem' }}
-          title="Send WhatsApp Message (1-Click Redirect)"
+          onClick={() => onDirectWhatsAppSend(contact)}
+          disabled={isSendingDirect}
+          style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
+          title={waConnected ? "Send message directly via linked WhatsApp without opening web" : "Connect WhatsApp first or click to link"}
         >
-          <MessageCircle size={17} />
-          <span>Send WhatsApp</span>
+          {isSendingDirect ? (
+            <>
+              <RefreshCw size={14} className="animate-spin" />
+              <span>Sending...</span>
+            </>
+          ) : (
+            <>
+              <Zap size={14} fill="#ffffff" />
+              <span>Direct Send</span>
+            </>
+          )}
         </button>
 
-        {/* Call Button */}
+        {/* 2. 1-Click WhatsApp Redirect (wa.me) */}
+        <button
+          className="btn btn-secondary"
+          onClick={() => onWhatsAppRedirect(contact)}
+          style={{
+            padding: '8px 10px',
+            minHeight: '38px',
+            fontSize: '0.82rem',
+            background: '#f0fdf4',
+            borderColor: '#a7f3d0',
+            color: '#065f46',
+            gap: '5px',
+          }}
+          title="Open WhatsApp Web / App Redirect"
+        >
+          <ExternalLink size={13} color="#059669" />
+          <span>WA Web</span>
+        </button>
+
+        {/* 3. Direct Phone Call Redirect */}
         <button
           className="btn btn-call"
           onClick={() => onCallRedirect(contact)}
-          style={{ padding: '10px 12px', minHeight: '42px', fontSize: '0.88rem' }}
-          title="Direct Phone Call"
+          style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
+          title="Direct Phone Call & Copy Number"
         >
-          <Phone size={16} />
+          <Phone size={14} />
           <span>Call</span>
         </button>
 

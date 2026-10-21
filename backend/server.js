@@ -445,13 +445,14 @@ app.post('/api/whatsapp/send', async (req, res) => {
       await Contact.findByIdAndUpdate(contactId, {
         contacted: true,
         lastContactedDate: new Date(),
+        $inc: { contactCount: 1 },
       });
     } else if (to) {
       const clean10 = normalizePhone(to);
       if (clean10) {
         await Contact.findOneAndUpdate(
           { phone: clean10 },
-          { contacted: true, lastContactedDate: new Date() }
+          { contacted: true, lastContactedDate: new Date(), $inc: { contactCount: 1 } }
         );
       }
     }
