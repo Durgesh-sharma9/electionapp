@@ -1150,6 +1150,7 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
+        localitiesCount={localities.length}
         templatesCount={templates.length}
         onOpenAddModal={() => {
           setEditingContact(null);

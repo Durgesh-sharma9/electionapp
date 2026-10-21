@@ -141,53 +141,54 @@ export default function LocalityMaster({
   const unassignedContacts = Math.max(0, totalContacts - totalAssignedContacts);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '90px' }}>
       {/* Top Banner / Summary */}
       <div
         className="glass-panel"
         style={{
-          padding: '16px 20px',
+          padding: '14px 16px',
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div
                 style={{
-                  width: '38px',
-                  height: '38px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '10px',
                   background: '#fef3c7',
                   border: '1px solid #fde68a',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                <MapPin size={20} color="#d97706" />
+                <MapPin size={18} color="#d97706" />
               </div>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                <h2 style={{ fontSize: 'clamp(1.1rem, 3.5vw, 1.35rem)', fontWeight: 700, color: '#0f172a', margin: 0 }}>
                   Locality Master (क्षेत्र / मोहल्ला प्रबंधन)
                 </h2>
-                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '2px 0 0 0' }}>
+                <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
                   Manage localities, wards, and group voters by their living areas
                 </p>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={openAddModal}
               className="btn btn-primary"
-              style={{ padding: '8px 16px', fontSize: '0.84rem' }}
+              style={{ padding: '7px 14px', fontSize: '0.82rem' }}
             >
-              <Plus size={16} />
-              <span>+ Add New Locality</span>
+              <Plus size={15} />
+              <span>+ Add Locality</span>
             </button>
           </div>
         </div>
@@ -196,36 +197,36 @@ export default function LocalityMaster({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '12px',
-            marginTop: '16px',
-            paddingTop: '14px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '10px',
+            marginTop: '14px',
+            paddingTop: '12px',
             borderTop: '1px solid #f1f5f9',
           }}
         >
-          <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
               Total Localities
             </span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>
               {localities.length}
             </div>
           </div>
 
-          <div style={{ padding: '10px 14px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
-            <span style={{ fontSize: '0.74rem', color: '#047857', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div style={{ padding: '8px 12px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
+            <span style={{ fontSize: '0.7rem', color: '#047857', fontWeight: 600, textTransform: 'uppercase' }}>
               Contacts Assigned
             </span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#065f46', marginTop: '2px' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#065f46', marginTop: '2px' }}>
               {totalAssignedContacts}
             </div>
           </div>
 
-          <div style={{ padding: '10px 14px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' }}>
-            <span style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div style={{ padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' }}>
+            <span style={{ fontSize: '0.7rem', color: '#b45309', fontWeight: 600, textTransform: 'uppercase' }}>
               Unassigned Contacts
             </span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#92400e', marginTop: '2px' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#92400e', marginTop: '2px' }}>
               {unassignedContacts}
             </div>
           </div>
@@ -242,7 +243,7 @@ export default function LocalityMaster({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field"
-            style={{ paddingLeft: '32px', height: '36px', fontSize: '0.84rem' }}
+            style={{ paddingLeft: '32px', height: '36px', fontSize: '0.84rem', width: '100%' }}
           />
         </div>
       </div>
@@ -251,8 +252,8 @@ export default function LocalityMaster({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-          gap: '14px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+          gap: '12px',
         }}
       >
         {filtered.map((loc) => {

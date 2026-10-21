@@ -100,44 +100,44 @@ export default function Navbar({
         }}
       >
         {/* Left: Branding & Current Page Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '220px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '0', flex: '1 1 auto' }}>
           <div
             style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
+              width: '34px',
+              height: '34px',
+              borderRadius: '9px',
               background: 'linear-gradient(135deg, #10b981, #059669)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 3px 12px rgba(16, 185, 129, 0.25)',
+              boxShadow: '0 3px 10px rgba(16, 185, 129, 0.25)',
               flexShrink: 0,
             }}
           >
-            <MessageCircle size={20} color="#ffffff" />
+            <MessageCircle size={18} color="#ffffff" />
           </div>
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ minWidth: '0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
               <span
                 style={{
-                  fontSize: '0.72rem',
+                  fontSize: '0.68rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.04em',
                   color: '#059669',
                   background: '#ecfdf5',
-                  padding: '1px 7px',
+                  padding: '1px 6px',
                   borderRadius: '4px',
                   border: '1px solid #a7f3d0',
                 }}
               >
-                महापुरा अभियान
+                महापुरा
               </span>
               <h1
                 style={{
                   fontFamily: 'var(--font-heading)',
-                  fontSize: '1.12rem',
+                  fontSize: 'clamp(0.95rem, 3vw, 1.1rem)',
                   fontWeight: 700,
                   letterSpacing: '-0.02em',
                   color: '#0f172a',
@@ -148,7 +148,7 @@ export default function Navbar({
                 {headerInfo.title}
               </h1>
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0 0' }}>
+            <p style={{ fontSize: '0.72rem', color: '#64748b', margin: '2px 0 0 0', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {headerInfo.subtitle}
             </p>
           </div>

@@ -160,43 +160,54 @@ export default function AnalyticsView({ onToast }) {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `outreach_analytics_${analyticsData.shareId}.csv`);
+    link.setAttribute('download', `outreach_analytics_${selectedShareId || 'export'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    if (onToast) onToast('Analytics CSV exported successfully! 📊');
   };
 
-  const summary = analyticsData?.summary || { total: 0, called: 0, messaged: 0, untouched: 0, percentComplete: 0 };
+  const summary = analyticsData?.summary || {
+    total: 0,
+    called: 0,
+    messaged: 0,
+    both: 0,
+    untouched: 0,
+    percentComplete: 0,
+  };
 
   return (
-    <div className="view-container animate-fade-in" style={{ paddingBottom: '40px' }}>
+    <div className="view-container animate-fade-in" style={{ paddingBottom: '90px' }}>
       
       {/* Page Header */}
-      <div className="view-header" style={{ marginBottom: '16px' }}>
+      <div className="view-header" style={{ marginBottom: '14px', gap: '10px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div
               style={{
-                width: '32px',
-                height: '32px',
+                width: '30px',
+                height: '30px',
                 borderRadius: '8px',
                 background: 'linear-gradient(135deg, #0284c7, #0369a1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#ffffff',
+                flexShrink: 0,
               }}
             >
-              <BarChart3 size={18} />
+              <BarChart3 size={16} />
             </div>
-            <h1 className="view-title">Campaign Outreach Analytics (आउटरीच एनालिटिक्स)</h1>
+            <h1 className="view-title">
+              Outreach Analytics (आउटरीच एनालिटिक्स)
+            </h1>
           </div>
           <p className="view-subtitle">
-            ट्रैक करें कि शेयर की गई लिंक से किस-किस को कॉल किया, किस-किस को मैसेज भेजा और कितने बाकी (Untouched) हैं।
+            शेयर लिंक ट्रैकिंग: कॉल, व्हाट्सएप मैसेज और अछूते (Untouched) कॉन्टैक्ट्स की रिपोर्ट
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
               fetchShareLinks();
@@ -204,10 +215,10 @@ export default function AnalyticsView({ onToast }) {
             }}
             disabled={loading || loadingDetails}
             className="btn btn-secondary"
-            style={{ padding: '7px 12px', fontSize: '0.82rem', gap: '6px' }}
+            style={{ padding: '6px 11px', fontSize: '0.8rem', gap: '5px' }}
             title="Refresh Live Analytics"
           >
-            <RefreshCw size={14} className={loading || loadingDetails ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={loading || loadingDetails ? 'animate-spin' : ''} />
             <span>Live Refresh</span>
           </button>
 
@@ -215,10 +226,10 @@ export default function AnalyticsView({ onToast }) {
             <button
               onClick={handleExportCSV}
               className="btn btn-secondary"
-              style={{ padding: '7px 12px', fontSize: '0.82rem', gap: '6px' }}
+              style={{ padding: '6px 11px', fontSize: '0.8rem', gap: '5px' }}
               title="Download CSV Report"
             >
-              <Download size={14} />
+              <Download size={13} />
               <span>Export CSV</span>
             </button>
           )}
@@ -229,19 +240,19 @@ export default function AnalyticsView({ onToast }) {
       <div
         className="glass-panel"
         style={{
-          padding: '14px 18px',
-          marginBottom: '16px',
+          padding: '12px 14px',
+          marginBottom: '14px',
           background: '#ffffff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: '10px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
-            📌 Select Shared Link (शेयर की गई लिंक चुनें):
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: '520px' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap' }}>
+            📌 Shared Link:
           </span>
 
           {shareLinks.length > 0 ? (
@@ -249,7 +260,7 @@ export default function AnalyticsView({ onToast }) {
               value={selectedShareId}
               onChange={(e) => setSelectedShareId(e.target.value)}
               className="input-field"
-              style={{ height: '36px', fontSize: '0.84rem', padding: '4px 10px', minWidth: '260px', fontWeight: 600 }}
+              style={{ height: '36px', fontSize: '0.82rem', padding: '4px 8px', flex: '1 1 200px', width: '100%', fontWeight: 600 }}
             >
               {shareLinks.map((s) => (
                 <option key={s.shareId} value={s.shareId}>
@@ -258,18 +269,16 @@ export default function AnalyticsView({ onToast }) {
               ))}
             </select>
           ) : (
-            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-              No share links created yet. Click "Share Link" in Contacts list to create one.
-            </span>
+            <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>No links generated yet</span>
           )}
         </div>
 
         {selectedShareId && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'flex-start' }}>
             <button
               onClick={() => handleCopyLink(selectedShareId)}
               className="btn btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px' }}
+              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px', flex: '1 1 auto' }}
               title="Copy Public Link URL"
             >
               {copiedId === selectedShareId ? <Check size={14} color="#059669" /> : <Copy size={14} />}
@@ -279,7 +288,7 @@ export default function AnalyticsView({ onToast }) {
             <button
               onClick={() => handleOpenLink(selectedShareId)}
               className="btn btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px' }}
+              style={{ padding: '6px 10px', fontSize: '0.78rem', gap: '5px', flex: '1 1 auto' }}
               title="Open Public Caller Page in New Tab"
             >
               <ExternalLink size={14} color="#0284c7" />
@@ -299,104 +308,110 @@ export default function AnalyticsView({ onToast }) {
       </div>
 
       {shareLinks.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '48px 20px', textAlign: 'center', background: '#ffffff' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#f0f9ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-            <Share2 size={28} />
+        <div className="glass-panel" style={{ padding: '36px 16px', textAlign: 'center', background: '#ffffff' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f0f9ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+            <Share2 size={24} />
           </div>
-          <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+          <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.05rem', fontWeight: 700 }}>
             No Outreach Share Links Yet
           </h3>
-          <p style={{ margin: '8px auto 20px', color: '#64748b', fontSize: '0.86rem', maxWidth: '440px' }}>
-            Create your first public webpage link by clicking <strong>"Share Link"</strong> in the top navigation bar or Contacts list.
+          <p style={{ margin: '6px auto 16px', color: '#64748b', fontSize: '0.82rem', maxWidth: '400px' }}>
+            Create your first public webpage link by clicking <strong>"🔗 Share Link"</strong> in the top navigation bar.
           </p>
         </div>
       ) : (
         <>
-          {/* 4 Summary Metric Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '16px' }}>
-            
+          {/* 4 Summary Metric Cards - Responsive 2x2 grid on mobile */}
+          <div
+            className="metric-cards-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '10px',
+              marginBottom: '14px',
+            }}
+          >
             {/* 1. Total Contacts */}
-            <div className="glass-panel" style={{ padding: '14px 16px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-                  Total Contacts (कुल)
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                  Total (कुल)
                 </span>
-                <Users size={16} color="#0284c7" />
+                <Users size={15} color="#0284c7" />
               </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0f172a', marginTop: '6px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
                 {summary.total}
               </div>
-              <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
-                Assigned to this outreach link
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+                Assigned contacts
               </div>
             </div>
 
             {/* 2. Called Contacts */}
-            <div className="glass-panel" style={{ padding: '14px 16px', background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
-                  📞 Called (कॉल किए गए)
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
+                  📞 Called
                 </span>
-                <Phone size={16} color="#059669" />
+                <Phone size={15} color="#059669" />
               </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#059669', marginTop: '6px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#059669', marginTop: '4px' }}>
                 {summary.called}
               </div>
-              <div style={{ fontSize: '0.74rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
-                {summary.total > 0 ? Math.round((summary.called / summary.total) * 100) : 0}% Call Outreach Complete
+              <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
+                {summary.total > 0 ? Math.round((summary.called / summary.total) * 100) : 0}% Complete
               </div>
             </div>
 
             {/* 3. Messaged Contacts */}
-            <div className="glass-panel" style={{ padding: '14px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
-                  💬 Messaged (मैसेज भेजे)
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
+                  💬 Messaged
                 </span>
-                <MessageCircle size={16} color="#15803d" />
+                <MessageCircle size={15} color="#15803d" />
               </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#15803d', marginTop: '6px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#15803d', marginTop: '4px' }}>
                 {summary.messaged}
               </div>
-              <div style={{ fontSize: '0.74rem', color: '#166534', marginTop: '2px', fontWeight: 600 }}>
-                {summary.total > 0 ? Math.round((summary.messaged / summary.total) * 100) : 0}% WhatsApp Reached
+              <div style={{ fontSize: '0.7rem', color: '#166534', marginTop: '2px', fontWeight: 600 }}>
+                {summary.total > 0 ? Math.round((summary.messaged / summary.total) * 100) : 0}% Reached
               </div>
             </div>
 
             {/* 4. Untouched Contacts */}
-            <div className="glass-panel" style={{ padding: '14px 16px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
-                  ⚪ Untouched (अछूते / बाकी)
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
+                  ⚪ Untouched
                 </span>
-                <Clock size={16} color="#ea580c" />
+                <Clock size={15} color="#ea580c" />
               </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ea580c', marginTop: '6px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ea580c', marginTop: '4px' }}>
                 {summary.untouched}
               </div>
-              <div style={{ fontSize: '0.74rem', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>
-                {summary.total > 0 ? Math.round((summary.untouched / summary.total) * 100) : 0}% Yet to be contacted
+              <div style={{ fontSize: '0.7rem', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>
+                {summary.total > 0 ? Math.round((summary.untouched / summary.total) * 100) : 0}% Remaining
               </div>
             </div>
-
           </div>
 
           {/* Progress Bar Strip */}
-          <div className="glass-panel" style={{ padding: '12px 18px', marginBottom: '16px', background: '#ffffff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
+          <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '14px', background: '#ffffff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0f172a' }}>
                 Overall Outreach Progress: {summary.percentComplete}%
               </span>
-              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                {summary.total - summary.untouched} of {summary.total} contacts touched
+              <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                {summary.called + summary.messaged} of {summary.total} contacts touched
               </span>
             </div>
-            <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
               <div
                 style={{
+                  width: `${Math.min(100, Math.max(0, summary.percentComplete))}%`,
                   height: '100%',
-                  width: `${summary.percentComplete}%`,
-                  background: 'linear-gradient(90deg, #10b981, #0284c7)',
+                  background: 'linear-gradient(90deg, #0284c7, #059669)',
                   borderRadius: '4px',
                   transition: 'width 0.4s ease',
                 }}
@@ -405,13 +420,13 @@ export default function AnalyticsView({ onToast }) {
           </div>
 
           {/* Contacts Table Card */}
-          <div className="glass-panel" style={{ padding: '14px 16px', background: '#ffffff' }}>
+          <div className="glass-panel" style={{ padding: '12px 14px', background: '#ffffff' }}>
             
             {/* Table Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
               
               {/* Search */}
-              <div style={{ position: 'relative', flex: '1 1 220px' }}>
+              <div style={{ position: 'relative', flex: '1 1 200px' }}>
                 <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
@@ -424,19 +439,31 @@ export default function AnalyticsView({ onToast }) {
               </div>
 
               {/* Status Filter Tabs */}
-              <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '3px', borderRadius: '8px', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '4px',
+                  background: '#f1f5f9',
+                  padding: '3px',
+                  borderRadius: '8px',
+                  overflowX: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                  maxWidth: '100%',
+                }}
+              >
                 <button
                   onClick={() => setStatusFilter('ALL')}
                   style={{
-                    padding: '5px 10px',
+                    padding: '5px 9px',
                     borderRadius: '6px',
-                    fontSize: '0.76rem',
+                    fontSize: '0.74rem',
                     fontWeight: statusFilter === 'ALL' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'ALL' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'ALL' ? '#0f172a' : '#64748b',
                     boxShadow: statusFilter === 'ALL' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   All ({summary.total})
@@ -444,15 +471,16 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('CALLED')}
                   style={{
-                    padding: '5px 10px',
+                    padding: '5px 9px',
                     borderRadius: '6px',
-                    fontSize: '0.76rem',
+                    fontSize: '0.74rem',
                     fontWeight: statusFilter === 'CALLED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'CALLED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'CALLED' ? '#047857' : '#64748b',
                     boxShadow: statusFilter === 'CALLED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   📞 Called ({summary.called})
@@ -460,15 +488,16 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('MESSAGED')}
                   style={{
-                    padding: '5px 10px',
+                    padding: '5px 9px',
                     borderRadius: '6px',
-                    fontSize: '0.76rem',
+                    fontSize: '0.74rem',
                     fontWeight: statusFilter === 'MESSAGED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'MESSAGED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'MESSAGED' ? '#166534' : '#64748b',
                     boxShadow: statusFilter === 'MESSAGED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   💬 Messaged ({summary.messaged})
@@ -476,15 +505,16 @@ export default function AnalyticsView({ onToast }) {
                 <button
                   onClick={() => setStatusFilter('UNTOUCHED')}
                   style={{
-                    padding: '5px 10px',
+                    padding: '5px 9px',
                     borderRadius: '6px',
-                    fontSize: '0.76rem',
+                    fontSize: '0.74rem',
                     fontWeight: statusFilter === 'UNTOUCHED' ? 700 : 500,
                     border: 'none',
                     background: statusFilter === 'UNTOUCHED' ? '#ffffff' : 'transparent',
                     color: statusFilter === 'UNTOUCHED' ? '#c2410c' : '#64748b',
                     boxShadow: statusFilter === 'UNTOUCHED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   ⚪ Untouched ({summary.untouched})
@@ -493,88 +523,88 @@ export default function AnalyticsView({ onToast }) {
 
             </div>
 
-            {/* Table */}
-            <div style={{ overflowX: 'auto' }}>
-              <table className="contacts-table" style={{ width: '100%', fontSize: '0.82rem' }}>
+            {/* Table with smooth horizontal scroll */}
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' }}>
+              <table className="contacts-table" style={{ width: '100%', fontSize: '0.8rem', minWidth: '600px' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '45px', textAlign: 'center' }}>#</th>
-                    <th>Name / नाम</th>
-                    <th>Phone Number / मोबाइल</th>
-                    <th>Locality / क्षेत्र</th>
-                    <th>Call Status (कॉल स्थिति)</th>
-                    <th>WhatsApp Status (मैसेज स्थिति)</th>
-                    <th>Overall Status</th>
+                    <th style={{ width: '40px', textAlign: 'center', padding: '9px 8px' }}>#</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Name / नाम</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Mobile / फोन</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Locality / क्षेत्र</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Call Status</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>WhatsApp Status</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredContacts.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
                         No contacts match the filter criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredContacts.map((c, i) => (
                       <tr key={c.phone + i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#0284c7' }}>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#0284c7', padding: '8px 6px' }}>
                           #{c.serialNo || i + 1}
                         </td>
-                        <td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           <div style={{ fontWeight: 700, color: '#0f172a' }}>{c.name}</div>
                           {c.reference && (
-                            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Ref: {c.reference}</div>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Ref: {c.reference}</div>
                           )}
                         </td>
-                        <td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#334155' }}>
                             +91 {c.phone}
                           </span>
                         </td>
-                        <td>
-                          <span style={{ fontSize: '0.74rem', background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', padding: '2px 7px', borderRadius: '6px', fontWeight: 600 }}>
                             📍 {c.locality || 'Mahima'}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           {c.called ? (
                             <div>
-                              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#047857', background: '#ecfdf5', padding: '2px 8px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#047857', background: '#ecfdf5', padding: '2px 7px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
                                 📞 Called ({c.callCount || 1}x)
                               </span>
                               {c.calledAt && (
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+                                <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '2px' }}>
                                   {new Date(c.calledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>— Not Called</span>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>— Not Called</span>
                           )}
                         </td>
-                        <td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           {c.messaged ? (
                             <div>
-                              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#166534', background: '#f0fdf4', padding: '2px 8px', borderRadius: '4px', border: '1px solid #bbf7d0' }}>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#166534', background: '#f0fdf4', padding: '2px 7px', borderRadius: '4px', border: '1px solid #bbf7d0' }}>
                                 💬 Messaged ({c.messageCount || 1}x)
                               </span>
                               {c.messagedAt && (
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+                                <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '2px' }}>
                                   {new Date(c.messagedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>— Not Messaged</span>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>— Not Messaged</span>
                           )}
                         </td>
-                        <td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           {(c.called || c.messaged || c.contacted) ? (
-                            <span className="badge badge-contacted" style={{ fontSize: '0.72rem' }}>
+                            <span className="badge badge-contacted" style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
                               ✅ Contacted
                             </span>
                           ) : (
-                            <span style={{ fontSize: '0.72rem', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.7rem', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
                               ⚪ Untouched
                             </span>
                           )}

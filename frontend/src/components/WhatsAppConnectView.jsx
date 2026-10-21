@@ -256,7 +256,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
   };
 
   return (
-    <div className="wa-connect-page">
+    <div className="wa-connect-page" style={{ paddingBottom: '90px' }}>
       {/* Page Header */}
       <div className="wa-page-header glass-panel">
         <div className="wa-header-left">

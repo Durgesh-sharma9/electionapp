@@ -29,7 +29,7 @@ export default function DashboardView({
   const categoryStats = stats?.categoryStats || [];
 
   return (
-    <div className="dashboard-view animate-fade-in space-y-6">
+    <div className="dashboard-view animate-fade-in space-y-6" style={{ paddingBottom: '90px' }}>
       {/* Welcome Banner */}
       <div className="section-card" style={{
         background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #e0f2fe 100%)',

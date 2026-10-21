@@ -136,7 +136,7 @@ export default function ShareLinkModal({
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-card animate-scale-in"
-        style={{ maxWidth: '580px', width: '92%' }}
+        style={{ maxWidth: '580px', width: '94%', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

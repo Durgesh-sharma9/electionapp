@@ -91,7 +91,7 @@ export default function TemplatesManager({
   };
 
   return (
-    <div className="tm-container">
+    <div className="tm-container" style={{ paddingBottom: '90px' }}>
       {/* Action Toolbar */}
       <div className="tm-toolbar glass-panel">
         <div className="tm-toolbar-left">
