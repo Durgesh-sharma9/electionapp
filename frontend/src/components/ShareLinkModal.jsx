@@ -30,7 +30,7 @@ export default function ShareLinkModal({
   const totalContacts = contacts.length;
 
   // Form State
-  const [title, setTitle] = useState('Mahapura Outreach Campaign');
+  const [title, setTitle] = useState('');
   const [scopeMode, setScopeMode] = useState(selectedIds && selectedIds.size > 0 ? 'selected' : 'all'); // 'all' | 'selected' | 'locality'
   const [selectedLocality, setSelectedLocality] = useState(() => {
     return localities[0]?.name || 'Mahima';
@@ -146,10 +146,53 @@ export default function ShareLinkModal({
 
   const handleCopyLink = () => {
     if (!generatedLink) return;
-    navigator.clipboard.writeText(generatedLink);
-    setCopied(true);
-    if (onToast) onToast('Link copied to clipboard! 📋');
-    setTimeout(() => setCopied(false), 2500);
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard
+        .writeText(generatedLink)
+        .then(() => {
+          setCopied(true);
+          if (onToast) onToast('Link copied to clipboard! 📋');
+          setTimeout(() => setCopied(false), 2500);
+        })
+        .catch(() => {
+          fallbackCopy(generatedLink);
+        });
+      return;
+    }
+
+    fallbackCopy(generatedLink);
+  };
+
+  const fallbackCopy = (text) => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.top = '0';
+      textArea.style.left = '0';
+      textArea.style.width = '2em';
+      textArea.style.height = '2em';
+      textArea.style.padding = '0';
+      textArea.style.border = 'none';
+      textArea.style.outline = 'none';
+      textArea.style.boxShadow = 'none';
+      textArea.style.background = 'transparent';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        setCopied(true);
+        if (onToast) onToast('Link copied to clipboard! 📋');
+        setTimeout(() => setCopied(false), 2500);
+      } else {
+        prompt('Copy link: Ctrl+C, Enter', text);
+      }
+    } catch (err) {
+      prompt('Copy link: Ctrl+C, Enter', text);
+    }
   };
 
   const handleOpenLink = () => {
@@ -269,17 +312,16 @@ export default function ShareLinkModal({
           {!generatedLink ? (
             <form onSubmit={handleGenerate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              {/* Campaign Title Input */}
+              {/* Campaign Title Input (Optional) */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Campaign / List Title
+                  Campaign / List Title <span style={{ fontWeight: 400, color: '#64748b' }}>(Optional)</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Mahapura Outreach Campaign"
-                  required
+                  placeholder="Enter campaign title (e.g. Caller List 1)"
                   style={{
                     width: '100%',
                     padding: '9px 12px',
@@ -682,6 +724,8 @@ export default function ShareLinkModal({
                     type="text"
                     readOnly
                     value={generatedLink}
+                    onClick={(e) => e.target.select()}
+                    title="Click to select all text"
                     style={{
                       flex: 1,
                       padding: '9px 12px',
@@ -692,6 +736,7 @@ export default function ShareLinkModal({
                       color: '#0369a1',
                       fontWeight: 600,
                       outline: 'none',
+                      cursor: 'pointer',
                     }}
                   />
                   <button
