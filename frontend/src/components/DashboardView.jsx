@@ -62,14 +62,14 @@ export default function DashboardView({
         </div>
       </div>
 
-      {/* KPI 4 Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+      {/* KPI 4 Cards Grid - Responsive 2x2 on Mobile, 4x1 on Desktop */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
         
         {/* Total Contacts */}
         <div
           className="glass-panel"
           onClick={() => onNavigateTab('contacts')}
-          style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+          style={{ padding: '16px', cursor: 'pointer', transition: 'all 0.2s ease' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Total Contacts</span>
@@ -89,7 +89,7 @@ export default function DashboardView({
         <div
           className="glass-panel"
           onClick={() => onNavigateTab('contacts')}
-          style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+          style={{ padding: '16px', cursor: 'pointer', transition: 'all 0.2s ease' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Messaged / Contacted</span>
@@ -110,7 +110,7 @@ export default function DashboardView({
         <div
           className="glass-panel"
           onClick={() => onNavigateTab('contacts')}
-          style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+          style={{ padding: '16px', cursor: 'pointer', transition: 'all 0.2s ease' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Pending Outreach</span>
@@ -130,7 +130,7 @@ export default function DashboardView({
         <div
           className="glass-panel"
           onClick={() => onNavigateTab('templates')}
-          style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+          style={{ padding: '16px', cursor: 'pointer', transition: 'all 0.2s ease' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Message Templates</span>

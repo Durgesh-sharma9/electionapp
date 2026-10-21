@@ -232,12 +232,12 @@ export default function Navbar({
           <span>{waConnected ? 'Active' : 'Offline'}</span>
         </button>
 
-        {/* 4. Secondary actions on contacts tab */}
+        {/* 4. Secondary actions on contacts tab (Hidden on mobile to save space) */}
         {activeTab === 'contacts' && (
           <>
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-secondary hide-on-mobile"
               onClick={onOpenBulkModal}
               style={{
                 borderColor: '#c7d2fe',
@@ -246,31 +246,29 @@ export default function Navbar({
                 padding: '7px 11px',
                 fontSize: '0.78rem',
                 fontWeight: 600,
-                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
               }}
               title="Paste multiple contacts from Excel"
             >
               <FileSpreadsheet size={14} color="#4f46e5" />
-              <span className="hide-on-mobile">Bulk List</span>
+              <span>Bulk List</span>
             </button>
 
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-secondary hide-on-mobile"
               onClick={onExportCSV}
               style={{
                 padding: '7px 11px',
                 fontSize: '0.78rem',
-                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
               }}
               title="Export contacts as CSV"
             >
               <Download size={14} />
-              <span className="hide-on-mobile">CSV</span>
+              <span>CSV</span>
             </button>
           </>
         )}

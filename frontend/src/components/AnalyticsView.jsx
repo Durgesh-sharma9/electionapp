@@ -97,7 +97,7 @@ export default function AnalyticsView({ onToast }) {
 
   // Delete share link
   const handleDeleteShare = async (shareId) => {
-    if (!window.confirm('Are you sure you want to delete this share link? (क्या आप यह लिंक हटाना चाहते हैं?)')) {
+    if (!window.confirm('Are you sure you want to delete this share link?')) {
       return;
     }
     try {
@@ -206,11 +206,11 @@ export default function AnalyticsView({ onToast }) {
               <BarChart3 size={16} />
             </div>
             <h1 className="view-title">
-              Outreach Analytics (आउटरीच एनालिटिक्स)
+              Outreach Analytics
             </h1>
           </div>
           <p className="view-subtitle">
-            शेयर लिंक ट्रैकिंग: कॉल, व्हाट्सएप मैसेज और अछूते (Untouched) कॉन्टैक्ट्स की रिपोर्ट
+            Track calls, WhatsApp messages, and untouched contacts across share links
           </p>
         </div>
 
@@ -376,7 +376,7 @@ export default function AnalyticsView({ onToast }) {
             <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-                  Total (कुल)
+                  Total
                 </span>
                 <Users size={14} color="#0284c7" />
               </div>
