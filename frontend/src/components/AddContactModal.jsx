@@ -273,7 +273,7 @@ export default function AddContactModal({
                   onChange={(e) => handleWardChange(e.target.value)}
                   style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, color: '#0369a1' }}
                 >
-                  <option value="">— No Specific Ward / Unassigned —</option>
+                  <option value="">Select Ward</option>
                   {wards.length > 0 ? (
                     wards.map((w) => (
                       <option key={w._id || w.name} value={w.name}>
@@ -387,7 +387,7 @@ export default function AddContactModal({
                     }}
                     style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
                   >
-                    <option value="">— Select Area in {ward || 'Ward'} —</option>
+                    <option value="">Select Locality</option>
                     <option value="__NEW__" style={{ fontWeight: 600, color: '#ea580c' }}>
                       + Add New Area in {ward || 'this ward'}...
                     </option>

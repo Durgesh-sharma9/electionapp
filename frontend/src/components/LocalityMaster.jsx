@@ -798,7 +798,7 @@ export default function LocalityMaster({
                   value={locWard}
                   onChange={(e) => setLocWard(e.target.value)}
                 >
-                  <option value="">-- No Specific Ward / General --</option>
+                  <option value="">Select Ward (Optional)</option>
                   {wards.map((w) => (
                     <option key={w._id || w.name} value={w.name}>
                       🏛️ {w.name}
