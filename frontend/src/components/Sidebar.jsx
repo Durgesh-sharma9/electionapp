@@ -5,6 +5,7 @@ import {
   Users,
   FileText,
   Smartphone,
+  MapPin,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -12,6 +13,7 @@ export default function Sidebar({
   onTabChange,
   totalContacts = 0,
   templatesCount = 0,
+  localitiesCount = 0,
   waConnected = false,
 }) {
   return (
@@ -27,7 +29,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Main 4 Navigation Tabs */}
+      {/* Main Navigation Tabs */}
       <nav className="sidebar-nav">
         {/* Tab 1: Dashboard */}
         <button
@@ -53,6 +55,23 @@ export default function Sidebar({
           </div>
           {totalContacts > 0 && (
             <span className="sidebar-nav-badge">{totalContacts}</span>
+          )}
+        </button>
+
+        {/* Tab 3: Locality Master */}
+        <button
+          type="button"
+          onClick={() => onTabChange('localities')}
+          className={`sidebar-nav-item ${activeTab === 'localities' ? 'active' : ''}`}
+        >
+          <div className="sidebar-nav-left">
+            <MapPin size={18} />
+            <span className="sidebar-nav-label">Locality Master</span>
+          </div>
+          {localitiesCount > 0 && (
+            <span className="sidebar-nav-badge" style={{ background: '#fef3c7', color: '#b45309' }}>
+              {localitiesCount}
+            </span>
           )}
         </button>
 

@@ -222,6 +222,18 @@ export default function ContactCard({
               {contact.category || 'General'}
             </span>
 
+            {contact.locality && (
+              <span className="badge" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                📍 {contact.locality}
+              </span>
+            )}
+
+            {contact.reference && (
+              <span className="badge" style={{ background: '#ede9fe', color: '#5b21b6', border: '1px solid #ddd6fe', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                👤 {contact.reference}
+              </span>
+            )}
+
             {contact.contacted ? (
               <span className="badge badge-contacted" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <CheckCircle2 size={11} />

@@ -21,6 +21,16 @@ const contactSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    locality: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    reference: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     category: {
       type: String,
       default: 'General',

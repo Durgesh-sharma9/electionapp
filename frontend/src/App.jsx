@@ -31,6 +31,7 @@ import WhatsAppConnectView from './components/WhatsAppConnectView';
 import SendMessageModal from './components/SendMessageModal';
 import ShareLinkModal from './components/ShareLinkModal';
 import PublicShareView from './components/PublicShareView';
+import LocalityMaster from './components/LocalityMaster';
 
 export default function App() {
   // Check if opening a shared outreach link (?share=sh_xxxx)
@@ -47,14 +48,20 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState(false);
 
-  // Active Main View Tab ('contacts' | 'templates' | 'dashboard' | 'whatsapp')
+  // Active Main View Tab ('contacts' | 'templates' | 'dashboard' | 'whatsapp' | 'localities')
   const [activeTab, setActiveTab] = useState('contacts');
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [contactedFilter, setContactedFilter] = useState('ALL');
+  const [localityFilter, setLocalityFilter] = useState('ALL');
+  const [referenceFilter, setReferenceFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('table'); // Default: 'table' (Compact list view)
+
+  // Locality Master & Reference state
+  const [localities, setLocalities] = useState([]);
+  const [references, setReferences] = useState([]);
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -121,7 +128,33 @@ export default function App() {
     }
   };
 
-  // Fetch Stats & Contacts
+  // Fetch Localities from MongoDB
+  const fetchLocalities = async () => {
+    try {
+      const res = await fetch('/api/localities');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setLocalities(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching localities:', err);
+    }
+  };
+
+  // Fetch References list from MongoDB
+  const fetchReferences = async () => {
+    try {
+      const res = await fetch('/api/references');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setReferences(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching references:', err);
+    }
+  };
+
+  // Fetch Stats & Contacts & Localities & References
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -143,6 +176,10 @@ export default function App() {
       if (contactsData.success) {
         setContacts(contactsData.data);
       }
+
+      // Refresh localities and references counts
+      fetchLocalities();
+      fetchReferences();
     } catch (err) {
       console.error('Fetch error:', err);
       setDbConnected(false);
@@ -154,6 +191,8 @@ export default function App() {
   useEffect(() => {
     fetchData();
     fetchTemplates();
+    fetchLocalities();
+    fetchReferences();
   }, []);
 
   // Filtered contacts
@@ -172,20 +211,40 @@ export default function App() {
       if (contactedFilter === 'CONTACTED' && !c.contacted) return false;
       if (contactedFilter === 'PENDING' && c.contacted) return false;
 
+      // Locality filter
+      if (localityFilter !== 'ALL') {
+        if (localityFilter === 'UNASSIGNED') {
+          if (c.locality && c.locality.trim() !== '') return false;
+        } else if (c.locality !== localityFilter) {
+          return false;
+        }
+      }
+
+      // Reference filter
+      if (referenceFilter !== 'ALL') {
+        if (referenceFilter === 'UNASSIGNED') {
+          if (c.reference && c.reference.trim() !== '') return false;
+        } else if (c.reference !== referenceFilter) {
+          return false;
+        }
+      }
+
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchName = c.name?.toLowerCase().includes(q);
         const matchPhone = c.phone?.toLowerCase().includes(q);
         const matchNotes = c.notes?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchNotes) {
+        const matchLocality = c.locality?.toLowerCase().includes(q);
+        const matchReference = c.reference?.toLowerCase().includes(q);
+        if (!matchName && !matchPhone && !matchNotes && !matchLocality && !matchReference) {
           return false;
         }
       }
 
       return true;
     });
-  }, [contacts, categoryFilter, contactedFilter, searchQuery]);
+  }, [contacts, categoryFilter, contactedFilter, localityFilter, referenceFilter, searchQuery]);
 
   // Open Send Message Modal (allows template selection and custom message editing)
   const handleOpenSendMessage = (contact) => {
@@ -389,10 +448,12 @@ export default function App() {
       alert('No contacts to export.');
       return;
     }
-    const headers = ['Name', 'Phone', 'Category', 'Status', 'Contact Count', 'Notes'];
+    const headers = ['Name', 'Phone', 'Locality', 'Reference', 'Category', 'Status', 'Contact Count', 'Notes'];
     const rows = contacts.map((c) => [
       `"${(c.name || '').replace(/"/g, '""')}"`,
       `"${c.phone || ''}"`,
+      `"${(c.locality || '').replace(/"/g, '""')}"`,
+      `"${(c.reference || '').replace(/"/g, '""')}"`,
       `"${(c.category || '').replace(/"/g, '""')}"`,
       c.contacted ? 'Contacted' : 'Pending',
       c.contactCount || 0,
@@ -484,6 +545,7 @@ export default function App() {
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
         templatesCount={templates.length}
+        localitiesCount={localities.length}
         waConnected={waConnected}
       />
 
@@ -542,32 +604,68 @@ export default function App() {
             onGoToTemplatesTab={() => setActiveTab('templates')}
           />
 
-          {/* Search & Filter Toolbar (Compact) */}
-          <div className="glass-panel" style={{ padding: '7px 12px', marginBottom: '8px' }}>
+          {/* Search & Filter Toolbar (Balanced) */}
+          <div className="glass-panel" style={{ padding: '8px 14px', marginBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
               
               {/* Search Box */}
-              <div style={{ position: 'relative', flex: '1 1 220px' }}>
-                <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '9px', top: '50%', transform: 'translateY(-50%)' }} />
+              <div style={{ position: 'relative', flex: '1 1 200px' }}>
+                <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Search name, phone, notes, #..."
+                  placeholder="Search name, phone, locality, ref..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-field"
-                  style={{ paddingLeft: '30px', width: '100%', height: '32px', fontSize: '0.82rem' }}
+                  style={{ paddingLeft: '32px', width: '100%', height: '34px', fontSize: '0.84rem' }}
                 />
               </div>
 
               {/* Filter Controls */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 
+                {/* Locality Filter */}
+                <select
+                  className="input-field"
+                  value={localityFilter}
+                  onChange={(e) => setLocalityFilter(e.target.value)}
+                  style={{ width: 'auto', padding: '4px 10px', fontSize: '0.8rem', height: '34px', borderColor: localityFilter !== 'ALL' ? '#f59e0b' : undefined, background: localityFilter !== 'ALL' ? '#fef3c7' : '#ffffff' }}
+                  title="Filter by Locality / Area"
+                >
+                  <option value="ALL">📍 All Localities</option>
+                  <option value="UNASSIGNED">Unassigned Only</option>
+                  {localities.map((loc) => (
+                    <option key={loc._id} value={loc.name}>
+                      {loc.name} {loc.ward ? `(Ward ${loc.ward})` : ''}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Reference Filter (if any distinct references exist) */}
+                {references.length > 0 && (
+                  <select
+                    className="input-field"
+                    value={referenceFilter}
+                    onChange={(e) => setReferenceFilter(e.target.value)}
+                    style={{ width: 'auto', padding: '4px 10px', fontSize: '0.8rem', height: '34px', borderColor: referenceFilter !== 'ALL' ? '#8b5cf6' : undefined, background: referenceFilter !== 'ALL' ? '#ede9fe' : '#ffffff' }}
+                    title="Filter by Reference person"
+                  >
+                    <option value="ALL">👤 All References</option>
+                    <option value="UNASSIGNED">No Reference</option>
+                    {references.map((ref) => (
+                      <option key={ref} value={ref}>
+                        Ref: {ref}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 {/* Category Filter */}
                 <select
                   className="input-field"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.78rem', height: '32px' }}
+                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.8rem', height: '34px' }}
                 >
                   <option value="ALL">All Categories</option>
                   <option value="General">General</option>
@@ -582,11 +680,11 @@ export default function App() {
                   className="input-field"
                   value={contactedFilter}
                   onChange={(e) => setContactedFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.78rem', height: '32px' }}
+                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.8rem', height: '34px' }}
                 >
                   <option value="ALL">All Status</option>
-                  <option value="PENDING">⏳ Pending Only</option>
-                  <option value="CONTACTED">✅ Messaged Only</option>
+                  <option value="PENDING">⏳ Pending</option>
+                  <option value="CONTACTED">✅ Messaged</option>
                 </select>
 
                 {/* View Mode Switcher */}
@@ -764,7 +862,7 @@ export default function App() {
               <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '36px', textAlign: 'center', padding: '6px 8px' }}>
+                    <th style={{ width: '40px', textAlign: 'center', padding: '10px 10px' }}>
                       <input
                         type="checkbox"
                         checked={selectedIds.size > 0 && selectedIds.size === filteredContacts.length}
@@ -774,12 +872,14 @@ export default function App() {
                         }}
                       />
                     </th>
-                    <th style={{ width: '50px', textAlign: 'center', padding: '6px 8px' }}>क्र.</th>
-                    <th style={{ padding: '6px 10px' }}>NAME / DESCRIPTION</th>
-                    <th style={{ padding: '6px 10px' }}>PHONE NUMBER</th>
-                    <th style={{ padding: '6px 10px' }}>CATEGORY</th>
-                    <th style={{ padding: '6px 10px' }}>STATUS</th>
-                    <th style={{ padding: '6px 10px', textAlign: 'right' }}>ACTIONS</th>
+                    <th style={{ width: '56px', textAlign: 'center', padding: '10px 10px' }}>क्र.</th>
+                    <th style={{ padding: '10px 12px' }}>NAME / DESCRIPTION</th>
+                    <th style={{ padding: '10px 12px' }}>PHONE NUMBER</th>
+                    <th style={{ padding: '10px 12px' }}>LOCALITY / क्षेत्र</th>
+                    <th style={{ padding: '10px 12px' }}>REFERENCE</th>
+                    <th style={{ padding: '10px 12px' }}>CATEGORY</th>
+                    <th style={{ padding: '10px 12px' }}>STATUS</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -790,7 +890,7 @@ export default function App() {
                         background: selectedIds.has(contact._id) ? '#f0fdf4' : index % 2 === 1 ? '#fafafa' : '#ffffff',
                       }}
                     >
-                      <td style={{ textAlign: 'center', padding: '5px 8px' }}>
+                      <td style={{ textAlign: 'center', padding: '9px 10px' }}>
                         <input
                           type="checkbox"
                           checked={selectedIds.has(contact._id)}
@@ -802,59 +902,103 @@ export default function App() {
                           }}
                         />
                       </td>
-                      <td style={{ textAlign: 'center', padding: '5px 8px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '0.8rem' }}>
+                      <td style={{ textAlign: 'center', padding: '9px 10px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '0.82rem' }}>
                         #{contact.serialNo || index + 1}
                       </td>
-                      <td style={{ padding: '5px 10px', fontWeight: 600, color: '#0f172a' }}>
+                      <td style={{ padding: '9px 12px', fontWeight: 600, color: '#0f172a' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                          <span>{contact.name}</span>
+                          <span style={{ fontSize: '0.88rem' }}>{contact.name}</span>
                           {contact.notes && (
-                            <span style={{ fontSize: '0.7rem', color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', padding: '1px 5px', fontWeight: 500 }}>
+                            <span style={{ fontSize: '0.72rem', color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', padding: '2px 6px', fontWeight: 500 }}>
                               ⚠️ {contact.notes}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '5px 10px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '9px 12px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span>+91 {contact.phone}</span>
+                          <span style={{ fontSize: '0.88rem' }}>+91 {contact.phone}</span>
                           <button
                             type="button"
                             onClick={() => {
                               navigator.clipboard.writeText(contact.phone);
                               showToast(`Copied ${contact.phone}`);
                             }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#94a3b8' }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8' }}
                             title="Copy number"
                           >
-                            <Copy size={12} />
+                            <Copy size={13} />
                           </button>
                         </div>
                       </td>
-                      <td style={{ padding: '5px 10px' }}>
-                        <span className="badge badge-pending" style={{ fontSize: '0.7rem', padding: '1px 6px' }}>
+                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                        {contact.locality ? (
+                          <span
+                            className="badge"
+                            style={{
+                              fontSize: '0.74rem',
+                              padding: '2px 8px',
+                              background: '#fef3c7',
+                              color: '#92400e',
+                              border: '1px solid #fde68a',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            📍 {contact.locality}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— Unassigned</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
+                        {contact.reference ? (
+                          <span
+                            className="badge"
+                            style={{
+                              fontSize: '0.74rem',
+                              padding: '2px 8px',
+                              background: '#ede9fe',
+                              color: '#5b21b6',
+                              border: '1px solid #ddd6fe',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            👤 {contact.reference}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— None</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '9px 12px' }}>
+                        <span className="badge badge-pending" style={{ fontSize: '0.72rem', padding: '2px 7px' }}>
                           {contact.category || 'General'}
                         </span>
                       </td>
-                      <td style={{ padding: '5px 10px' }}>
+                      <td style={{ padding: '9px 12px' }}>
                         <button
                           onClick={() => handleToggleContacted(contact._id, contact.contacted)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           title="Click to toggle status"
                         >
-                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'} style={{ fontSize: '0.7rem', padding: '1px 6px' }}>
+                          <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'} style={{ fontSize: '0.72rem', padding: '2px 7px' }}>
                             {contact.contacted ? '✅ Messaged' : '⏳ Pending'}
                           </span>
                         </button>
                       </td>
-                      <td style={{ padding: '5px 10px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <td style={{ padding: '9px 12px', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
                           {/* 1. Direct Send (WhatsApp Modal) */}
                           <button
                             className="btn btn-whatsapp"
                             onClick={() => handleOpenSendMessage(contact)}
                             disabled={sendingDirectId === contact._id}
-                            style={{ padding: '3px 7px', fontSize: '0.72rem', borderRadius: '5px', gap: '3px' }}
+                            style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px' }}
                             title="Open Message Box & Send"
                           >
                             <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
@@ -864,7 +1008,7 @@ export default function App() {
                           <button
                             className="btn btn-secondary"
                             onClick={() => handleOpenSendMessage(contact)}
-                            style={{ padding: '3px 7px', fontSize: '0.72rem', borderRadius: '5px', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
+                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px', background: '#f0fdf4', borderColor: '#a7f3d0', color: '#065f46' }}
                             title="Open WhatsApp Web"
                           >
                             <span>🔗 Web</span>
@@ -874,10 +1018,10 @@ export default function App() {
                           <button
                             className="btn btn-call"
                             onClick={() => handleCallRedirect(contact)}
-                            style={{ padding: '3px 6px', fontSize: '0.72rem', borderRadius: '5px' }}
+                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px' }}
                             title="Call Phone Number"
                           >
-                            <Phone size={11} />
+                            <Phone size={13} />
                           </button>
 
                           {/* 4. Edit Contact */}
@@ -887,20 +1031,20 @@ export default function App() {
                               setEditingContact(contact);
                               setIsAddModalOpen(true);
                             }}
-                            style={{ padding: '3px 6px', borderRadius: '5px', color: '#0284c7' }}
+                            style={{ padding: '4px 7px', borderRadius: '6px', color: '#0284c7' }}
                             title="Edit Contact"
                           >
-                            <Edit2 size={11} />
+                            <Edit2 size={13} />
                           </button>
 
                           {/* 5. Delete Contact */}
                           <button
                             className="btn btn-secondary"
                             onClick={() => handleDeleteContact(contact._id)}
-                            style={{ padding: '3px 6px', borderRadius: '5px', color: '#ef4444' }}
+                            style={{ padding: '4px 7px', borderRadius: '6px', color: '#ef4444' }}
                             title="Delete Contact"
                           >
-                            <Trash2 size={11} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </td>
@@ -939,6 +1083,25 @@ export default function App() {
         />
       )}
 
+      {/* ============================================================== */}
+      {/* TAB 5: LOCALITY MASTER VIEW (Area / Ward / Mohalla Master)     */}
+      {/* ============================================================== */}
+      {activeTab === 'localities' && (
+        <LocalityMaster
+          localities={localities}
+          onRefreshLocalities={() => {
+            fetchLocalities();
+            fetchData();
+          }}
+          onFilterByLocality={(locName) => {
+            setLocalityFilter(locName);
+            setActiveTab('contacts');
+          }}
+          totalContacts={contacts.length}
+          onToast={showToast}
+        />
+      )}
+
       </div>
 
       {/* Add / Edit Contact Modal */}
@@ -950,6 +1113,8 @@ export default function App() {
         }}
         onSave={handleSaveContact}
         contact={editingContact}
+        localities={localities}
+        references={references}
       />
 
       {/* Bulk Import Modal */}

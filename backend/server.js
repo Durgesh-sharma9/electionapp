@@ -6,6 +6,7 @@ require('dotenv').config();
 const Contact = require('./models/Contact');
 const Template = require('./models/Template');
 const ShareLink = require('./models/ShareLink');
+const Locality = require('./models/Locality');
 const crypto = require('crypto');
 
 const app = express();
@@ -76,7 +77,7 @@ app.get('/api/stats', async (req, res) => {
 // GET /api/contacts
 app.get('/api/contacts', async (req, res) => {
   try {
-    const { search, category, ward, contacted, sort = 'createdAt', order = 'desc' } = req.query;
+    const { search, category, ward, locality, reference, contacted, sort = 'createdAt', order = 'desc' } = req.query;
 
     const filter = {};
 
@@ -86,6 +87,14 @@ app.get('/api/contacts', async (req, res) => {
 
     if (ward && ward !== 'ALL') {
       filter.ward = ward;
+    }
+
+    if (locality && locality !== 'ALL') {
+      filter.locality = locality;
+    }
+
+    if (reference && reference !== 'ALL') {
+      filter.reference = reference;
     }
 
     if (contacted !== undefined && contacted !== 'ALL') {
@@ -99,6 +108,8 @@ app.get('/api/contacts', async (req, res) => {
         { name: regex },
         { phone: regex },
         { ward: regex },
+        { locality: regex },
+        { reference: regex },
         { notes: regex },
       ];
     }
@@ -127,7 +138,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { serialNo, name, phone, ward, category, notes } = req.body;
+    const { serialNo, name, phone, ward, locality, reference, category, notes } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -143,6 +154,8 @@ app.post('/api/contacts', async (req, res) => {
       name: name.trim(),
       phone: cleanedPhone,
       ward: ward?.trim() || '',
+      locality: locality?.trim() || '',
+      reference: reference?.trim() || '',
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
     });
@@ -185,6 +198,8 @@ app.post('/api/contacts/bulk', async (req, res) => {
         name,
         phone,
         ward: item.ward?.trim() || '',
+        locality: item.locality?.trim() || '',
+        reference: item.reference?.trim() || '',
         category: item.category?.trim() || defaultCategory,
         notes: item.notes?.trim() || '',
         contacted: false,
@@ -247,12 +262,14 @@ app.patch('/api/contacts/:id/contacted', async (req, res) => {
 app.put('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, ward, category, notes, contacted } = req.body;
+    const { name, phone, ward, locality, reference, category, notes, contacted } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
     if (phone) updateData.phone = normalizePhone(phone);
     if (ward !== undefined) updateData.ward = ward.trim();
+    if (locality !== undefined) updateData.locality = locality.trim();
+    if (reference !== undefined) updateData.reference = reference.trim();
     if (category !== undefined) updateData.category = category.trim();
     if (notes !== undefined) updateData.notes = notes.trim();
     if (contacted !== undefined) updateData.contacted = Boolean(contacted);
@@ -411,6 +428,159 @@ app.delete('/api/templates/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Template not found' });
     }
     res.json({ success: true, message: 'Template deleted successfully', data: deleted });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==============================================================
+// LOCALITY MASTER CRUD API (क्षेत्र / मोहल्ला मास्टर)
+// ==============================================================
+const defaultLocalitiesSeed = [
+  { name: 'Mahapura Main', ward: 'Ward 1', color: '#ea580c', description: 'Central village area' },
+  { name: 'Sharma Mohalla', ward: 'Ward 1', color: '#2563eb', description: 'Sharma Mohalla locality' },
+  { name: 'Jangid Mohalla', ward: 'Ward 2', color: '#7c3aed', description: 'Jangid Mohalla area' },
+  { name: 'Main Market', ward: 'Ward 1', color: '#059669', description: 'Market & Shops' },
+  { name: 'Bheel Basti', ward: 'Ward 3', color: '#d97706', description: 'Bheel Basti' },
+  { name: 'School Road', ward: 'Ward 2', color: '#0891b2', description: 'Near Govt School' },
+];
+
+// GET /api/localities (List all localities with contact counts)
+app.get('/api/localities', async (req, res) => {
+  try {
+    let localities = await Locality.find().sort({ name: 1 }).lean();
+    if (localities.length === 0) {
+      await Locality.insertMany(defaultLocalitiesSeed);
+      localities = await Locality.find().sort({ name: 1 }).lean();
+    }
+
+    // Aggregate counts of contacts per locality
+    const counts = await Contact.aggregate([
+      { $match: { locality: { $exists: true, $ne: '' } } },
+      { $group: { _id: '$locality', count: { $sum: 1 } } },
+    ]);
+    const countMap = {};
+    counts.forEach((c) => {
+      countMap[c._id] = c.count;
+    });
+
+    const totalAssigned = await Contact.countDocuments({ locality: { $exists: true, $ne: '' } });
+    const totalUnassigned = await Contact.countDocuments({
+      $or: [{ locality: { $exists: false } }, { locality: '' }],
+    });
+
+    const enriched = localities.map((loc) => ({
+      ...loc,
+      contactCount: countMap[loc.name] || 0,
+    }));
+
+    res.json({
+      success: true,
+      data: enriched,
+      meta: {
+        totalLocalities: localities.length,
+        totalAssigned,
+        totalUnassigned,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/localities (Create new locality)
+app.post('/api/localities', async (req, res) => {
+  try {
+    const { name, ward, description, color } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Locality name is required' });
+    }
+
+    const trimmedName = name.trim();
+    const existing = await Locality.findOne({ name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } });
+    if (existing) {
+      return res.status(400).json({ success: false, error: 'Locality with this name already exists' });
+    }
+
+    const newLocality = new Locality({
+      name: trimmedName,
+      ward: ward?.trim() || '',
+      description: description?.trim() || '',
+      color: color || '#0284c7',
+    });
+
+    const saved = await newLocality.save();
+    res.status(201).json({ success: true, data: saved });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT /api/localities/:id (Update locality)
+app.put('/api/localities/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, ward, description, color } = req.body;
+
+    const loc = await Locality.findById(id);
+    if (!loc) {
+      return res.status(404).json({ success: false, error: 'Locality not found' });
+    }
+
+    const oldName = loc.name;
+    if (name && name.trim()) {
+      const trimmedName = name.trim();
+      if (trimmedName.toLowerCase() !== oldName.toLowerCase()) {
+        const dup = await Locality.findOne({
+          _id: { $ne: id },
+          name: { $regex: new RegExp(`^${trimmedName}$`, 'i') },
+        });
+        if (dup) {
+          return res.status(400).json({ success: false, error: 'Another locality already has this name' });
+        }
+        loc.name = trimmedName;
+        // Cascade rename on contacts
+        await Contact.updateMany({ locality: oldName }, { locality: trimmedName });
+      }
+    }
+
+    if (ward !== undefined) loc.ward = ward.trim();
+    if (description !== undefined) loc.description = description.trim();
+    if (color !== undefined) loc.color = color;
+
+    const updated = await loc.save();
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/localities/:id (Delete locality)
+app.delete('/api/localities/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const loc = await Locality.findById(id);
+    if (!loc) {
+      return res.status(404).json({ success: false, error: 'Locality not found' });
+    }
+
+    const locName = loc.name;
+    await Locality.findByIdAndDelete(id);
+
+    // Unassign deleted locality from contacts
+    await Contact.updateMany({ locality: locName }, { locality: '' });
+
+    res.json({ success: true, message: `Locality '${locName}' deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/references (List distinct reference names for autocomplete & filtering)
+app.get('/api/references', async (req, res) => {
+  try {
+    const refs = await Contact.distinct('reference', { reference: { $exists: true, $ne: '' } });
+    res.json({ success: true, data: refs.filter(Boolean).sort() });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

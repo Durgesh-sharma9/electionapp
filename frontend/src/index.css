@@ -1625,43 +1625,43 @@ body {
 }
 
 /* ==========================================================================
-   COMPACT LIST / TABLE STYLES (Ultra-Compact, Sleek, Professional)
+   COMPACT LIST / TABLE STYLES (Balanced, Comfortable, Professional)
    ========================================================================== */
 .compact-table-container {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .compact-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
 }
 
 .compact-table th {
   background: #f8fafc;
   color: #475569;
   font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.03em;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 7px 10px;
+  padding: 11px 14px;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .compact-table td {
-  padding: 6px 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
 .compact-table tbody tr {
-  transition: background-color 0.1s ease;
+  transition: background-color 0.12s ease;
 }
 
 .compact-table tbody tr:hover {
