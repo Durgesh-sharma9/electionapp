@@ -22,7 +22,6 @@ import {
 import Navbar from './components/Navbar';
 import DashboardView from './components/DashboardView';
 import StatsOverview from './components/StatsOverview';
-import MessageTemplateBar from './components/MessageTemplateBar';
 import AddContactModal from './components/AddContactModal';
 import BulkImportModal from './components/BulkImportModal';
 import ContactCard from './components/ContactCard';
@@ -722,16 +721,6 @@ export default function App() {
       {/* ============================================================== */}
       {activeTab === 'contacts' && (
         <>
-          {/* WhatsApp Message Template Quick Bar */}
-          <MessageTemplateBar
-            templates={templates}
-            activeTemplateId={activeTemplateId}
-            onSelectTemplate={handleSelectTemplate}
-            customText={customText}
-            onUpdateCustomText={setCustomText}
-            onGoToTemplatesTab={() => navigateTab('templates')}
-          />
-
           {/* Search & Filter Toolbar (Balanced) */}
           <div className="glass-panel" style={{ padding: '8px 14px', marginBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
