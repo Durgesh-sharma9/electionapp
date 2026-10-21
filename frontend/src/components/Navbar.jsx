@@ -1,5 +1,12 @@
 import React from 'react';
-import { MessageCircle, UserPlus, FileSpreadsheet, Download, RefreshCw } from 'lucide-react';
+import {
+  MessageCircle,
+  UserPlus,
+  FileSpreadsheet,
+  Download,
+  RefreshCw,
+  Smartphone,
+} from 'lucide-react';
 
 export default function Navbar({
   activeTab = 'contacts',
@@ -7,26 +14,32 @@ export default function Navbar({
   onOpenBulkModal,
   onRefresh,
   onExportCSV,
-  dbConnected,
-  loading,
+  dbConnected = true,
+  waConnected = false,
+  loading = false,
 }) {
   const getHeaderInfo = () => {
     switch (activeTab) {
       case 'dashboard':
         return {
-          title: 'Outreach Dashboard',
-          subtitle: 'Real-time overview, outreach completion progress, and quick statistics',
+          title: 'Outreach Analytics Dashboard',
+          subtitle: 'Real-time overview, outreach completion progress, and voter breakdown',
         };
       case 'templates':
         return {
           title: 'WhatsApp Message Templates',
-          subtitle: 'Create, test with {name}, and permanently save reusable messages',
+          subtitle: 'Manage reusable messages with dynamic {name} personalization',
+        };
+      case 'whatsapp':
+        return {
+          title: 'WhatsApp Device Connection',
+          subtitle: 'Scan QR code with your phone for direct live message dispatching',
         };
       case 'contacts':
       default:
         return {
-          title: 'Contacts & Outreach List',
-          subtitle: 'Manage your contact list and 1-click WhatsApp redirects',
+          title: 'Contacts & Outreach Directory',
+          subtitle: 'Manage contacts list and 1-click WhatsApp redirects',
         };
     }
   };
@@ -37,8 +50,8 @@ export default function Navbar({
     <header className="glass-panel main-top-header" style={{ padding: '14px 18px', marginBottom: '18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         
-        {/* Mobile Brand / Desktop Page Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Mobile Logo + Page Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className="mobile-only-logo" style={{
             width: '38px',
             height: '38px',
@@ -65,17 +78,6 @@ export default function Navbar({
               }}>
                 {headerInfo.title}
               </h1>
-              <span className="mobile-only-badge" style={{
-                fontSize: '0.68rem',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                background: '#ecfdf5',
-                color: '#059669',
-                fontWeight: 600,
-                border: '1px solid #a7f3d0',
-              }}>
-                INTERNAL
-              </span>
             </div>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
               {headerInfo.subtitle}
@@ -85,6 +87,28 @@ export default function Navbar({
 
         {/* Desktop Quick Header Actions */}
         <div className="desktop-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* WA Status Pill */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 10px',
+            borderRadius: '8px',
+            background: waConnected ? '#ecfdf5' : '#f8fafc',
+            border: `1px solid ${waConnected ? '#a7f3d0' : '#e2e8f0'}`,
+            fontSize: '0.74rem',
+            fontWeight: 600,
+            color: waConnected ? '#059669' : '#64748b',
+          }}>
+            <span style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: waConnected ? '#10b981' : '#cbd5e1',
+            }} />
+            <span>{waConnected ? 'WA Connected' : 'WA Standby'}</span>
+          </div>
+
           <button 
             className="btn btn-secondary btn-icon" 
             onClick={onRefresh}
@@ -94,48 +118,28 @@ export default function Navbar({
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           </button>
 
-          <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '7px 12px', fontSize: '0.82rem' }}>
-            <Download size={14} />
-            <span>CSV Export</span>
-          </button>
+          {activeTab === 'contacts' && (
+            <>
+              <button className="btn btn-secondary" onClick={onExportCSV} style={{ padding: '7px 12px', fontSize: '0.82rem' }}>
+                <Download size={14} />
+                <span>CSV Export</span>
+              </button>
 
-          <button 
-            className="btn btn-secondary" 
-            onClick={onOpenBulkModal} 
-            style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '7px 12px', fontSize: '0.82rem' }}
-          >
-            <FileSpreadsheet size={15} color="#4f46e5" />
-            <span>📋 Paste Bulk List</span>
-          </button>
+              <button 
+                className="btn btn-secondary" 
+                onClick={onOpenBulkModal} 
+                style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca', padding: '7px 12px', fontSize: '0.82rem' }}
+              >
+                <FileSpreadsheet size={15} color="#4f46e5" />
+                <span>Paste Bulk List</span>
+              </button>
+            </>
+          )}
 
           <button className="btn btn-primary" onClick={onOpenAddModal} style={{ padding: '7px 14px', fontSize: '0.85rem' }}>
             <UserPlus size={15} />
             <span>+ Add Contact</span>
           </button>
-        </div>
-
-        {/* Mobile DB status pill */}
-        <div className="mobile-only-status" style={{ display: 'none' }}>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '0.72rem',
-            color: dbConnected ? '#059669' : '#dc2626',
-            fontWeight: 600,
-            background: dbConnected ? '#ecfdf5' : '#fef2f2',
-            padding: '2px 8px',
-            borderRadius: '6px',
-            border: `1px solid ${dbConnected ? '#a7f3d0' : '#fecaca'}`,
-          }}>
-            <span style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: dbConnected ? '#10b981' : '#ef4444',
-            }} />
-            {dbConnected ? 'Live' : 'Connecting'}
-          </span>
         </div>
 
       </div>

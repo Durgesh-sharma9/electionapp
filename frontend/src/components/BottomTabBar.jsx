@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, FileText, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, UserPlus, Smartphone } from 'lucide-react';
 
 export default function BottomTabBar({
   activeTab,
@@ -7,62 +7,83 @@ export default function BottomTabBar({
   totalContacts = 0,
   templatesCount = 0,
   onOpenAddModal,
+  waConnected = false,
 }) {
   return (
-    <nav className="bottom-tab-bar" aria-label="Mobile Bottom Navigation">
-      <div className="bottom-tab-container">
-        
-        {/* Tab 1: Dashboard */}
-        <button
-          type="button"
-          onClick={() => onTabChange('dashboard')}
-          className={`bottom-tab-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-        >
-          <div className="tab-icon-wrapper">
-            <LayoutDashboard size={19} />
-          </div>
-          <span className="tab-label">Dashboard</span>
-        </button>
+    <nav className="bottom-tab-bar" aria-label="Mobile Navigation">
+      {/* 1. Dashboard Tab */}
+      <button
+        type="button"
+        onClick={() => onTabChange('dashboard')}
+        className={`bottom-tab-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+      >
+        <LayoutDashboard size={20} />
+        <span className="bottom-tab-label">Dashboard</span>
+      </button>
 
-        {/* Tab 2: Contacts List */}
-        <button
-          type="button"
-          onClick={() => onTabChange('contacts')}
-          className={`bottom-tab-item ${activeTab === 'contacts' ? 'active' : ''}`}
-        >
-          <div className="tab-icon-wrapper">
-            <Users size={19} />
-            {totalContacts > 0 && <span className="tab-badge">{totalContacts}</span>}
-          </div>
-          <span className="tab-label">Contacts</span>
-        </button>
+      {/* 2. Contacts Tab */}
+      <button
+        type="button"
+        onClick={() => onTabChange('contacts')}
+        className={`bottom-tab-item ${activeTab === 'contacts' ? 'active' : ''}`}
+      >
+        <div style={{ position: 'relative' }}>
+          <Users size={20} />
+          {totalContacts > 0 && (
+            <span className="bottom-tab-badge">{totalContacts}</span>
+          )}
+        </div>
+        <span className="bottom-tab-label">Contacts</span>
+      </button>
 
-        {/* Tab 3: Message Templates */}
-        <button
-          type="button"
-          onClick={() => onTabChange('templates')}
-          className={`bottom-tab-item ${activeTab === 'templates' ? 'active' : ''}`}
-        >
-          <div className="tab-icon-wrapper">
-            <FileText size={19} />
-            {templatesCount > 0 && <span className="tab-badge tab-badge-emerald">{templatesCount}</span>}
-          </div>
-          <span className="tab-label">Templates</span>
-        </button>
+      {/* Floating Quick Add Action */}
+      <button
+        type="button"
+        onClick={onOpenAddModal}
+        className="bottom-tab-fab"
+        title="Add Single Contact"
+        aria-label="Add Contact"
+      >
+        <UserPlus size={22} color="#ffffff" />
+      </button>
 
-        {/* Tab 4: Add Contact Action */}
-        <button
-          type="button"
-          onClick={onOpenAddModal}
-          className="bottom-tab-item tab-action-highlight"
-        >
-          <div className="tab-icon-wrapper">
-            <UserPlus size={19} className="text-orange-600" />
-          </div>
-          <span className="tab-label">+ Add</span>
-        </button>
+      {/* 3. Templates Tab */}
+      <button
+        type="button"
+        onClick={() => onTabChange('templates')}
+        className={`bottom-tab-item ${activeTab === 'templates' ? 'active' : ''}`}
+      >
+        <div style={{ position: 'relative' }}>
+          <FileText size={20} />
+          {templatesCount > 0 && (
+            <span className="bottom-tab-badge bottom-tab-badge-emerald">{templatesCount}</span>
+          )}
+        </div>
+        <span className="bottom-tab-label">Templates</span>
+      </button>
 
-      </div>
+      {/* 4. WhatsApp Connect Tab */}
+      <button
+        type="button"
+        onClick={() => onTabChange('whatsapp')}
+        className={`bottom-tab-item ${activeTab === 'whatsapp' ? 'active' : ''}`}
+      >
+        <div style={{ position: 'relative' }}>
+          <Smartphone size={20} />
+          <span
+            style={{
+              position: 'absolute',
+              top: '-1px',
+              right: '-3px',
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: waConnected ? '#10b981' : '#94a3b8',
+            }}
+          />
+        </div>
+        <span className="bottom-tab-label">WA Link</span>
+      </button>
     </nav>
   );
 }

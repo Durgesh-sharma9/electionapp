@@ -6,6 +6,7 @@ import {
   FileText,
   UserPlus,
   FileSpreadsheet,
+  Smartphone,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -15,6 +16,7 @@ export default function Sidebar({
   templatesCount = 0,
   onOpenAddModal,
   onOpenBulkModal,
+  waConnected = false,
 }) {
   return (
     <aside className="app-sidebar" aria-label="Sidebar Navigation">
@@ -25,11 +27,11 @@ export default function Sidebar({
         </div>
         <div className="sidebar-brand-text">
           <h1 className="sidebar-title">Outreach Portal</h1>
-          <span className="sidebar-subtitle">WhatsApp 1-Click Redirects</span>
+          <span className="sidebar-subtitle">Campaign Assistant</span>
         </div>
       </div>
 
-      {/* Main 3 Tabs Navigation */}
+      {/* Main 4 Navigation Tabs */}
       <nav className="sidebar-nav">
         {/* Tab 1: Dashboard */}
         <button
@@ -72,6 +74,29 @@ export default function Sidebar({
             <span className="sidebar-nav-badge sidebar-nav-badge-emerald">{templatesCount}</span>
           )}
         </button>
+
+        {/* Tab 4: WhatsApp Connect (Live Socket) */}
+        <button
+          type="button"
+          onClick={() => onTabChange('whatsapp')}
+          className={`sidebar-nav-item ${activeTab === 'whatsapp' ? 'active' : ''}`}
+        >
+          <div className="sidebar-nav-left">
+            <Smartphone size={18} />
+            <span className="sidebar-nav-label">WhatsApp Link</span>
+          </div>
+          <span
+            className="sidebar-status-dot"
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: waConnected ? '#10b981' : '#94a3b8',
+              boxShadow: waConnected ? '0 0 6px #10b981' : 'none',
+            }}
+            title={waConnected ? 'WhatsApp Connected' : 'WhatsApp Disconnected'}
+          />
+        </button>
       </nav>
 
       {/* Primary Action Buttons */}
@@ -92,7 +117,7 @@ export default function Sidebar({
           style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca' }}
         >
           <FileSpreadsheet size={15} color="#4f46e5" />
-          <span>Paste Bulk List</span>
+          <span>📋 Paste Bulk List</span>
         </button>
       </div>
     </aside>

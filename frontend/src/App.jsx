@@ -25,6 +25,7 @@ import ContactCard from './components/ContactCard';
 import TemplatesManager from './components/TemplatesManager';
 import BottomTabBar from './components/BottomTabBar';
 import Sidebar from './components/Sidebar';
+import WhatsAppConnectView from './components/WhatsAppConnectView';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -58,11 +59,29 @@ export default function App() {
 
   // Toast
   const [toast, setToast] = useState(null);
+  const [waConnected, setWaConnected] = useState(false);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3500);
   };
+
+  // Check WA status periodically
+  const fetchWaStatus = async () => {
+    try {
+      const res = await fetch('/api/whatsapp/status');
+      const data = await res.json();
+      if (data.success) {
+        setWaConnected(Boolean(data.active && data.session?.loggedIn));
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchWaStatus();
+    const interval = setInterval(fetchWaStatus, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch Templates from MongoDB
   const fetchTemplates = async () => {
@@ -386,10 +405,7 @@ export default function App() {
         templatesCount={templates.length}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenBulkModal={() => setIsBulkModalOpen(true)}
-        onRefresh={fetchData}
-        onExportCSV={handleExportCSV}
-        dbConnected={dbConnected}
-        loading={loading}
+        waConnected={waConnected}
       />
 
       {/* Main Content Area */}
@@ -405,6 +421,7 @@ export default function App() {
           onRefresh={fetchData}
           onExportCSV={handleExportCSV}
           dbConnected={dbConnected}
+          waConnected={waConnected}
           loading={loading}
         />
 
@@ -744,17 +761,28 @@ export default function App() {
       )}
 
       {/* ============================================================== */}
-      {/* TAB 2: TEMPLATES MANAGER VIEW (Dedicated tab requested by user) */}
+      {/* TAB 3: TEMPLATES MANAGER VIEW (Saved WhatsApp templates)       */}
       {/* ============================================================== */}
       {activeTab === 'templates' && (
         <TemplatesManager
           templates={templates}
-          activeTemplate={activeTemplateObj}
+          activeTemplateId={activeTemplateId}
           onSelectTemplate={(tpl) => handleSelectTemplate(tpl._id, tpl.text)}
           onSaveTemplate={handleSaveTemplate}
           onDeleteTemplate={handleDeleteTemplate}
           onSetDefaultTemplate={handleSetDefaultTemplate}
           loading={loading}
+        />
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 4: WHATSAPP CONNECT VIEW (Baileys QR Link & Live Sandbox)  */}
+      {/* ============================================================== */}
+      {activeTab === 'whatsapp' && (
+        <WhatsAppConnectView
+          contacts={contacts}
+          templates={templates}
+          onToast={showToast}
         />
       )}
 
@@ -774,14 +802,14 @@ export default function App() {
         onBulkImport={handleBulkImport}
       />
 
-      {/* Sticky Bottom Tab Bar (Requested by user: "neeche tabs banao us sme ek me templates ka hoga") */}
+      {/* Sticky Bottom Tab Bar (Mobile Navigation) */}
       <BottomTabBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
         templatesCount={templates.length}
         onOpenAddModal={() => setIsAddModalOpen(true)}
-        onOpenBulkModal={() => setIsBulkModalOpen(true)}
+        waConnected={waConnected}
       />
 
     </div>

@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Check, Sparkles, Copy, MessageSquare, Star } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Check,
+  Copy,
+  Star,
+  MessageSquare,
+  Sparkles,
+  X,
+  Send,
+  CheckCheck,
+} from 'lucide-react';
 
 export default function TemplatesManager({
-  templates,
-  activeTemplate,
+  templates = [],
+  activeTemplateId,
   onSelectTemplate,
   onSaveTemplate,
   onDeleteTemplate,
   onSetDefaultTemplate,
   loading,
 }) {
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     icon: '💬',
@@ -21,21 +33,22 @@ export default function TemplatesManager({
   const [previewName, setPreviewName] = useState('Rahul Sharma');
   const [copiedId, setCopiedId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [messageNotice, setMessageNotice] = useState(null);
+
+  const iconsList = ['💬', '👋', '📢', '🤝', '⏰', '✨', '🗳️', '🎯', '📌', '🔔'];
+  const categoriesList = ['General', 'Supporter', 'Meeting', 'Announcement', 'Volunteer', 'Follow-up'];
 
   const startCreate = () => {
-    setIsCreating(true);
     setEditingId(null);
     setFormData({
       title: '',
       icon: '💬',
       category: 'General',
-      text: 'Hello {name},\n\n',
+      text: 'Hello {name}, hope you are doing well! Reaching out to connect with you.',
     });
+    setModalOpen(true);
   };
 
   const startEdit = (tpl) => {
-    setIsCreating(false);
     setEditingId(tpl._id);
     setFormData({
       title: tpl.title,
@@ -43,10 +56,11 @@ export default function TemplatesManager({
       category: tpl.category || 'General',
       text: tpl.text,
     });
+    setModalOpen(true);
   };
 
-  const cancelEdit = () => {
-    setIsCreating(false);
+  const closeModal = () => {
+    setModalOpen(false);
     setEditingId(null);
     setFormData({ title: '', icon: '💬', category: 'General', text: '' });
   };
@@ -54,21 +68,14 @@ export default function TemplatesManager({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.text.trim()) {
-      alert('Please fill in both title and template message text');
+      alert('Please fill in both title and template text');
       return;
     }
 
     setSaving(true);
     try {
-      if (isCreating) {
-        await onSaveTemplate(null, formData);
-        setMessageNotice('Template created and saved successfully!');
-      } else {
-        await onSaveTemplate(editingId, formData);
-        setMessageNotice('Template updated successfully!');
-      }
-      cancelEdit();
-      setTimeout(() => setMessageNotice(null), 3000);
+      await onSaveTemplate(editingId, formData);
+      closeModal();
     } catch (err) {
       alert('Error saving template: ' + (err.message || 'Unknown error'));
     } finally {
@@ -83,261 +90,249 @@ export default function TemplatesManager({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const iconsList = ['💬', '👋', '📢', '🤝', '⏰', '✨', '🗳️', '🎯', '📌', '🔔'];
-
   return (
-    <div className="templates-manager">
-      {/* Top Header */}
-      <div className="section-card tm-header">
-        <div className="tm-header-content">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-lg">📝</span>
-              <h2 className="text-xl font-bold text-slate-800">WhatsApp Message Templates</h2>
-              <span className="badge badge-emerald">{templates.length} Saved</span>
-            </div>
-            <p className="text-sm text-slate-500 mt-1">
-              Create, edit, and save reusable WhatsApp messages. Use <code className="bg-slate-100 text-emerald-700 px-1.5 py-0.5 rounded font-mono font-bold text-xs">{'{name}'}</code> to automatically insert the recipient's name.
-            </p>
+    <div className="tm-container">
+      {/* Action Toolbar */}
+      <div className="tm-toolbar glass-panel">
+        <div className="tm-toolbar-left">
+          <div className="tm-preview-name-box">
+            <span className="tm-preview-label">Live Preview Name:</span>
+            <input
+              type="text"
+              value={previewName}
+              onChange={(e) => setPreviewName(e.target.value)}
+              placeholder="Test Recipient Name"
+              className="input-field tm-preview-input"
+            />
           </div>
-
-          {!isCreating && !editingId && (
-            <button onClick={startCreate} className="btn btn-primary shadow-sm">
-              <Plus size={18} />
-              <span>Create New Template</span>
-            </button>
-          )}
+          <span className="tm-token-hint">
+            Token <code className="tm-code-tag">{'{name}'}</code> will be dynamically replaced for each voter.
+          </span>
         </div>
 
-        {messageNotice && (
-          <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm flex items-center gap-2">
-            <Check size={16} className="text-emerald-600" />
-            <span>{messageNotice}</span>
-          </div>
-        )}
+        <button onClick={startCreate} className="btn btn-primary" style={{ padding: '9px 18px' }}>
+          <Plus size={16} />
+          <span>+ Create New Template</span>
+        </button>
       </div>
 
-      {/* Create / Edit Form Drawer */}
-      {(isCreating || editingId) && (
-        <div className="section-card tm-form-card border-2 border-emerald-500/30 shadow-md">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <Sparkles size={18} className="text-emerald-600" />
-              <span>{isCreating ? 'Create New Template' : 'Edit Template'}</span>
-            </h3>
-            <span className="text-xs text-slate-400">All changes save permanently to database</span>
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Template Title *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Friendly Greeting, Event Reminder"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="input-field"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. General, Follow-up"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="input-field"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Choose Emoji Icon
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {iconsList.map((ic) => (
-                  <button
-                    key={ic}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, icon: ic })}
-                    className={`px-3 py-1.5 text-lg rounded-lg border transition-all ${
-                      formData.icon === ic
-                        ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200'
-                        : 'border-slate-200 bg-white hover:bg-slate-50'
-                    }`}
-                  >
-                    {ic}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-600">
-                  Message Content *
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, text: formData.text + '{name}' })}
-                  className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium hover:bg-emerald-100"
-                >
-                  + Insert {'{name}'}
-                </button>
-              </div>
-              <textarea
-                rows={5}
-                placeholder="Type your WhatsApp message here. Use {name} where you want recipient's name to appear..."
-                value={formData.text}
-                onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                className="input-field font-sans"
-                required
-              />
-            </div>
-
-            {/* Live Preview Inside Form */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-              <div className="flex items-center justify-between mb-1 text-xs text-slate-500">
-                <span className="font-semibold text-slate-600 flex items-center gap-1">
-                  <span>📱 Live Message Preview:</span>
-                </span>
-                <span className="italic">Testing with recipient: <strong>{previewName}</strong></span>
-              </div>
-              <div className="p-3 bg-emerald-50/70 border border-emerald-200/70 rounded-lg text-slate-800 text-sm whitespace-pre-wrap leading-relaxed">
-                {formData.text ? formData.text.replace(/{name}/g, previewName) : <em className="text-slate-400">Message preview will appear here...</em>}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="btn btn-secondary"
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={saving}
-              >
-                <Check size={16} />
-                <span>{saving ? 'Saving...' : isCreating ? 'Save New Template' : 'Update Template'}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Grid of Saved Templates */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      {/* Templates Grid */}
+      <div className="tm-grid">
         {templates.map((tpl) => {
-          const isSelected = activeTemplate?._id === tpl._id || activeTemplate?.title === tpl.title;
-          const formattedPreview = tpl.text.replace(/{name}/g, previewName);
+          const isActive = activeTemplateId === tpl._id;
+          const formattedMessage = tpl.text.replace(/{name}/g, previewName);
 
           return (
-            <div
-              key={tpl._id}
-              className={`section-card template-card transition-all ${
-                isSelected
-                  ? 'border-2 border-emerald-500 bg-emerald-50/20 shadow-md ring-1 ring-emerald-200'
-                  : 'hover:border-slate-300'
-              }`}
-            >
+            <div key={tpl._id} className={`tm-card ${isActive ? 'active' : ''}`}>
               {/* Card Header */}
-              <div className="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl p-1 bg-white rounded shadow-xs border border-slate-100">
-                    {tpl.icon || '💬'}
-                  </span>
+              <div className="tm-card-header">
+                <div className="tm-card-title-group">
+                  <span className="tm-card-icon">{tpl.icon || '💬'}</span>
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-slate-800 text-base">{tpl.title}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h3 className="tm-card-title">{tpl.title}</h3>
                       {tpl.isDefault && (
-                        <span className="badge badge-emerald text-[10px] py-0.5">Default</span>
+                        <span className="tm-default-badge" title="Default Active Template">
+                          <Star size={11} fill="#eab308" color="#eab308" />
+                          <span>Default</span>
+                        </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-400 font-medium">
-                      Category: {tpl.category || 'General'}
-                    </span>
+                    <span className="badge badge-category">{tpl.category || 'General'}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onSelectTemplate(tpl)}
-                    className={`btn btn-sm ${
-                      isSelected ? 'btn-success' : 'btn-secondary text-xs'
-                    }`}
-                    title="Select as active message template"
-                  >
-                    {isSelected ? <Check size={14} /> : <MessageSquare size={14} />}
-                    <span>{isSelected ? 'Active' : 'Use'}</span>
-                  </button>
-
+                {/* Edit & Delete Actions */}
+                <div className="tm-card-actions">
                   <button
                     onClick={() => startEdit(tpl)}
-                    className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition"
+                    className="tm-icon-btn"
                     title="Edit Template"
                   >
-                    <Edit2 size={15} />
+                    <Edit2 size={14} />
                   </button>
-
                   <button
-                    onClick={() => onDeleteTemplate(tpl._id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition"
+                    onClick={() => {
+                      if (window.confirm(`Delete template "${tpl.title}"?`)) {
+                        onDeleteTemplate(tpl._id);
+                      }
+                    }}
+                    className="tm-icon-btn tm-delete-btn"
                     title="Delete Template"
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
 
-              {/* Message Content Preview */}
-              <div className="my-3 p-3 bg-white border border-slate-200/80 rounded-lg text-slate-700 text-sm whitespace-pre-wrap leading-relaxed shadow-xs">
-                {formattedPreview}
+              {/* WhatsApp Chat Preview Bubble */}
+              <div className="tm-chat-preview-box">
+                <div className="tm-chat-bubble">
+                  <p className="tm-chat-text">{formattedMessage}</p>
+                  <div className="tm-chat-meta">
+                    <span className="tm-chat-time">10:30 AM</span>
+                    <CheckCheck size={14} color="#38bdf8" />
+                  </div>
+                </div>
               </div>
 
-              {/* Card Footer */}
-              <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
-                <span className="flex items-center gap-1">
-                  <span className="font-semibold text-slate-500">Preview:</span> {previewName}
-                </span>
+              {/* Card Footer Toolbar */}
+              <div className="tm-card-footer">
+                <button
+                  onClick={() => onSelectTemplate(tpl)}
+                  className={`btn ${isActive ? 'btn-whatsapp' : 'btn-secondary'} tm-select-btn`}
+                >
+                  {isActive ? (
+                    <>
+                      <Check size={14} />
+                      <span>Currently Active</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare size={14} />
+                      <span>Use for Outreach</span>
+                    </>
+                  )}
+                </button>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleCopy(tpl)}
-                    className="text-slate-600 hover:text-slate-900 flex items-center gap-1 font-medium hover:underline"
-                  >
-                    {copiedId === tpl._id ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                    <span>{copiedId === tpl._id ? 'Copied' : 'Copy'}</span>
-                  </button>
-
-                  {!tpl.isDefault && onSetDefaultTemplate && (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {!tpl.isDefault && (
                     <button
                       onClick={() => onSetDefaultTemplate(tpl._id)}
-                      className="text-amber-600 hover:text-amber-700 flex items-center gap-1 font-medium hover:underline"
+                      className="btn btn-secondary tm-sub-btn"
+                      title="Set as Default"
                     >
-                      <Star size={13} />
-                      <span>Set Default</span>
+                      <Star size={14} />
                     </button>
                   )}
+
+                  <button
+                    onClick={() => handleCopy(tpl)}
+                    className="btn btn-secondary tm-sub-btn"
+                    title="Copy formatted text"
+                  >
+                    {copiedId === tpl._id ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                  </button>
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Create / Edit Modal Dialog */}
+      {modalOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.4rem' }}>{formData.icon || '📝'}</span>
+                <div>
+                  <h3 className="modal-title">
+                    {editingId ? 'Edit Message Template' : 'Create New Message Template'}
+                  </h3>
+                  <p className="modal-subtitle">Save reusable WhatsApp messages to MongoDB</p>
+                </div>
+              </div>
+              <button onClick={closeModal} className="modal-close-btn">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="modal-body">
+              {/* Template Title */}
+              <div className="form-group">
+                <label className="form-label">Template Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Supporter Outreach, Event Invitation..."
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="input-field"
+                />
+              </div>
+
+              {/* Icon & Category Selection */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="input-field"
+                  >
+                    {categoriesList.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Pick Emoji Icon</label>
+                  <div className="tm-emoji-selector">
+                    {iconsList.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, icon: emoji })}
+                        className={`tm-emoji-btn ${formData.icon === emoji ? 'active' : ''}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Template Text */}
+              <div className="form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Message Content</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, text: formData.text + '{name}' })}
+                    className="tm-insert-token-btn"
+                  >
+                    + Insert {'{name}'}
+                  </button>
+                </div>
+                <textarea
+                  rows={5}
+                  required
+                  value={formData.text}
+                  onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+                  placeholder="Enter message text... Type {name} to personalize recipient name."
+                  className="input-field"
+                  style={{ lineHeight: 1.5, resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Live Preview Inside Modal */}
+              <div className="tm-modal-preview">
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                  Recipient Preview with "{previewName}":
+                </span>
+                <p style={{ margin: '6px 0 0 0', fontSize: '0.84rem', color: '#1e293b', whiteSpace: 'pre-wrap' }}>
+                  {formData.text ? formData.text.replace(/{name}/g, previewName) : 'Your message will appear here...'}
+                </p>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="modal-actions">
+                <button type="button" onClick={closeModal} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="btn btn-primary">
+                  {saving ? 'Saving...' : editingId ? 'Update Template' : 'Save Template'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

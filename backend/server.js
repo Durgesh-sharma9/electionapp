@@ -405,6 +405,74 @@ app.delete('/api/templates/:id', async (req, res) => {
   }
 });
 
+// ==============================================================
+// WHATSAPP LIVE BAILEYS ENDPOINTS (QR LOGIN & DIRECT SEND)
+// ==============================================================
+const whatsappService = require('./whatsappService');
+
+// GET /api/whatsapp/status
+app.get('/api/whatsapp/status', async (req, res) => {
+  try {
+    const data = await whatsappService.getWhatsAppStatus();
+    res.json({ success: true, ...data });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/whatsapp/start-session
+app.post('/api/whatsapp/start-session', async (req, res) => {
+  try {
+    const data = await whatsappService.initWhatsApp(true);
+    res.json({ success: true, ...data });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/whatsapp/send
+app.post('/api/whatsapp/send', async (req, res) => {
+  try {
+    const { to, message, contactId } = req.body;
+    const result = await whatsappService.sendLiveWhatsAppMessage({ to, message });
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    // Auto-mark contact as contacted in MongoDB if contactId or phone provided
+    if (contactId) {
+      await Contact.findByIdAndUpdate(contactId, {
+        contacted: true,
+        lastContactedDate: new Date(),
+      });
+    } else if (to) {
+      const clean10 = normalizePhone(to);
+      if (clean10) {
+        await Contact.findOneAndUpdate(
+          { phone: clean10 },
+          { contacted: true, lastContactedDate: new Date() }
+        );
+      }
+    }
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/whatsapp/logout
+app.post('/api/whatsapp/logout', async (req, res) => {
+  try {
+    const result = await whatsappService.logoutWhatsApp();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Outreach Server running on port ${PORT}`);
 });
+
