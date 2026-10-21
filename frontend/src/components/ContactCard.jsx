@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, MessageCircle, Copy, Check, Trash2, Edit2, MapPin, Clock, CheckCircle2 } from 'lucide-react';
+import { Phone, MessageCircle, Copy, Check, Trash2, Edit2, MapPin, CheckCircle2 } from 'lucide-react';
 
 export default function ContactCard({
   contact,
@@ -7,7 +7,6 @@ export default function ContactCard({
   onCallRedirect,
   onDelete,
   onEdit,
-  onToggleContacted,
   isSelected,
   onSelectToggle,
 }) {
@@ -28,14 +27,13 @@ export default function ContactCard({
     return 'badge-pending';
   };
 
-  // Generate avatar gradient based on name
   const getAvatarBg = (name) => {
     const colors = [
-      'linear-gradient(135deg, #f97316, #ea580c)',
-      'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-      'linear-gradient(135deg, #10b981, #047857)',
-      'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-      'linear-gradient(135deg, #ec4899, #be185d)',
+      'linear-gradient(135deg, #ea580c, #f97316)',
+      'linear-gradient(135deg, #2563eb, #3b82f6)',
+      'linear-gradient(135deg, #059669, #10b981)',
+      'linear-gradient(135deg, #7c3aed, #8b5cf6)',
+      'linear-gradient(135deg, #db2777, #ec4899)',
     ];
     let hash = 0;
     for (let i = 0; i < (name || '').length; i++) {
@@ -56,20 +54,20 @@ export default function ContactCard({
         justifyContent: 'space-between',
         gap: '14px',
         border: isSelected
-          ? '1px solid rgba(249, 115, 22, 0.7)'
+          ? '2px solid #ea580c'
           : contact.contacted
-          ? '1px solid rgba(16, 185, 129, 0.25)'
+          ? '1px solid #bbf7d0'
           : '1px solid var(--border-subtle)',
         background: isSelected
-          ? 'rgba(249, 115, 22, 0.08)'
+          ? '#fff7ed'
           : contact.contacted
-          ? 'rgba(16, 185, 129, 0.04)'
-          : 'var(--bg-card)',
+          ? '#fafffc'
+          : '#ffffff',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        position: 'relative',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
       }}
     >
-      {/* Top row: Checkbox, Avatar, Name & Badges */}
+      {/* Top row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
         
         {/* Selection Checkbox */}
@@ -77,7 +75,7 @@ export default function ContactCard({
           type="checkbox"
           checked={isSelected}
           onChange={(e) => onSelectToggle(contact._id, e.target.checked)}
-          style={{ marginTop: '6px', cursor: 'pointer', accentColor: '#f97316' }}
+          style={{ marginTop: '6px', cursor: 'pointer', accentColor: '#ea580c', width: '16px', height: '16px' }}
         />
 
         {/* Avatar */}
@@ -94,7 +92,7 @@ export default function ContactCard({
             fontWeight: 700,
             color: '#ffffff',
             flexShrink: 0,
-            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
           }}
         >
           {initial}
@@ -107,8 +105,8 @@ export default function ContactCard({
               style={{
                 margin: 0,
                 fontSize: '1.05rem',
-                fontWeight: 600,
-                color: '#ffffff',
+                fontWeight: 700,
+                color: '#0f172a',
                 fontFamily: 'var(--font-heading)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -132,7 +130,7 @@ export default function ContactCard({
               <button
                 className="btn btn-secondary btn-icon"
                 onClick={() => onDelete(contact._id)}
-                style={{ width: '28px', height: '28px', padding: 0, color: '#f87171' }}
+                style={{ width: '28px', height: '28px', padding: 0, color: '#ef4444' }}
                 title="डिलीट करें"
               >
                 <Trash2 size={13} />
@@ -142,7 +140,7 @@ export default function ContactCard({
 
           {/* Phone row with quick copy */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-            <span style={{ fontSize: '0.92rem', color: '#38bdf8', fontWeight: 600, letterSpacing: '0.02em' }}>
+            <span style={{ fontSize: '0.94rem', color: '#0369a1', fontWeight: 600 }}>
               +91 {contact.phone}
             </span>
             <button
@@ -151,14 +149,14 @@ export default function ContactCard({
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                color: copied ? '#34d399' : 'var(--text-dim)',
+                color: copied ? '#059669' : '#94a3b8',
                 padding: '2px',
                 display: 'flex',
                 alignItems: 'center',
               }}
               title="नंबर कॉपी करें"
             >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
             </button>
           </div>
 
@@ -189,7 +187,7 @@ export default function ContactCard({
 
           {/* Notes if any */}
           {contact.notes && (
-            <p style={{ margin: '6px 0 0 0', fontSize: '0.78rem', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+            <p style={{ margin: '6px 0 0 0', fontSize: '0.78rem', color: '#64748b', fontStyle: 'italic' }}>
               📝 {contact.notes}
             </p>
           )}
@@ -197,10 +195,10 @@ export default function ContactCard({
 
       </div>
 
-      {/* Action Redirect Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      {/* Action Buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
         
-        {/* WhatsApp Button (Primary Requirement!) */}
+        {/* WhatsApp Button */}
         <button
           className="btn btn-whatsapp"
           onClick={() => onWhatsAppRedirect(contact)}

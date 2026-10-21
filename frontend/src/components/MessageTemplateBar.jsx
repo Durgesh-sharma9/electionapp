@@ -5,17 +5,17 @@ export const DEFAULT_TEMPLATES = [
   {
     id: 'appeal',
     title: '🗳️ चुनाव सहयोग अपील',
-    text: 'सादर प्रणाम {name} जी! महापुरा चुनाव में आपके अमूल्य सहयोग, आशीर्वाद एवं समर्थन की विनम्र अपील करते हैं। आपका साथ ही हमारी ताकत है। धन्यवाद!',
+    text: 'सादर प्रणाम {name} जी! आगामी चुनाव में आपके अमूल्य सहयोग, आशीर्वाद एवं समर्थन की विनम्र अपील करते हैं। आपका साथ ही हमारी ताकत है। धन्यवाद!',
   },
   {
     id: 'development',
     title: '🌟 विकास एवं विजन',
-    text: 'नमस्ते {name} जी, महापुरा के चहुंमुखी विकास, बेहतर सुविधाओं और जनसेवा हेतु अपना बहुमूल्य मत देकर विजयी बनाएं। आपका एक वोट बदलेगा भविष्य!',
+    text: 'नमस्ते {name} जी, क्षेत्र के चहुंमुखी विकास, जनसेवा और बेहतर सुविधाओं के लिए अपना बहुमूल्य मत देकर विजयी बनाएं। आपका एक वोट बदलेगा भविष्य!',
   },
   {
     id: 'meeting',
     title: '📢 जनसंवाद आमंत्रण',
-    text: 'सादर नमस्कार {name} जी, आज महापुरा में जनसंवाद एवं जनसंपर्क बैठक का आयोजन है। आप सादर आमंत्रित हैं, अवश्य पधारें।',
+    text: 'सादर नमस्कार {name} जी, आज क्षेत्र में जनसंवाद एवं जनसंपर्क बैठक का आयोजन है। आप सादर आमंत्रित हैं, अवश्य पधारें।',
   },
   {
     id: 'reminder',
@@ -34,21 +34,21 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '14px 16px', marginBottom: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+    <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MessageSquareText size={17} color="#10b981" />
-          <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#ffffff' }}>
+          <MessageSquareText size={18} color="#059669" />
+          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
             WhatsApp सन्देश टेम्पलेट
           </span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            {"{name}"} स्वतः बदल जाएगा
+          <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+            ({" {name} "} उस व्यक्ति के नाम से स्वतः बदल जाएगा)
           </span>
         </div>
 
         <button
           className="btn btn-secondary"
-          style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
           onClick={() => {
             if (isEditing) {
               handleSaveCustom();
@@ -60,32 +60,32 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
         >
           {isEditing ? (
             <>
-              <Check size={13} color="#10b981" />
+              <Check size={14} color="#059669" />
               <span>सेव करें</span>
             </>
           ) : (
             <>
-              <Edit3 size={13} />
-              <span>एडिट करें</span>
+              <Edit3 size={14} />
+              <span>कस्टम संदेश लिखें</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Preset Pills - scrollable on mobile */}
+      {/* Preset Pills */}
       <div className="template-pills-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
         {DEFAULT_TEMPLATES.map((tmpl) => (
           <button
             key={tmpl.id}
             onClick={() => onSelectTemplate(tmpl.id, tmpl.text)}
             style={{
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '20px',
-              border: activeTemplate === tmpl.id ? '1px solid #10b981' : '1px solid var(--border-subtle)',
-              background: activeTemplate === tmpl.id ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-              color: activeTemplate === tmpl.id ? '#34d399' : 'var(--text-muted)',
-              fontSize: '0.78rem',
-              fontWeight: 500,
+              border: activeTemplate === tmpl.id ? '1.5px solid #10b981' : '1px solid #cbd5e1',
+              background: activeTemplate === tmpl.id ? '#ecfdf5' : '#f8fafc',
+              color: activeTemplate === tmpl.id ? '#047857' : '#475569',
+              fontSize: '0.8rem',
+              fontWeight: 600,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               transition: 'all 0.15s ease',
@@ -103,21 +103,21 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
           rows={3}
           value={tempText}
           onChange={(e) => setTempText(e.target.value)}
-          placeholder="अपना सन्देश लिखें... ({name} की जगह व्यक्ति का नाम आएगा)"
+          placeholder="अपना संदेश यहाँ लिखें... ({name} व्यक्ति के नाम से बदल जाएगा)"
           style={{ width: '100%', resize: 'vertical' }}
         />
       ) : (
         <div style={{
-          padding: '8px 12px',
-          borderRadius: '8px',
-          background: 'rgba(0, 0, 0, 0.25)',
-          border: '1px dashed rgba(255, 255, 255, 0.12)',
-          fontSize: '0.8rem',
-          color: '#cbd5e1',
+          padding: '10px 14px',
+          borderRadius: '10px',
+          background: '#f8fafc',
+          border: '1px dashed #cbd5e1',
+          fontSize: '0.84rem',
+          color: '#334155',
           fontStyle: 'italic',
-          lineHeight: '1.4',
+          lineHeight: '1.5',
         }}>
-          "{customText.replace('{name}', 'राजेश जी')}"
+          "{customText.replace('{name}', 'राम शर्मा')}"
         </div>
       )}
     </div>

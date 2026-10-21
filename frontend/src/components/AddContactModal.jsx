@@ -10,19 +10,21 @@ const CATEGORIES = [
 ];
 
 const COMMON_WARDS = [
-  'महापुरा (मुख्य गाँव)',
-  'महापुरा वार्ड 1',
-  'महापुरा वार्ड 2',
-  'महापुरा वार्ड 3',
-  'महापुरा वार्ड 4',
-  'महापुरा कॉलोनी',
-  'महापुरा ढाणी क्षेत्र',
+  'वार्ड 1 (Ward 1)',
+  'वार्ड 2 (Ward 2)',
+  'वार्ड 3 (Ward 3)',
+  'वार्ड 4 (Ward 4)',
+  'वार्ड 5 (Ward 5)',
+  'वार्ड 6 (Ward 6)',
+  'मुख्य क्षेत्र (Main Area)',
+  'कॉलोनी क्षेत्र',
+  'ग्रामीण / ढाणी क्षेत्र',
 ];
 
 export default function AddContactModal({ isOpen, onClose, onSave }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [ward, setWard] = useState('महापुरा (मुख्य गाँव)');
+  const [ward, setWard] = useState('वार्ड 1 (Ward 1)');
   const [category, setCategory] = useState('समर्थक (Supporter)');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +54,6 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
         category,
         notes: notes.trim(),
       });
-      // Reset
       setName('');
       setPhone('');
       setNotes('');
@@ -71,8 +72,8 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0, 0, 0, 0.75)',
-      backdropFilter: 'blur(8px)',
+      background: 'rgba(15, 23, 42, 0.6)',
+      backdropFilter: 'blur(4px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -84,15 +85,15 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ padding: '8px', borderRadius: '10px', background: 'rgba(249, 115, 22, 0.15)', color: '#f97316' }}>
+            <div style={{ padding: '8px', borderRadius: '10px', background: '#fff7ed', color: '#ea580c' }}>
               <UserPlus size={20} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
                 नया मतदाता / संपर्क जोड़ें
               </h3>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Add New Contact for Mahapura Campaign
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+                Add New Contact for Election Campaign
               </p>
             </div>
           </div>
@@ -109,9 +110,9 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
           <div style={{
             padding: '10px 14px',
             borderRadius: '8px',
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#f87171',
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#dc2626',
             fontSize: '0.85rem',
             marginBottom: '16px',
           }}>
@@ -123,11 +124,11 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
           
           {/* Name */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#e2e8f0' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
               मतदाता का नाम (Full Name) *
             </label>
             <div style={{ position: 'relative' }}>
-              <User size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '14px' }} />
+              <User size={16} color="#64748b" style={{ position: 'absolute', left: '12px', top: '14px' }} />
               <input
                 type="text"
                 className="input-field"
@@ -143,11 +144,11 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
 
           {/* Phone */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#e2e8f0' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
               मोबाइल नंबर (10 Digit Mobile No) *
             </label>
             <div style={{ position: 'relative' }}>
-              <Phone size={16} color="#10b981" style={{ position: 'absolute', left: '12px', top: '14px' }} />
+              <Phone size={16} color="#059669" style={{ position: 'absolute', left: '12px', top: '14px' }} />
               <input
                 type="tel"
                 className="input-field"
@@ -165,7 +166,7 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
             
             {/* Ward */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#e2e8f0' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
                 वार्ड / क्षेत्र (Ward/Area)
               </label>
               <input
@@ -184,7 +185,7 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
 
             {/* Category */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#e2e8f0' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
                 श्रेणी (Category)
               </label>
               <select
@@ -194,7 +195,7 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
                 style={{ cursor: 'pointer' }}
               >
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat} style={{ background: '#1e293b' }}>
+                  <option key={cat} value={cat}>
                     {cat}
                   </option>
                 ))}
@@ -205,13 +206,13 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
 
           {/* Notes */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#e2e8f0' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>
               टिप्पणी / विवरण (Notes - Optional)
             </label>
             <input
               type="text"
               className="input-field"
-              placeholder="उदा. वार्ड अध्यक्ष, युवा मोर्चा, परिवार में 5 वोट आदि"
+              placeholder="उदा. प्रमुख कार्यकर्ता, युवा मोर्चा, परिवार में 5 वोट"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -225,7 +226,7 @@ export default function AddContactModal({ isOpen, onClose, onSave }) {
               onClick={onClose}
               style={{ flex: 1 }}
             >
-              रद्द करें (Cancel)
+              रद्द करें
             </button>
             <button
               type="submit"

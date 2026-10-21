@@ -14,6 +14,9 @@ import {
   Phone,
   Edit2,
   Check,
+  Download,
+  UserPlus,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
@@ -444,19 +447,19 @@ export default function App() {
             marginTop: '12px',
             padding: '10px 14px',
             borderRadius: '10px',
-            background: 'rgba(249, 115, 22, 0.12)',
-            border: '1px solid rgba(249, 115, 22, 0.3)',
+            background: '#fff7ed',
+            border: '1px solid #fed7aa',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#fed7aa' }}>
+            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#9a3412' }}>
               {selectedIds.size} संपर्क चुने गए हैं
             </span>
             <button
               className="btn btn-secondary"
               onClick={handleBulkDelete}
-              style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.4)', padding: '6px 12px', fontSize: '0.8rem' }}
+              style={{ color: '#dc2626', borderColor: '#fca5a5', padding: '6px 12px', fontSize: '0.8rem' }}
             >
               <Trash2 size={14} />
               <span>चुने गए हटाएं (Delete Selected)</span>
@@ -473,8 +476,8 @@ export default function App() {
             width: '64px',
             height: '64px',
             borderRadius: '50%',
-            background: 'rgba(249, 115, 22, 0.1)',
-            color: '#f97316',
+            background: '#fff7ed',
+            color: '#ea580c',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -482,10 +485,10 @@ export default function App() {
           }}>
             <Users size={32} />
           </div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', fontFamily: 'var(--font-heading)' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>
             {contacts.length === 0 ? 'अभी कोई मतदाता संपर्क दर्ज नहीं है' : 'कोई परिणाम नहीं मिला'}
           </h3>
-          <p style={{ margin: '0 0 20px 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.9rem' }}>
             {contacts.length === 0
               ? 'ऊपर दिए गए बटन से नया संपर्क जोड़ें या सीधे बल्क लिस्ट पेस्ट करें!'
               : 'कृपया अपनी खोज या फ़िल्टर बदलकर देखें'}
@@ -522,13 +525,13 @@ export default function App() {
         <div className="glass-panel" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
             <thead>
-              <tr style={{ background: 'rgba(255, 255, 255, 0.04)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569' }}>
                 <th style={{ padding: '12px 16px', width: '40px' }}>
                   <input
                     type="checkbox"
                     checked={selectedIds.size === filteredContacts.length && filteredContacts.length > 0}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    style={{ accentColor: '#f97316', cursor: 'pointer' }}
+                    style={{ accentColor: '#ea580c', cursor: 'pointer' }}
                   />
                 </th>
                 <th style={{ padding: '12px 16px' }}>नाम (Name)</th>
@@ -544,8 +547,8 @@ export default function App() {
                 <tr
                   key={contact._id}
                   style={{
-                    borderBottom: '1px solid var(--border-subtle)',
-                    background: selectedIds.has(contact._id) ? 'rgba(249, 115, 22, 0.05)' : 'transparent',
+                    borderBottom: '1px solid #e2e8f0',
+                    background: selectedIds.has(contact._id) ? '#fff7ed' : '#ffffff',
                     transition: 'background 0.15s ease',
                   }}
                 >
@@ -554,16 +557,16 @@ export default function App() {
                       type="checkbox"
                       checked={selectedIds.has(contact._id)}
                       onChange={(e) => handleSelectToggle(contact._id, e.target.checked)}
-                      style={{ accentColor: '#f97316', cursor: 'pointer' }}
+                      style={{ accentColor: '#ea580c', cursor: 'pointer' }}
                     />
                   </td>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, color: '#ffffff' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a' }}>
                     {contact.name}
                   </td>
-                  <td style={{ padding: '12px 16px', color: '#38bdf8', fontWeight: 500 }}>
+                  <td style={{ padding: '12px 16px', color: '#0284c7', fontWeight: 600 }}>
                     +91 {contact.phone}
                   </td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '12px 16px', color: '#475569' }}>
                     {contact.ward}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
