@@ -1,36 +1,24 @@
 import React, { useState } from 'react';
-import { MessageSquareText, Edit3, Check } from 'lucide-react';
+import { MessageSquareText, Edit3, Check, Settings2, Plus } from 'lucide-react';
 
-export const DEFAULT_TEMPLATES = [
-  {
-    id: 'greeting',
-    title: '👋 Greeting & Connect',
-    text: 'Hello {name}, hope you are doing well! Reaching out to connect with you regarding our latest update. Please let us know if you have any questions. Thank you!',
-  },
-  {
-    id: 'update',
-    title: '📢 Important Update',
-    text: 'Hi {name}, we have an important announcement to share with you. Please review and feel free to reach out anytime. Best regards!',
-  },
-  {
-    id: 'meeting',
-    title: '🤝 Meeting Invitation',
-    text: 'Dear {name}, you are cordially invited to our upcoming meeting and discussion. Looking forward to your valuable presence!',
-  },
-  {
-    id: 'followup',
-    title: '⏰ Quick Follow-up',
-    text: 'Hello {name}, following up on our previous conversation. Please let us know a convenient time to connect. Thank you!',
-  },
-];
-
-export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, customText, onUpdateCustomText }) {
+export default function MessageTemplateBar({
+  templates = [],
+  activeTemplateId,
+  onSelectTemplate,
+  customText,
+  onUpdateCustomText,
+  onGoToTemplatesTab,
+  onSaveActiveToDb,
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempText, setTempText] = useState(customText);
 
-  const handleSaveCustom = () => {
+  const handleSaveCustom = async () => {
     onUpdateCustomText(tempText);
     setIsEditing(false);
+    if (onSaveActiveToDb) {
+      onSaveActiveToDb(tempText);
+    }
   };
 
   return (
@@ -39,61 +27,105 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MessageSquareText size={18} color="#059669" />
           <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
-            WhatsApp Message Template
+            Active WhatsApp Message Template
           </span>
           <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
             ({" {name} "} is dynamically replaced with the recipient's name)
           </span>
         </div>
 
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-          onClick={() => {
-            if (isEditing) {
-              handleSaveCustom();
-            } else {
-              setTempText(customText);
-              setIsEditing(true);
-            }
-          }}
-        >
-          {isEditing ? (
-            <>
-              <Check size={14} color="#059669" />
-              <span>Save Message</span>
-            </>
-          ) : (
-            <>
-              <Edit3 size={14} />
-              <span>Edit Custom Message</span>
-            </>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {onGoToTemplatesTab && (
+            <button
+              className="btn btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '0.8rem', background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46' }}
+              onClick={onGoToTemplatesTab}
+              title="Open Templates Manager to create, edit and permanently save templates"
+            >
+              <Settings2 size={14} color="#059669" />
+              <span>Manage & Save Templates</span>
+            </button>
           )}
-        </button>
-      </div>
 
-      {/* Preset Pills */}
-      <div className="template-pills-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-        {DEFAULT_TEMPLATES.map((tmpl) => (
           <button
-            key={tmpl.id}
-            onClick={() => onSelectTemplate(tmpl.id, tmpl.text)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '20px',
-              border: activeTemplate === tmpl.id ? '1.5px solid #10b981' : '1px solid #cbd5e1',
-              background: activeTemplate === tmpl.id ? '#ecfdf5' : '#f8fafc',
-              color: activeTemplate === tmpl.id ? '#047857' : '#475569',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+            onClick={() => {
+              if (isEditing) {
+                handleSaveCustom();
+              } else {
+                setTempText(customText);
+                setIsEditing(true);
+              }
             }}
           >
-            <span>{tmpl.title}</span>
+            {isEditing ? (
+              <>
+                <Check size={14} color="#059669" />
+                <span>Save Message</span>
+              </>
+            ) : (
+              <>
+                <Edit3 size={14} />
+                <span>Edit Current</span>
+              </>
+            )}
           </button>
-        ))}
+        </div>
+      </div>
+
+      {/* Preset Pills from DB */}
+      <div className="template-pills-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+        {templates.map((tmpl) => {
+          const isSelected = activeTemplateId === tmpl._id || activeTemplateId === tmpl.id;
+          return (
+            <button
+              key={tmpl._id || tmpl.id}
+              onClick={() => onSelectTemplate(tmpl._id || tmpl.id, tmpl.text)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '20px',
+                border: isSelected ? '1.5px solid #10b981' : '1px solid #cbd5e1',
+                background: isSelected ? '#ecfdf5' : '#f8fafc',
+                color: isSelected ? '#047857' : '#475569',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+            >
+              <span>{tmpl.icon || '💬'}</span>
+              <span>{tmpl.title}</span>
+            </button>
+          );
+        })}
+
+        {onGoToTemplatesTab && (
+          <button
+            onClick={onGoToTemplatesTab}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: '1px dashed #cbd5e1',
+              background: '#f8fafc',
+              color: '#64748b',
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <Plus size={13} />
+            <span>New Template</span>
+          </button>
+        )}
       </div>
 
       {/* Message Preview */}
@@ -117,7 +149,7 @@ export default function MessageTemplateBar({ activeTemplate, onSelectTemplate, c
           fontStyle: 'italic',
           lineHeight: '1.5',
         }}>
-          "{customText.replace('{name}', 'John Doe')}"
+          "{customText.replace('{name}', 'Rahul Sharma')}"
         </div>
       )}
     </div>

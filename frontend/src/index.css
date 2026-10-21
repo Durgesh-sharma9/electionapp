@@ -49,6 +49,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.main-app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 20px 96px 20px;
+  width: 100%;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -332,3 +339,168 @@ body {
     padding: 12px 12px 90px 12px !important;
   }
 }
+
+/* ============================================================== */
+/* Navigation Tabs (Top Header)                                  */
+/* ============================================================== */
+.nav-tabs-container {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.nav-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nav-tab-btn:hover {
+  color: #0f172a;
+}
+
+.nav-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.nav-tab-badge {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #334155;
+  font-weight: 700;
+}
+
+.nav-tab-badge-emerald {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* ============================================================== */
+/* Sticky Bottom Tab Bar (Tabs for Contacts, Templates, Paste)   */
+/* ============================================================== */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)) 12px;
+}
+
+.bottom-tab-container {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+}
+
+.bottom-tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.bottom-tab-item:hover {
+  color: #0f172a;
+}
+
+.bottom-tab-item.active {
+  color: #059669;
+  background: #ecfdf5;
+}
+
+.tab-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-badge {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.tab-badge-emerald {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+}
+
+.tab-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.tab-action-highlight {
+  color: #ea580c;
+}
+.tab-action-highlight:hover {
+  color: #c2410c;
+}
+
+/* Templates Manager */
+.templates-manager {
+  margin-bottom: 24px;
+}
+
+.tm-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tm-form-card {
+  margin-top: 14px;
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+

@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const Contact = require('./models/Contact');
+const Template = require('./models/Template');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -286,6 +287,126 @@ app.delete('/api/contacts', async (req, res) => {
       return res.json({ success: true, message: `${result.deletedCount} contacts deleted` });
     }
     res.status(400).json({ success: false, error: 'IDs array required' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// TEMPLATES CRUD API
+// ==========================================
+const defaultTemplatesSeed = [
+  {
+    title: 'Greeting & Connect',
+    icon: '👋',
+    category: 'General',
+    text: 'Hello {name}, I hope you are having a wonderful day! Reaching out to connect and stay in touch. Please let us know if you need any assistance.',
+    isDefault: true,
+  },
+  {
+    title: 'Important Update',
+    icon: '📢',
+    category: 'Announcement',
+    text: 'Dear {name}, here is an important update regarding our upcoming community discussion. Your presence and feedback would be greatly appreciated.',
+    isDefault: false,
+  },
+  {
+    title: 'Meeting Invitation',
+    icon: '🤝',
+    category: 'Meeting',
+    text: 'Namaste {name}, you are cordially invited to our group meeting this weekend. Please confirm your availability whenever convenient.',
+    isDefault: false,
+  },
+  {
+    title: 'Quick Follow-up',
+    icon: '⏰',
+    category: 'Follow-up',
+    text: 'Hi {name}, following up on our previous conversation. Please feel free to reply or call back whenever you have a moment. Thank you!',
+    isDefault: false,
+  },
+];
+
+// GET /api/templates
+app.get('/api/templates', async (req, res) => {
+  try {
+    let templates = await Template.find().sort({ isDefault: -1, createdAt: 1 }).lean();
+    if (templates.length === 0) {
+      await Template.insertMany(defaultTemplatesSeed);
+      templates = await Template.find().sort({ isDefault: -1, createdAt: 1 }).lean();
+    }
+    res.json({ success: true, count: templates.length, data: templates });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/templates
+app.post('/api/templates', async (req, res) => {
+  try {
+    const { title, text, icon, category, isDefault } = req.body;
+    if (!title || !text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both template title and text are required',
+      });
+    }
+
+    if (isDefault) {
+      await Template.updateMany({}, { isDefault: false });
+    }
+
+    const newTemplate = new Template({
+      title: title.trim(),
+      text: text.trim(),
+      icon: icon?.trim() || '💬',
+      category: category?.trim() || 'General',
+      isDefault: Boolean(isDefault),
+    });
+
+    const saved = await newTemplate.save();
+    res.status(201).json({ success: true, data: saved });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT /api/templates/:id
+app.put('/api/templates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, text, icon, category, isDefault } = req.body;
+
+    if (isDefault) {
+      await Template.updateMany({ _id: { $ne: id } }, { isDefault: false });
+    }
+
+    const updateData = {};
+    if (title) updateData.title = title.trim();
+    if (text) updateData.text = text.trim();
+    if (icon) updateData.icon = icon.trim();
+    if (category) updateData.category = category.trim();
+    if (isDefault !== undefined) updateData.isDefault = Boolean(isDefault);
+
+    const updated = await Template.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'Template not found' });
+    }
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/templates/:id
+app.delete('/api/templates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Template.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Template not found' });
+    }
+    res.json({ success: true, message: 'Template deleted successfully', data: deleted });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
