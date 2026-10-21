@@ -135,11 +135,11 @@ export default function Sidebar({
             onClick={onLogout}
             className="sidebar-nav-item"
             style={{ marginTop: 'auto', color: '#ef4444' }}
-            title="Logout (लॉगआउट)"
+            title="Logout"
           >
             <div className="sidebar-nav-left">
               <LogOut size={18} color="#ef4444" />
-              <span className="sidebar-nav-label">Logout (लॉगआउट)</span>
+              <span className="sidebar-nav-label">Logout</span>
             </div>
           </button>
         )}

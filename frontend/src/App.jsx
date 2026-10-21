@@ -581,27 +581,21 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="app-main-content">
-        {/* Top Navbar */}
         <Navbar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
           totalContacts={contacts.length}
-          templatesCount={templates.length}
-          localitiesCount={localities.length}
           onOpenAddModal={() => {
             setEditingContact(null);
             setIsAddModalOpen(true);
           }}
-          onOpenBulkModal={() => setIsBulkModalOpen(true)}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
-          onExportCSV={handleExportCSV}
           onLogout={handleLogout}
-          dbConnected={dbConnected}
-          waConnected={waConnected}
-          waSession={waSession}
           loading={loading}
         />
+
+        {/* Page Body Container (Navbar stays permanently fixed at top) */}
+        <div className="app-page-container">
 
       {/* ============================================================== */}
       {/* TAB 1: DEDICATED DASHBOARD                                      */}
@@ -1171,6 +1165,7 @@ export default function App() {
         <AnalyticsView onToast={showToast} />
       )}
 
+        </div>
       </div>
 
       {/* Add / Edit Contact Modal */}

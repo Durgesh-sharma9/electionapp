@@ -855,7 +855,16 @@ body {
     margin-left: 220px !important;
     width: calc(100% - 220px) !important;
     min-height: 100vh !important;
-    padding: 12px 18px 80px 18px !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .app-page-container {
+    padding: 16px 20px 80px 20px;
+    width: 100%;
+    max-width: 1400px;
+    box-sizing: border-box;
   }
 
   .bottom-tab-bar {
@@ -896,7 +905,15 @@ body {
   .app-main-content {
     margin-left: 0 !important;
     width: 100% !important;
-    padding: 8px 10px 110px 10px !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .app-page-container {
+    padding: 10px 10px 110px 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .desktop-header-actions {

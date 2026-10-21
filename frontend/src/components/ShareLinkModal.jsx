@@ -593,38 +593,7 @@ export default function ShareLinkModal({
                 </div>
               </div>
 
-              {/* Default WhatsApp Outreach Message Template */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', margin: 0 }}>
-                    Default WhatsApp Outreach Message:
-                  </label>
-                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                    {'{name}'} is replaced dynamically
-                  </span>
-                </div>
-                <textarea
-                  rows={3}
-                  value={messageTemplate}
-                  onChange={(e) => setMessageTemplate(e.target.value)}
-                  placeholder="Enter message text with {name} placeholder..."
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.84rem',
-                    fontFamily: 'inherit',
-                    lineHeight: '1.4',
-                    color: '#0f172a',
-                    outline: 'none',
-                    resize: 'vertical',
-                    boxSizing: 'border-box',
-                    background: '#ffffff',
-                  }}
-                />
-              </div>
+
 
               {/* Action Buttons */}
               <div
