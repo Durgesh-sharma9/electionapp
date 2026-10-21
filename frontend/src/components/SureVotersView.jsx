@@ -57,7 +57,7 @@ export default function SureVotersView({
     }
 
     contacts.forEach((c) => {
-      const w = c.ward || 'Ward 1';
+      const w = c.ward && c.ward.trim() ? c.ward : 'Unassigned';
       if (!map[w]) map[w] = { ward: w, total: 0, sure: 0 };
       map[w].total += 1;
       if (c.isSureVoter) map[w].sure += 1;
@@ -74,7 +74,7 @@ export default function SureVotersView({
       if (!map[loc]) {
         map[loc] = {
           name: loc,
-          ward: c.ward || 'Ward 1',
+          ward: c.ward && c.ward.trim() ? c.ward : '—',
           total: 0,
           sure: 0,
         };
@@ -100,7 +100,13 @@ export default function SureVotersView({
       if (scopeFilter === 'PENDING_ONLY' && c.isSureVoter) return false;
 
       // Ward filter
-      if (wardFilter !== 'ALL' && (c.ward || 'Ward 1') !== wardFilter) return false;
+      if (wardFilter !== 'ALL') {
+        if (wardFilter === 'UNASSIGNED') {
+          if (c.ward && c.ward.trim() !== '') return false;
+        } else if (c.ward !== wardFilter) {
+          return false;
+        }
+      }
 
       // Locality filter
       if (localityFilter !== 'ALL') {
@@ -146,7 +152,7 @@ export default function SureVotersView({
       c.serialNo || i + 1,
       `"${(c.name || '').replace(/"/g, '""')}"`,
       c.phone,
-      `"${c.ward || 'Ward 1'}"`,
+      `"${c.ward || '—'}"`,
       `"${(c.locality || '').replace(/"/g, '""')}"`,
       `"${(c.reference || '').replace(/"/g, '""')}"`,
       c.contacted ? 'Yes' : 'No',
@@ -572,6 +578,7 @@ export default function SureVotersView({
               }}
             >
               <option value="ALL">🏛️ All Wards</option>
+              <option value="UNASSIGNED">Unassigned Ward</option>
               {wards.map((w) => (
                 <option key={w._id} value={w.name}>
                   {w.name}

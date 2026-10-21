@@ -97,7 +97,7 @@ export default function AddContactModal({
       const res = await fetch('/api/localities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed, ward: ward || 'Ward 1' }),
+        body: JSON.stringify({ name: trimmed, ward: ward || '' }),
       });
       const data = await res.json();
       if (data.success && data.data) {

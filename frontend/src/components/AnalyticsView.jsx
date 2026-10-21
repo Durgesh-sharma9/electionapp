@@ -61,7 +61,7 @@ export default function AnalyticsView({
   const wardBreakdown = useMemo(() => {
     const list = wards.length > 0 ? wards : [{ _id: 'default', name: 'Ward 1', targetVoters: 500 }];
     return list.map((w) => {
-      const wardContacts = contacts.filter((c) => (c.ward || 'Ward 1') === w.name);
+      const wardContacts = contacts.filter((c) => (c.ward || '') === w.name);
       const total = wardContacts.length;
       const sure = wardContacts.filter((c) => c.isSureVoter).length;
       const contacted = wardContacts.filter((c) => c.contacted).length;
@@ -101,8 +101,11 @@ export default function AnalyticsView({
   const filteredCampaignContacts = useMemo(() => {
     return contacts.filter((c) => {
       if (wardFilter !== 'ALL') {
-        const contactWard = c.ward || 'Ward 1';
-        if (contactWard !== wardFilter) return false;
+        if (wardFilter === 'UNASSIGNED') {
+          if (c.ward && c.ward.trim() !== '') return false;
+        } else if (c.ward !== wardFilter) {
+          return false;
+        }
       }
       if (localityFilter !== 'ALL' && c.locality !== localityFilter) return false;
       if (sureFilter === 'SURE_ONLY' && !c.isSureVoter) return false;
@@ -127,7 +130,7 @@ export default function AnalyticsView({
       c.serialNo || i + 1,
       `"${(c.name || '').replace(/"/g, '""')}"`,
       `"${c.phone}"`,
-      `"${c.ward || 'Ward 1'}"`,
+      `"${c.ward || '—'}"`,
       `"${c.locality || ''}"`,
       `"${c.reference || ''}"`,
       c.isSureVoter ? 'YES (Confirmed)' : 'NO',
@@ -566,7 +569,7 @@ export default function AnalyticsView({
                         📍 {loc.name}
                       </span>
                       <span style={{ fontSize: '0.7rem', color: '#1d4ed8', background: '#eff6ff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                        {loc.ward || 'Ward 1'}
+                        {loc.ward || 'General'}
                       </span>
                     </div>
 
@@ -620,6 +623,7 @@ export default function AnalyticsView({
                   style={{ height: '32px', fontSize: '0.78rem', padding: '2px 8px', fontWeight: 600 }}
                 >
                   <option value="ALL">🏛️ All Wards</option>
+                  <option value="UNASSIGNED">Unassigned Ward</option>
                   {wards.map((w) => (
                     <option key={w._id} value={w.name}>
                       {w.name}
@@ -683,7 +687,7 @@ export default function AnalyticsView({
                         </td>
                         <td style={{ padding: '8px 10px' }}>
                           <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontWeight: 700 }}>
-                            🏛️ {c.ward || 'Ward 1'}
+                            🏛️ {c.ward || '—'}
                           </span>
                         </td>
                         <td style={{ padding: '8px 10px' }}>

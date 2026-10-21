@@ -298,8 +298,11 @@ export default function App() {
 
       // Ward filter
       if (wardFilter !== 'ALL') {
-        const contactWard = c.ward || 'Ward 1';
-        if (contactWard !== wardFilter) return false;
+        if (wardFilter === 'UNASSIGNED') {
+          if (c.ward && c.ward.trim() !== '') return false;
+        } else if (c.ward !== wardFilter) {
+          return false;
+        }
       }
 
       // Locality filter
@@ -774,6 +777,7 @@ export default function App() {
                   title="Filter by Ward"
                 >
                   <option value="ALL">🏛️ All Wards</option>
+                  <option value="UNASSIGNED">Unassigned Ward</option>
                   {wards.map((w) => (
                     <option key={w._id} value={w.name}>
                       {w.name}

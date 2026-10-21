@@ -623,7 +623,7 @@ export default function LocalityMaster({
                             border: '1px solid #bae6fd',
                           }}
                         >
-                          🏛️ {loc.ward || 'Ward 1'}
+                          🏛️ {loc.ward || 'General'}
                         </span>
                       </div>
                     </div>
