@@ -5,6 +5,8 @@ require('dotenv').config();
 
 const Contact = require('./models/Contact');
 const Template = require('./models/Template');
+const ShareLink = require('./models/ShareLink');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -477,6 +479,110 @@ app.post('/api/whatsapp/logout', async (req, res) => {
   try {
     const result = await whatsappService.logoutWhatsApp();
     res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==============================================================
+// PUBLIC SHAREABLE OUTREACH LINKS API
+// ==============================================================
+
+// POST /api/shares (Generate a new shareable list link)
+app.post('/api/shares', async (req, res) => {
+  try {
+    const { title, messageTemplate, contacts, countLimit } = req.body;
+
+    let selectedContacts = Array.isArray(contacts) ? contacts : [];
+
+    // If countLimit is specified and smaller than length, slice it
+    if (countLimit && Number(countLimit) > 0 && Number(countLimit) < selectedContacts.length) {
+      selectedContacts = selectedContacts.slice(0, Number(countLimit));
+    }
+
+    if (selectedContacts.length === 0) {
+      return res.status(400).json({ success: false, error: 'At least one contact is required to generate share link' });
+    }
+
+    const shareId = 'sh_' + crypto.randomBytes(4).toString('hex');
+
+    const shareDoc = new ShareLink({
+      shareId,
+      title: title?.trim() || 'Outreach Contact List',
+      messageTemplate: messageTemplate || 'Hello {name}, reaching out to connect with you.',
+      contacts: selectedContacts.map((c, i) => ({
+        serialNo: c.serialNo || i + 1,
+        name: c.name,
+        phone: normalizePhone(c.phone),
+        category: c.category || 'General',
+        notes: c.notes || '',
+        contacted: Boolean(c.contacted),
+        contactCount: c.contactCount || 0,
+      })),
+      totalCount: selectedContacts.length,
+    });
+
+    const saved = await shareDoc.save();
+
+    res.status(201).json({
+      success: true,
+      shareId: saved.shareId,
+      totalCount: saved.totalCount,
+      title: saved.title,
+      messageTemplate: saved.messageTemplate,
+      createdAt: saved.createdAt,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/shares/:shareId (Fetch public shared list)
+app.get('/api/shares/:shareId', async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    const shareDoc = await ShareLink.findOne({ shareId }).lean();
+
+    if (!shareDoc) {
+      return res.status(404).json({ success: false, error: 'Share link not found or expired' });
+    }
+
+    res.json({
+      success: true,
+      data: shareDoc,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PATCH /api/shares/:shareId/contact/:phone/toggle (Mark as contacted in shared list)
+app.patch('/api/shares/:shareId/contact/:phone/toggle', async (req, res) => {
+  try {
+    const { shareId, phone } = req.params;
+    const cleanPhone = normalizePhone(phone);
+
+    const shareDoc = await ShareLink.findOne({ shareId });
+    if (!shareDoc) {
+      return res.status(404).json({ success: false, error: 'Share link not found' });
+    }
+
+    const targetContact = shareDoc.contacts.find((c) => c.phone === cleanPhone);
+    if (targetContact) {
+      targetContact.contacted = !targetContact.contacted;
+      if (targetContact.contacted) {
+        targetContact.contactCount = (targetContact.contactCount || 0) + 1;
+      }
+      await shareDoc.save();
+
+      // Also update master Contact document in MongoDB!
+      await Contact.findOneAndUpdate(
+        { phone: cleanPhone },
+        { contacted: targetContact.contacted, $inc: { contactCount: targetContact.contacted ? 1 : 0 } }
+      );
+    }
+
+    res.json({ success: true, contacted: targetContact?.contacted });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

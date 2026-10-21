@@ -27,8 +27,19 @@ import BottomTabBar from './components/BottomTabBar';
 import Sidebar from './components/Sidebar';
 import WhatsAppConnectView from './components/WhatsAppConnectView';
 import SendMessageModal from './components/SendMessageModal';
+import ShareLinkModal from './components/ShareLinkModal';
+import PublicShareView from './components/PublicShareView';
 
 export default function App() {
+  // Check if opening a shared outreach link (?share=sh_xxxx)
+  const urlShareId = useMemo(() => {
+    return new URLSearchParams(window.location.search).get('share');
+  }, []);
+
+  if (urlShareId) {
+    return <PublicShareView shareId={urlShareId} />;
+  }
+
   const [contacts, setContacts] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -48,6 +59,7 @@ export default function App() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [messageModalContact, setMessageModalContact] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Templates from Database
   const [templates, setTemplates] = useState([]);
@@ -478,6 +490,7 @@ export default function App() {
           templatesCount={templates.length}
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenBulkModal={() => setIsBulkModalOpen(true)}
+          onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
           onExportCSV={handleExportCSV}
           dbConnected={dbConnected}
@@ -909,6 +922,16 @@ export default function App() {
         onSendDirect={handleSendDirectFromModal}
         onSendWeb={handleSendWebFromModal}
         onNavigateToWhatsAppLink={() => setActiveTab('whatsapp')}
+      />
+
+      {/* Share Outreach Webpage Link Modal */}
+      <ShareLinkModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        contacts={contacts}
+        selectedIds={selectedIds}
+        activeTemplateText={customText}
+        onToast={showToast}
       />
 
       {/* Sticky Bottom Tab Bar (Mobile Navigation) */}

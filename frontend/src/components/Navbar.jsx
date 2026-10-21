@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   MessageCircle,
   UserPlus,
@@ -6,6 +5,7 @@ import {
   Download,
   RefreshCw,
   Smartphone,
+  Share2,
 } from 'lucide-react';
 
 export default function Navbar({
@@ -13,6 +13,7 @@ export default function Navbar({
   onTabChange,
   onOpenAddModal,
   onOpenBulkModal,
+  onOpenShareModal,
   onRefresh,
   onExportCSV,
   dbConnected = true,
@@ -148,6 +149,16 @@ export default function Navbar({
               >
                 <FileSpreadsheet size={15} color="#4f46e5" />
                 <span>Paste Bulk List</span>
+              </button>
+
+              <button 
+                className="btn btn-secondary" 
+                onClick={onOpenShareModal} 
+                style={{ borderColor: '#7dd3fc', background: '#f0f9ff', color: '#0369a1', padding: '7px 12px', fontSize: '0.82rem', fontWeight: 600 }}
+                title="Generate public caller link with Call & WhatsApp buttons"
+              >
+                <Share2 size={14} color="#0284c7" />
+                <span>Share Link</span>
               </button>
             </>
           )}
