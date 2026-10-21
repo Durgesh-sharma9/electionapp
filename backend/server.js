@@ -8,6 +8,8 @@ const Template = require('./models/Template');
 const ShareLink = require('./models/ShareLink');
 const Locality = require('./models/Locality');
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -925,6 +927,35 @@ app.patch('/api/shares/:shareId/contact/:phone/toggle', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// ============================================================================
+// SERVE PRODUCTION FRONTEND (SPA)
+// Checks multiple paths so it works whether deployed in monorepo or flat folder
+// ============================================================================
+const possibleDistPaths = [
+  path.join(__dirname, '../frontend/dist'),
+  path.join(__dirname, './dist'),
+  path.join(__dirname, './public'),
+  path.join(__dirname, '../dist'),
+];
+
+for (const distPath of possibleDistPaths) {
+  if (fs.existsSync(distPath)) {
+    console.log(`📦 Serving production frontend build from: ${distPath}`);
+    app.use(express.static(distPath));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      const indexFile = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexFile)) {
+        return res.sendFile(indexFile);
+      }
+      next();
+    });
+    break;
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`🚀 Outreach Server running on port ${PORT}`);

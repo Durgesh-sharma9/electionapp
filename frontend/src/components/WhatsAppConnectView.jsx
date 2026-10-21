@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8500';
+const API_BASE = '';
 
 export default function WhatsAppConnectView({ contacts = [], templates = [], onToast }) {
   // Session & Status
