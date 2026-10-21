@@ -8,6 +8,7 @@ import {
   Edit2,
   CheckCircle2,
   Zap,
+  Sparkles,
   ExternalLink,
   RefreshCw,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ export default function ContactCard({
   contact,
   onDirectWhatsAppSend,
   onWhatsAppRedirect,
+  onOpenTemplateModal,
   onCallRedirect,
   onDelete,
   onEdit,
@@ -253,60 +255,55 @@ export default function ContactCard({
 
       </div>
 
-      {/* Actions: Direct WhatsApp (if connected), Web Redirect, Phone Call */}
-      <div style={{ display: 'grid', gridTemplateColumns: waConnected ? '1.4fr 1fr 0.9fr' : '1.3fr 1fr', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+      {/* Actions: Direct WhatsApp, Template Choose/Edit, Phone Call */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.1fr 0.8fr', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
         
-        {/* 1. Direct WhatsApp Dispatch (Baileys Engine) - ONLY WHEN waConnected */}
-        {waConnected && (
-          <button
-            className="btn btn-whatsapp"
-            onClick={() => onDirectWhatsAppSend(contact)}
-            disabled={isSendingDirect}
-            style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
-            title="Send message directly via linked WhatsApp without opening web"
-          >
-            {isSendingDirect ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                <span>Sending...</span>
-              </>
-            ) : (
-              <>
-                <Zap size={14} fill="#ffffff" />
-                <span>Direct Send</span>
-              </>
-            )}
-          </button>
-        )}
-
-        {/* 2. WhatsApp Message Redirect */}
+        {/* 1. Direct WhatsApp Redirect */}
         <button
-          className="btn btn-secondary"
+          className="btn btn-whatsapp"
           onClick={() => onWhatsAppRedirect(contact)}
           style={{
-            padding: '8px 10px',
+            padding: '8px 8px',
             minHeight: '38px',
-            fontSize: '0.82rem',
-            background: '#f0fdf4',
-            borderColor: '#86efac',
-            color: '#15803d',
-            fontWeight: 600,
-            gap: '5px',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
           }}
-          title="Send WhatsApp Message"
+          title="Direct WhatsApp Chat (सीधा व्हाट्सएप)"
         >
-          <MessageCircle size={14} color="#16a34a" />
-          <span>WhatsApp</span>
+          <Zap size={13} fill="#ffffff" />
+          <span>Direct WA</span>
+        </button>
+
+        {/* 2. Choose Template / Edit Box */}
+        <button
+          className="btn btn-secondary"
+          onClick={() => (onOpenTemplateModal ? onOpenTemplateModal(contact) : onWhatsAppRedirect(contact))}
+          style={{
+            padding: '8px 8px',
+            minHeight: '38px',
+            fontSize: '0.8rem',
+            background: '#ffffff',
+            borderColor: '#f59e0b',
+            color: '#b45309',
+            fontWeight: 600,
+            gap: '4px',
+          }}
+          title="Choose Template / Edit Message (टेम्पलेट चुनें)"
+        >
+          <Sparkles size={13} color="#f59e0b" />
+          <span>Template</span>
         </button>
 
         {/* 3. Direct Phone Call Redirect */}
         <button
           className="btn btn-call"
           onClick={() => onCallRedirect(contact)}
-          style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
+          style={{ padding: '8px 8px', minHeight: '38px', fontSize: '0.8rem', gap: '4px' }}
           title="Direct Phone Call & Copy Number"
         >
-          <Phone size={14} />
+          <Phone size={13} />
           <span>Call</span>
         </button>
 

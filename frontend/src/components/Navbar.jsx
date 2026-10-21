@@ -12,6 +12,7 @@ import {
   Download,
   RefreshCw,
   Sparkles,
+  LogOut,
 } from 'lucide-react';
 
 export default function Navbar({
@@ -25,6 +26,7 @@ export default function Navbar({
   onOpenShareModal,
   onRefresh,
   onExportCSV,
+  onLogout,
   dbConnected = true,
   waConnected = false,
   waSession = null,
@@ -304,6 +306,24 @@ export default function Navbar({
           >
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           </button>
+
+          {/* 6. Logout Button */}
+          {onLogout && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-icon"
+              onClick={onLogout}
+              title="Logout from Admin (लॉगआउट)"
+              style={{
+                padding: '7px 9px',
+                color: '#ef4444',
+                borderColor: '#fecaca',
+                background: '#fff5f5',
+              }}
+            >
+              <LogOut size={15} />
+            </button>
+          )}
         </div>
       </div>
 

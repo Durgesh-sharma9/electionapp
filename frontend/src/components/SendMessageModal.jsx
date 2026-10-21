@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  Send,
   ExternalLink,
   MessageCircle,
   Zap,
-  CheckCircle2,
-  AlertTriangle,
   Sparkles,
-  Smartphone,
+  Send,
   RefreshCw,
+  Edit3,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function SendMessageModal({
@@ -22,13 +21,13 @@ export default function SendMessageModal({
   waSession = null,
   onSendDirect,
   onSendWeb,
-  onNavigateToWhatsAppLink,
 }) {
   if (!isOpen || !contact) return null;
 
   const [selectedTemplateId, setSelectedTemplateId] = useState(activeTemplateId || '');
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [activeMode, setActiveMode] = useState('direct'); // 'direct' | 'template'
 
   // Helper to format text with recipient name
   const formatTextForContact = (templateText, recipientName) => {
@@ -41,7 +40,6 @@ export default function SendMessageModal({
   useEffect(() => {
     if (!contact) return;
 
-    // Find current template
     let tpl = templates.find((t) => t._id === selectedTemplateId);
     if (!tpl) {
       tpl = templates.find((t) => t.isDefault) || templates[0];
@@ -51,7 +49,7 @@ export default function SendMessageModal({
     if (tpl) {
       setMessageText(formatTextForContact(tpl.text, contact.name));
     } else {
-      setMessageText(`Hello ${contact.name}, hope you are doing well! Reaching out to connect and stay in touch.`);
+      setMessageText(`Hello ${contact.name}, hope you are doing well! Reaching out to connect with you.`);
     }
   }, [contact, isOpen]);
 
@@ -61,11 +59,17 @@ export default function SendMessageModal({
     setMessageText(formatTextForContact(tpl.text, contact.name));
   };
 
-  // Direct send handler
-  const handleDirectSubmit = async (e) => {
-    e.preventDefault();
-    if (!messageText.trim()) return;
+  // Direct WhatsApp Web / App redirect
+  const handleDirectRedirect = (textToSend) => {
+    const finalMsg = textToSend || messageText;
+    if (!finalMsg.trim()) return;
+    onSendWeb(contact, finalMsg.trim());
+    onClose();
+  };
 
+  // Background direct send (if Baileys WA linked)
+  const handleDirectEngineSend = async () => {
+    if (!messageText.trim()) return;
     setIsSending(true);
     try {
       await onSendDirect(contact, messageText.trim());
@@ -77,18 +81,11 @@ export default function SendMessageModal({
     }
   };
 
-  // WhatsApp Web redirect handler
-  const handleWebSubmit = () => {
-    if (!messageText.trim()) return;
-    onSendWeb(contact, messageText.trim());
-    onClose();
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-card animate-scale-in"
-        style={{ maxWidth: '580px', width: '92%' }}
+        style={{ maxWidth: '560px', width: '92%' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -111,7 +108,7 @@ export default function SendMessageModal({
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
-                Send WhatsApp Message
+                WhatsApp Message (व्हाट्सएप भेजें)
               </h3>
               <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
                 {contact.serialNo ? <span style={{ fontWeight: 700, color: '#0284c7' }}>#{contact.serialNo} </span> : null}
@@ -124,223 +121,319 @@ export default function SendMessageModal({
           </button>
         </div>
 
-        <form onSubmit={handleDirectSubmit}>
-          <div className="modal-body" style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            
-            {/* Live WhatsApp Connection Banner */}
+        {/* Two Clear Mode Tabs: 1. Redirect to WhatsApp | 2. Template / Custom */}
+        <div
+          style={{
+            display: 'flex',
+            background: '#f1f5f9',
+            borderRadius: '10px',
+            padding: '3px',
+            marginTop: '14px',
+            gap: '4px',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveMode('direct')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              border: 'none',
+              borderRadius: '8px',
+              background: activeMode === 'direct' ? '#ffffff' : 'transparent',
+              color: activeMode === 'direct' ? '#065f46' : '#64748b',
+              fontWeight: activeMode === 'direct' ? 700 : 500,
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: activeMode === 'direct' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Zap size={15} color={activeMode === 'direct' ? '#10b981' : '#94a3b8'} />
+            <span>1. Redirect to WhatsApp (सीधा व्हाट्सएप)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMode('template')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              border: 'none',
+              borderRadius: '8px',
+              background: activeMode === 'template' ? '#ffffff' : 'transparent',
+              color: activeMode === 'template' ? '#0f172a' : '#64748b',
+              fontWeight: activeMode === 'template' ? 700 : 500,
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: activeMode === 'template' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Sparkles size={15} color={activeMode === 'template' ? '#f59e0b' : '#94a3b8'} />
+            <span>2. Choose Template & Edit (टेम्पलेट चुनें)</span>
+          </button>
+        </div>
+
+        <div className="modal-body" style={{ padding: '14px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          
+          {/* OPTION 1: DIRECT REDIRECT MODE */}
+          {activeMode === 'direct' ? (
             <div
               style={{
+                background: '#f0fdf4',
+                border: '1.5px solid #a7f3d0',
+                borderRadius: '12px',
+                padding: '16px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                borderRadius: '10px',
-                background: waConnected ? '#f0fdf4' : '#fffbeb',
-                border: `1px solid ${waConnected ? '#bbf7d0' : '#fde68a'}`,
+                flexDirection: 'column',
+                gap: '12px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {waConnected ? (
-                  <CheckCircle2 size={16} color="#059669" />
-                ) : (
-                  <AlertTriangle size={16} color="#d97706" />
-                )}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Zap size={18} />
+                </div>
                 <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: waConnected ? '#166534' : '#92400e' }}>
-                    {waConnected ? '🟢 WhatsApp Connected & Active' : '🔴 WhatsApp Not Linked Yet'}
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: waConnected ? '#15803d' : '#b45309' }}>
-                    {waConnected
-                      ? `Linked: ${waSession?.phone || 'Your Device'} • Direct background send ready`
-                      : 'Scan QR in "WhatsApp Link" tab for 1-click direct sending'}
-                  </div>
+                  <h4 style={{ margin: 0, fontSize: '0.94rem', fontWeight: 700, color: '#065f46' }}>
+                    सीधा व्हाट्सएप चैट पर जाएं (Direct WhatsApp Redirect)
+                  </h4>
+                  <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#047857' }}>
+                    नीचे बटन दबाते ही तुरंत <strong>+91 {contact.phone}</strong> की चैट खुल जाएगी।
+                  </p>
                 </div>
               </div>
 
-              {!waConnected && onNavigateToWhatsAppLink && (
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    onClose();
-                    onNavigateToWhatsAppLink();
-                  }}
-                  style={{
-                    padding: '4px 10px',
-                    fontSize: '0.74rem',
-                    background: '#ffffff',
-                    borderColor: '#f59e0b',
-                    color: '#b45309',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <Smartphone size={12} />
-                  <span>Link QR</span>
-                </button>
-              )}
-            </div>
-
-            {/* Template Selector Chips */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label className="form-label" style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600 }}>
-                  <Sparkles size={13} color="#f59e0b" style={{ display: 'inline', marginRight: '4px' }} />
-                  Select Message Template:
-                </label>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Click chip to fill message</span>
-              </div>
-
+              {/* Message preview that will be sent */}
               <div
                 style={{
-                  display: 'flex',
-                  gap: '6px',
-                  overflowX: 'auto',
-                  paddingBottom: '4px',
-                  scrollbarWidth: 'thin',
+                  background: '#ffffff',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  fontSize: '0.84rem',
+                  color: '#334155',
+                  lineHeight: '1.45',
+                  maxHeight: '90px',
+                  overflowY: 'auto',
                 }}
               >
-                {templates.map((tpl) => {
-                  const isSelected = tpl._id === selectedTemplateId;
-                  return (
-                    <button
-                      key={tpl._id}
-                      type="button"
-                      onClick={() => handleSelectTemplate(tpl)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        fontSize: '0.78rem',
-                        fontWeight: isSelected ? 700 : 500,
-                        border: `1px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
-                        background: isSelected ? '#ecfdf5' : '#ffffff',
-                        color: isSelected ? '#065f46' : '#475569',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <span>{tpl.icon || '💬'}</span>
-                      <span>{tpl.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Message Box (Textarea) */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label className="form-label" style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600 }}>
-                  Message to Send:
-                </label>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
-                  {messageText.length} characters
-                </span>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>
+                  मैसेज प्रीव्यू (Active Message):
+                </div>
+                {messageText}
               </div>
 
-              <textarea
-                className="form-textarea"
-                rows={5}
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Type your WhatsApp message here..."
-                required
-                style={{
-                  width: '100%',
-                  fontSize: '0.9rem',
-                  lineHeight: '1.5',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
-                  color: '#0f172a',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                  💡 Recipient name <strong>{contact.name}</strong> is dynamically populated.
-                </span>
-                {contact.notes && (
-                  <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600 }}>
-                    📝 Note: {contact.notes}
-                  </span>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {/* Primary: Direct WhatsApp Redirect */}
+                <button
+                  type="button"
+                  onClick={() => handleDirectRedirect(messageText)}
+                  className="btn btn-whatsapp"
+                  style={{
+                    flex: '1 1 180px',
+                    padding: '11px 18px',
+                    fontSize: '0.92rem',
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                  }}
+                >
+                  <ExternalLink size={16} />
+                  <span>Direct Redirect to WhatsApp ➔</span>
+                </button>
+
+                {/* If Baileys engine is connected, option for direct background send */}
+                {waConnected && (
+                  <button
+                    type="button"
+                    onClick={handleDirectEngineSend}
+                    disabled={isSending}
+                    className="btn btn-secondary"
+                    style={{
+                      padding: '11px 14px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      background: '#ffffff',
+                      borderColor: '#10b981',
+                      color: '#065f46',
+                    }}
+                    title="Send in background via linked WhatsApp"
+                  >
+                    {isSending ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} />}
+                    <span>1-Click Send ⚡</span>
+                  </button>
                 )}
               </div>
             </div>
-
-          </div>
-
-          {/* Modal Actions */}
-          <div
-            className="modal-footer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px',
-              paddingTop: '12px',
-              borderTop: '1px solid #f1f5f9',
-            }}
-          >
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSending}>
-              Cancel
-            </button>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {/* WhatsApp Web Redirect Option */}
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleWebSubmit}
-                disabled={isSending || !messageText.trim()}
-                style={{
-                  background: '#f0fdf4',
-                  borderColor: '#a7f3d0',
-                  color: '#065f46',
-                  padding: '9px 14px',
-                  fontSize: '0.84rem',
-                }}
-                title="Open WhatsApp Web in browser tab"
-              >
-                <ExternalLink size={15} color="#059669" />
-                <span>WA Web</span>
-              </button>
-
-              {/* Direct Background Send Option - ONLY IF waConnected */}
-              {waConnected && (
-                <button
-                  type="submit"
-                  className="btn btn-whatsapp"
-                  disabled={isSending || !messageText.trim()}
+          ) : (
+            /* OPTION 2: TEMPLATE CHOOSE & BOX FILL MODE */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {/* Template Chips */}
+              <div>
+                <label className="form-label" style={{ margin: '0 0 6px 0', fontSize: '0.82rem', fontWeight: 600 }}>
+                  <Sparkles size={13} color="#f59e0b" style={{ display: 'inline', marginRight: '4px' }} />
+                  टेम्पलेट चुनें (Choose Template):
+                </label>
+                <div
                   style={{
-                    padding: '9px 18px',
-                    fontSize: '0.88rem',
-                    fontWeight: 600,
-                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                    display: 'flex',
+                    gap: '6px',
+                    overflowX: 'auto',
+                    paddingBottom: '4px',
+                    scrollbarWidth: 'thin',
                   }}
-                  title="Send directly using linked WhatsApp account"
                 >
-                  {isSending ? (
-                    <>
-                      <RefreshCw size={16} className="animate-spin" />
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Zap size={16} fill="#ffffff" />
-                      <span>Direct Send ⚡</span>
-                    </>
+                  {templates.map((tpl) => {
+                    const isSelected = tpl._id === selectedTemplateId;
+                    return (
+                      <button
+                        key={tpl._id}
+                        type="button"
+                        onClick={() => handleSelectTemplate(tpl)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.78rem',
+                          fontWeight: isSelected ? 700 : 500,
+                          border: `1.5px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
+                          background: isSelected ? '#ecfdf5' : '#ffffff',
+                          color: isSelected ? '#065f46' : '#475569',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <span>{tpl.icon || '💬'}</span>
+                        <span>{tpl.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Message Box Fill / Edit */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <label className="form-label" style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600 }}>
+                    <Edit3 size={13} color="#2563eb" style={{ display: 'inline', marginRight: '4px' }} />
+                    बॉक्स में मैसेज लिखें / भरें (Message Box):
+                  </label>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                    {messageText.length} characters
+                  </span>
+                </div>
+
+                <textarea
+                  className="form-textarea"
+                  rows={4}
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Type or edit your WhatsApp message here..."
+                  required
+                  style={{
+                    width: '100%',
+                    fontSize: '0.88rem',
+                    lineHeight: '1.5',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #cbd5e1',
+                    background: '#f8fafc',
+                    color: '#0f172a',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    💡 नाम <strong>{contact.name}</strong> अपने आप जुड़ जाता है।
+                  </span>
+                  {contact.notes && (
+                    <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600 }}>
+                      📝 Note: {contact.notes}
+                    </span>
                   )}
+                </div>
+              </div>
+
+              {/* Action Button for Template Mode */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDirectRedirect(messageText)}
+                  className="btn btn-whatsapp"
+                  disabled={!messageText.trim()}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <ExternalLink size={15} />
+                  <span>व्हाट्सएप पर भेजें (Send via WhatsApp) ➔</span>
                 </button>
-              )}
+              </div>
+
             </div>
-          </div>
-        </form>
+          )}
+
+        </div>
+
+        {/* Modal Footer */}
+        <div
+          className="modal-footer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '12px',
+            borderTop: '1px solid #f1f5f9',
+          }}
+        >
+          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSending}>
+            Cancel (रद्द करें)
+          </button>
+
+          <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>
+            {activeMode === 'direct' ? '⚡ 1-Click Fast Mode' : '📝 Template Edit Mode'}
+          </span>
+        </div>
+
       </div>
     </div>
   );

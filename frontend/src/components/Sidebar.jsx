@@ -7,6 +7,7 @@ import {
   Smartphone,
   MapPin,
   BarChart3,
+  LogOut,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -16,6 +17,7 @@ export default function Sidebar({
   templatesCount = 0,
   localitiesCount = 0,
   waConnected = false,
+  onLogout,
 }) {
   return (
     <aside className="app-sidebar" aria-label="Sidebar Navigation">
@@ -125,6 +127,22 @@ export default function Sidebar({
             <span className="sidebar-nav-label">Analytics</span>
           </div>
         </button>
+
+        {/* Logout Button */}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="sidebar-nav-item"
+            style={{ marginTop: 'auto', color: '#ef4444' }}
+            title="Logout (लॉगआउट)"
+          >
+            <div className="sidebar-nav-left">
+              <LogOut size={18} color="#ef4444" />
+              <span className="sidebar-nav-label">Logout (लॉगआउट)</span>
+            </div>
+          </button>
+        )}
       </nav>
     </aside>
   );

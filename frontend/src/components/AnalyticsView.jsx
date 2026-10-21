@@ -30,6 +30,7 @@ export default function AnalyticsView({ onToast }) {
 
   // Filters & Search
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'CALLED' | 'MESSAGED' | 'UNTOUCHED'
+  const [localityFilter, setLocalityFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
 
@@ -124,6 +125,12 @@ export default function AnalyticsView({ onToast }) {
       if (statusFilter === 'CALLED' && !c.called) return false;
       if (statusFilter === 'MESSAGED' && !c.messaged) return false;
       if (statusFilter === 'UNTOUCHED' && (c.called || c.messaged || c.contacted)) return false;
+
+      // Locality filter
+      if (localityFilter !== 'ALL') {
+        const cLoc = (c.locality || 'Mahima').trim().toLowerCase();
+        if (cLoc !== localityFilter.trim().toLowerCase()) return false;
+      }
 
       // Search query
       if (searchQuery.trim()) {
@@ -471,6 +478,27 @@ export default function AnalyticsView({ onToast }) {
                   style={{ paddingLeft: '30px', height: '32px', fontSize: '0.8rem', width: '100%' }}
                 />
               </div>
+
+              {/* Locality Filter Dropdown */}
+              <select
+                className="input-field"
+                value={localityFilter}
+                onChange={(e) => setLocalityFilter(e.target.value)}
+                style={{
+                  width: 'auto',
+                  padding: '2px 10px',
+                  fontSize: '0.78rem',
+                  height: '32px',
+                  borderColor: localityFilter !== 'ALL' ? '#f59e0b' : '#cbd5e1',
+                  background: localityFilter !== 'ALL' ? '#fef3c7' : '#ffffff',
+                  fontWeight: 600,
+                  color: '#0f172a',
+                }}
+                title="Filter by Locality"
+              >
+                <option value="ALL">📍 All Localities (सभी)</option>
+                <option value="Mahima">📍 Mahima (महिमा)</option>
+              </select>
 
               {/* Status Filter Tabs */}
               <div

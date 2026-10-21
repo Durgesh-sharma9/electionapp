@@ -15,6 +15,8 @@ import {
   Filter,
   Edit2,
   Copy,
+  Zap,
+  Sparkles,
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
@@ -33,9 +35,10 @@ import ShareLinkModal from './components/ShareLinkModal';
 import PublicShareView from './components/PublicShareView';
 import LocalityMaster from './components/LocalityMaster';
 import AnalyticsView from './components/AnalyticsView';
+import LoginView from './components/LoginView';
 
 export default function App() {
-  // Check if opening a shared outreach link (?share=sh_xxxx)
+  // Check if opening a shared outreach link (?share=sh_xxxx) - Public links bypass login!
   const urlShareId = useMemo(() => {
     return new URLSearchParams(window.location.search).get('share');
   }, []);
@@ -43,6 +46,34 @@ export default function App() {
   if (urlShareId) {
     return <PublicShareView shareId={urlShareId} />;
   }
+
+  // Persistent Admin Authentication (Device remember: admin / 123456)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      const auth = localStorage.getItem('mahapura_admin_auth');
+      if (auth) {
+        const parsed = JSON.parse(auth);
+        return Boolean(parsed.loggedIn);
+      }
+    } catch {}
+    return false;
+  });
+
+  const handleLogin = (user) => {
+    try {
+      localStorage.setItem('mahapura_admin_auth', JSON.stringify({ loggedIn: true, user, at: Date.now() }));
+    } catch {}
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('क्या आप एडमिन पोर्टल से लॉगआउट करना चाहते हैं? (Logout?)')) {
+      try {
+        localStorage.removeItem('mahapura_admin_auth');
+      } catch {}
+      setIsAuthenticated(false);
+    }
+  };
 
   const [contacts, setContacts] = useState([]);
   const [stats, setStats] = useState(null);
@@ -522,6 +553,11 @@ export default function App() {
     return templates.find((t) => t._id === activeTemplateId) || templates[0] || null;
   }, [templates, activeTemplateId]);
 
+  // If not authenticated on this device, show LoginView (admin / 123456)
+  if (!isAuthenticated) {
+    return <LoginView onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app-shell">
       {/* Toast Notification */}
@@ -540,6 +576,7 @@ export default function App() {
         templatesCount={templates.length}
         localitiesCount={localities.length}
         waConnected={waConnected}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -559,6 +596,7 @@ export default function App() {
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
           onExportCSV={handleExportCSV}
+          onLogout={handleLogout}
           dbConnected={dbConnected}
           waConnected={waConnected}
           waSession={waSession}
@@ -828,8 +866,9 @@ export default function App() {
                           else next.delete(id);
                           setSelectedIds(next);
                         }}
-                        onDirectWhatsAppSend={handleOpenSendMessage}
-                        onWhatsAppRedirect={handleOpenSendMessage}
+                        onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
+                        onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
+                        onOpenTemplateModal={(c) => setMessageModalContact(c)}
                         onCallRedirect={handleCallRedirect}
                         onDelete={handleDeleteContact}
                         onEdit={(c) => {
@@ -971,49 +1010,47 @@ export default function App() {
                       </td>
                       <td style={{ padding: '9px 12px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                          {/* 1. Direct Send (WhatsApp Modal) - ONLY IF waConnected */}
-                          {waConnected && (
-                            <button
-                              className="btn btn-whatsapp"
-                              onClick={() => handleOpenSendMessage(contact)}
-                              disabled={sendingDirectId === contact._id}
-                              style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px' }}
-                              title="Instant WhatsApp Direct Send"
-                            >
-                              <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
-                            </button>
-                          )}
+                          {/* 1. Direct WhatsApp Redirect (सीधा व्हाट्सएप) */}
+                          <button
+                            className="btn btn-whatsapp"
+                            onClick={() => handleSendWebFromModal(contact, customText)}
+                            style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px', fontWeight: 700 }}
+                            title="Direct WhatsApp Redirect (सीधा व्हाट्सएप खोलें)"
+                          >
+                            <Zap size={12} fill="#ffffff" />
+                            <span>Direct WA</span>
+                          </button>
 
-                          {/* 2. WhatsApp Message / Chat Redirect */}
+                          {/* 2. Choose Template / Edit Message Box (टेम्पलेट चुनें) */}
                           <button
                             className="btn btn-secondary"
-                            onClick={() => handleOpenSendMessage(contact)}
+                            onClick={() => setMessageModalContact(contact)}
                             style={{
-                              padding: '4px 9px',
-                              fontSize: '0.78rem',
+                              padding: '4px 8px',
+                              fontSize: '0.76rem',
                               borderRadius: '6px',
-                              background: '#f0fdf4',
-                              borderColor: '#86efac',
-                              color: '#15803d',
+                              background: '#ffffff',
+                              borderColor: '#f59e0b',
+                              color: '#b45309',
                               fontWeight: 600,
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
                             }}
-                            title="Send WhatsApp Message"
+                            title="Choose Template / Edit Box (टेम्पलेट चुनें)"
                           >
-                            <MessageCircle size={13} color="#16a34a" />
-                            <span>WhatsApp</span>
+                            <Sparkles size={12} color="#f59e0b" />
+                            <span>Template</span>
                           </button>
 
                           {/* 3. Call Phone */}
                           <button
                             className="btn btn-call"
                             onClick={() => handleCallRedirect(contact)}
-                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px' }}
+                            style={{ padding: '4px 8px', fontSize: '0.76rem', borderRadius: '6px', gap: '3px' }}
                             title="Call Phone Number"
                           >
-                            <Phone size={13} />
+                            <Phone size={12} />
                           </button>
 
                           {/* 4. Edit Contact */}
@@ -1062,8 +1099,9 @@ export default function App() {
                         else next.delete(id);
                         setSelectedIds(next);
                       }}
-                      onDirectWhatsAppSend={handleOpenSendMessage}
-                      onWhatsAppRedirect={handleOpenSendMessage}
+                      onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
+                      onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
+                      onOpenTemplateModal={(c) => setMessageModalContact(c)}
                       onCallRedirect={handleCallRedirect}
                       onDelete={handleDeleteContact}
                       onEdit={(c) => {
