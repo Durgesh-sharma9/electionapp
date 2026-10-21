@@ -42,10 +42,9 @@ export default function Navbar({
   const currentTitle = getPageTitle();
 
   return (
-    <header className="main-top-navbar">
-      {/* LEFT: Logo Emblem + Brand Name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexShrink: 1 }}>
-
+    <header className="main-top-navbar" style={{ padding: '8px 12px', justifyContent: 'space-between', gap: '8px' }}>
+      {/* LEFT: Logo Emblem + Brand Name (Guaranteed flexShrink: 0 so it never cuts off) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {/* Emblem */}
         <div
           style={{
@@ -65,7 +64,7 @@ export default function Navbar({
         </div>
 
         {/* Brand & Section Badge */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <h1
               style={{
@@ -116,43 +115,45 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* RIGHT: Sure Voters Live Counter + Action Buttons */}
+      {/* RIGHT: Sure Voters Live Counter + Action Buttons (Responsive on Mobile) */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
+          gap: '5px',
           flexShrink: 0,
         }}
       >
-        {/* Live Sure Voters Counter Pill (Clickable -> Opens Sure Voters Page) */}
+        {/* Live Sure Voters Counter Pill */}
         <button
           type="button"
           onClick={() => onNavigateTab && onNavigateTab('sure-voters')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '3px',
             background: activeTab === 'sure-voters'
               ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
               : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
             border: activeTab === 'sure-voters' ? '1.5px solid #d97706' : '1px solid #f59e0b',
             color: activeTab === 'sure-voters' ? '#ffffff' : '#92400e',
-            padding: '4px 9px',
+            padding: '4px 8px',
             borderRadius: '20px',
             boxShadow: activeTab === 'sure-voters'
               ? '0 2px 8px rgba(245, 158, 11, 0.4)'
               : '0 1px 4px rgba(245, 158, 11, 0.2)',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
           title="Click to view Sure Voters Analytics & List"
         >
-          <span style={{ fontSize: '0.8rem' }}>⭐</span>
+          <span style={{ fontSize: '0.78rem' }}>⭐</span>
           <span style={{ fontSize: '0.82rem', fontWeight: 800, fontFamily: 'monospace' }}>
             {sureCount}
           </span>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>
+          <span className="hide-on-mobile" style={{ fontSize: '0.72rem', fontWeight: 700 }}>
             Sure
           </span>
         </button>
@@ -164,8 +165,8 @@ export default function Navbar({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
-            padding: '6px 10px',
+            gap: '4px',
+            padding: '6px 8px',
             borderRadius: '8px',
             background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
             color: '#ffffff',
@@ -176,6 +177,7 @@ export default function Navbar({
             boxShadow: '0 2px 6px rgba(2, 132, 199, 0.22)',
             transition: 'all 0.15s ease',
             whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
           title="Create shareable public outreach link"
         >
@@ -189,7 +191,7 @@ export default function Navbar({
           className="btn btn-primary"
           onClick={onOpenAddModal}
           style={{
-            padding: '6px 11px',
+            padding: '6px 9px',
             fontSize: '0.78rem',
             fontWeight: 700,
             display: 'inline-flex',
@@ -197,11 +199,12 @@ export default function Navbar({
             gap: '4px',
             whiteSpace: 'nowrap',
             borderRadius: '8px',
+            flexShrink: 0,
           }}
           title="Add a new contact"
         >
           <UserPlus size={13} />
-          <span>Add Contact</span>
+          <span>Add<span className="hide-on-mobile"> Contact</span></span>
         </button>
 
         {/* 3. Refresh */}
@@ -211,8 +214,8 @@ export default function Navbar({
           title="Refresh All Data"
           disabled={loading}
           style={{
-            width: '30px',
-            height: '30px',
+            width: '28px',
+            height: '28px',
             borderRadius: '50%',
             display: 'inline-flex',
             alignItems: 'center',
@@ -222,20 +225,22 @@ export default function Navbar({
             color: '#475569',
             cursor: 'pointer',
             padding: 0,
+            flexShrink: 0,
           }}
         >
-          <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
         </button>
 
-        {/* 4. Logout */}
+        {/* 4. Logout (Desktop Only so it doesn't crowd mobile navbar) */}
         {onLogout && (
           <button
             type="button"
             onClick={onLogout}
             title="Logout"
+            className="hide-on-mobile"
             style={{
-              width: '30px',
-              height: '30px',
+              width: '28px',
+              height: '28px',
               borderRadius: '50%',
               display: 'inline-flex',
               alignItems: 'center',
@@ -245,9 +250,10 @@ export default function Navbar({
               color: '#ef4444',
               cursor: 'pointer',
               padding: 0,
+              flexShrink: 0,
             }}
           >
-            <LogOut size={13} />
+            <LogOut size={12} />
           </button>
         )}
       </div>
