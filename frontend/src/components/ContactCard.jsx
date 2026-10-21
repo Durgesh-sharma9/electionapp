@@ -253,29 +253,31 @@ export default function ContactCard({
 
       </div>
 
-      {/* 2 Types of WhatsApp + 1 Call Action */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 0.9fr', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+      {/* Actions: Direct WhatsApp (if connected), Web Redirect, Phone Call */}
+      <div style={{ display: 'grid', gridTemplateColumns: waConnected ? '1.4fr 1fr 0.9fr' : '1.3fr 1fr', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
         
-        {/* 1. Direct WhatsApp Dispatch (Baileys Engine) */}
-        <button
-          className="btn btn-whatsapp"
-          onClick={() => onDirectWhatsAppSend(contact)}
-          disabled={isSendingDirect}
-          style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
-          title={waConnected ? "Send message directly via linked WhatsApp without opening web" : "Connect WhatsApp first or click to link"}
-        >
-          {isSendingDirect ? (
-            <>
-              <RefreshCw size={14} className="animate-spin" />
-              <span>Sending...</span>
-            </>
-          ) : (
-            <>
-              <Zap size={14} fill="#ffffff" />
-              <span>Direct Send</span>
-            </>
-          )}
-        </button>
+        {/* 1. Direct WhatsApp Dispatch (Baileys Engine) - ONLY WHEN waConnected */}
+        {waConnected && (
+          <button
+            className="btn btn-whatsapp"
+            onClick={() => onDirectWhatsAppSend(contact)}
+            disabled={isSendingDirect}
+            style={{ padding: '8px 10px', minHeight: '38px', fontSize: '0.82rem', gap: '5px' }}
+            title="Send message directly via linked WhatsApp without opening web"
+          >
+            {isSendingDirect ? (
+              <>
+                <RefreshCw size={14} className="animate-spin" />
+                <span>Sending...</span>
+              </>
+            ) : (
+              <>
+                <Zap size={14} fill="#ffffff" />
+                <span>Direct Send</span>
+              </>
+            )}
+          </button>
+        )}
 
         {/* 2. 1-Click WhatsApp Redirect (wa.me) */}
         <button

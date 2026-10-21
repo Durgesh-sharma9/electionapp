@@ -20,15 +20,21 @@ let sessionInfo = {
 
 let isInitializing = false;
 
-// Helper to read saved phone from creds.json if existing
-const getSavedSessionPhone = () => {
+// Helper to read saved account details from creds.json if existing
+const getSavedSessionDetails = () => {
   try {
     const credsPath = path.join(SESSION_DIR, 'creds.json');
     if (fs.existsSync(credsPath)) {
       const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
       if (creds?.me?.id) {
-        const phone = creds.me.id.split(':')[0] || creds.me.id.split('@')[0];
-        return `+${phone}`;
+        const rawPhone = creds.me.id.split(':')[0] || creds.me.id.split('@')[0];
+        const cleanPhone = rawPhone.replace(/\D/g, '');
+        return {
+          phone: cleanPhone ? `+${cleanPhone}` : null,
+          accountName: creds.me.name || creds.me.notify || 'WhatsApp Account',
+          jid: creds.me.id,
+          platform: creds.platform || 'WhatsApp Multi-Device',
+        };
       }
     }
   } catch {}
@@ -36,10 +42,12 @@ const getSavedSessionPhone = () => {
 };
 
 // Check if already paired on disk
-const savedPhone = getSavedSessionPhone();
-if (savedPhone) {
+const savedDetails = getSavedSessionDetails();
+if (savedDetails && savedDetails.phone) {
   sessionInfo.loggedIn = true;
-  sessionInfo.phone = savedPhone;
+  sessionInfo.phone = savedDetails.phone;
+  sessionInfo.accountName = savedDetails.accountName || sessionInfo.accountName;
+  sessionInfo.jid = savedDetails.jid;
   sessionInfo.status = 'Connected';
 }
 
@@ -122,10 +130,11 @@ const initWhatsApp = async (forceNew = false) => {
           }
         } else {
           // Reconnecting
-          const phone = getSavedSessionPhone();
-          if (phone) {
+          const saved = getSavedSessionDetails();
+          if (saved && saved.phone) {
             sessionInfo.loggedIn = true;
-            sessionInfo.phone = phone;
+            sessionInfo.phone = saved.phone;
+            sessionInfo.accountName = saved.accountName || sessionInfo.accountName;
           }
           connectionStatus = 'Connecting';
           setTimeout(() => {
@@ -137,15 +146,19 @@ const initWhatsApp = async (forceNew = false) => {
         connectionStatus = 'Connected';
         currentQr = null;
 
-        const rawUser = sock?.user?.id || '';
-        const phoneDigits = rawUser.split(':')[0] || rawUser.split('@')[0] || '';
-        const formattedPhone = phoneDigits ? `+${phoneDigits}` : (getSavedSessionPhone() || '+91 Linked Device');
-        const accountName = sock?.user?.name || 'Campaign Outreach Official';
+        const me = sock?.user || {};
+        const rawUser = me.id || '';
+        const phoneDigits = (rawUser.split(':')[0] || rawUser.split('@')[0] || '').replace(/\D/g, '');
+        const saved = getSavedSessionDetails();
+        const formattedPhone = phoneDigits ? `+${phoneDigits}` : (saved?.phone || '+91 Linked Device');
+        const accountName = me.name || me.notify || saved?.accountName || 'WhatsApp Connected Account';
 
         sessionInfo = {
           loggedIn: true,
           phone: formattedPhone,
           accountName,
+          jid: rawUser || saved?.jid || `${phoneDigits}@s.whatsapp.net`,
+          platform: 'WhatsApp Multi-Device (Phone)',
           instanceId: sessionInfo.instanceId || `INST-MAHAPURA-${Math.floor(100000 + Math.random() * 900000)}`,
           accessToken: sessionInfo.accessToken || `wa_sec_live_${Math.random().toString(36).substring(2, 12)}`,
           status: 'Connected',
@@ -170,22 +183,33 @@ const initWhatsApp = async (forceNew = false) => {
  * Get current QR or connection state
  */
 const getWhatsAppStatus = async () => {
-  const phone = getSavedSessionPhone();
-  if (phone) {
+  const saved = getSavedSessionDetails();
+  if (saved && saved.phone) {
     sessionInfo.loggedIn = true;
-    sessionInfo.phone = phone;
+    sessionInfo.phone = saved.phone;
+    sessionInfo.accountName = saved.accountName || sessionInfo.accountName;
+    sessionInfo.jid = saved.jid || sessionInfo.jid;
     sessionInfo.status = 'Connected';
+  } else if (!sock) {
+    sessionInfo.loggedIn = false;
+    sessionInfo.phone = '';
+    sessionInfo.status = 'Disconnected';
+    connectionStatus = 'Disconnected';
   }
 
   if (!sock && sessionInfo.loggedIn) {
     initWhatsApp().catch(() => {});
   }
 
+  const isActuallyConnected = Boolean(
+    sessionInfo.loggedIn && (connectionStatus === 'Connected' || Boolean(saved?.phone))
+  );
+
   return {
-    status: connectionStatus === 'Connected' ? 'Connected' : (sessionInfo.loggedIn ? 'Connected' : connectionStatus),
+    status: isActuallyConnected ? 'Connected' : connectionStatus,
     qr: currentQr,
     session: sessionInfo,
-    active: sessionInfo.loggedIn || connectionStatus === 'Connected',
+    active: isActuallyConnected,
   };
 };
 
@@ -270,7 +294,9 @@ const logoutWhatsApp = async () => {
     sessionInfo = {
       loggedIn: false,
       phone: '',
-      accountName: 'Mahapura Election Outreach',
+      accountName: '',
+      jid: '',
+      platform: '',
       instanceId: 'INST-MAHAPURA-01',
       accessToken: 'wa_sec_live_mahapura',
       status: 'Disconnected',

@@ -311,31 +311,33 @@ export default function SendMessageModal({
                 <span>WA Web</span>
               </button>
 
-              {/* Direct Background Send Option */}
-              <button
-                type="submit"
-                className="btn btn-whatsapp"
-                disabled={isSending || !messageText.trim()}
-                style={{
-                  padding: '9px 18px',
-                  fontSize: '0.88rem',
-                  fontWeight: 600,
-                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                }}
-                title="Send directly using linked WhatsApp account"
-              >
-                {isSending ? (
-                  <>
-                    <RefreshCw size={16} className="animate-spin" />
-                    <span>Sending...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap size={16} fill="#ffffff" />
-                    <span>Direct Send ⚡</span>
-                  </>
-                )}
-              </button>
+              {/* Direct Background Send Option - ONLY IF waConnected */}
+              {waConnected && (
+                <button
+                  type="submit"
+                  className="btn btn-whatsapp"
+                  disabled={isSending || !messageText.trim()}
+                  style={{
+                    padding: '9px 18px',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                  }}
+                  title="Send directly using linked WhatsApp account"
+                >
+                  {isSending ? (
+                    <>
+                      <RefreshCw size={16} className="animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap size={16} fill="#ffffff" />
+                      <span>Direct Send ⚡</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </form>

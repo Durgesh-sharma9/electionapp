@@ -97,8 +97,9 @@ export default function App() {
       const res = await fetch('/api/whatsapp/status');
       const data = await res.json();
       if (data.success) {
-        setWaConnected(Boolean(data.active && data.session?.loggedIn));
-        if (data.session) setWaSession(data.session);
+        const isLogged = Boolean(data.active && data.session?.loggedIn);
+        setWaConnected(isLogged);
+        setWaSession(isLogged ? data.session : null);
       }
     } catch {}
   };
@@ -964,16 +965,18 @@ export default function App() {
                       </td>
                       <td style={{ padding: '9px 12px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                          {/* 1. Direct Send (WhatsApp Modal) */}
-                          <button
-                            className="btn btn-whatsapp"
-                            onClick={() => handleOpenSendMessage(contact)}
-                            disabled={sendingDirectId === contact._id}
-                            style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px' }}
-                            title="Open Message Box & Send"
-                          >
-                            <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
-                          </button>
+                          {/* 1. Direct Send (WhatsApp Modal) - ONLY IF waConnected */}
+                          {waConnected && (
+                            <button
+                              className="btn btn-whatsapp"
+                              onClick={() => handleOpenSendMessage(contact)}
+                              disabled={sendingDirectId === contact._id}
+                              style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px' }}
+                              title="Instant WhatsApp Direct Send"
+                            >
+                              <span>{sendingDirectId === contact._id ? '...' : '⚡ Send'}</span>
+                            </button>
+                          )}
 
                           {/* 2. WhatsApp Web Redirect */}
                           <button

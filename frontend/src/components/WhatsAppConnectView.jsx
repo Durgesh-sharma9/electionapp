@@ -141,7 +141,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
 
   // Disconnect handler
   const handleDisconnect = async () => {
-    if (!window.confirm('Are you sure you want to disconnect this WhatsApp instance?')) {
+    if (!window.confirm('Are you sure you want to remove & disconnect this WhatsApp account? (क्या आप यह अकाउंट हटाना चाहते हैं?)')) {
       return;
     }
     try {
@@ -151,13 +151,15 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
         loggedIn: false,
         phone: '',
         accountName: '',
+        jid: '',
         instanceId: 'INST-MAHAPURA-01',
         accessToken: '',
         status: 'Disconnected',
         connectedAt: null,
       });
       setLiveQr(null);
-      if (onToast) onToast('WhatsApp device disconnected successfully', 'info');
+      if (onToast) onToast('WhatsApp account disconnected & removed successfully (अकाउंट सफलतापूर्वक हटा दिया गया)', 'info');
+      fetchStatus();
     } catch (err) {
       alert('Error disconnecting: ' + err.message);
     }
@@ -289,73 +291,186 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
 
       {/* Main Instance Card */}
       <div className="wa-card glass-panel">
-        <div className="wa-card-header">
-          <span className="wa-card-title">Connected WhatsApp Instance</span>
-          {isActive && (
-            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
-              ● Baileys Socket Engine Active
+        <div className="wa-card-header" style={{ paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="wa-card-title">WhatsApp Linked Account Details (अकाउंट विवरण)</span>
+          </div>
+          {isActive ? (
+            <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 700, background: '#ecfdf5', padding: '3px 10px', borderRadius: '12px', border: '1px solid #a7f3d0' }}>
+              ● Live Engine Connected
+            </span>
+          ) : (
+            <span style={{ fontSize: '0.78rem', color: '#dc2626', fontWeight: 600, background: '#fef2f2', padding: '3px 10px', borderRadius: '12px', border: '1px solid #fecaca' }}>
+              ○ Disconnected (अकाउंट लिंक नहीं है)
             </span>
           )}
         </div>
 
         {isActive ? (
-          <div className="wa-instance-details">
-            <div className="wa-instance-grid">
-              {/* Linked Phone */}
-              <div className="wa-detail-col">
-                <span className="wa-detail-label">Linked Phone Number</span>
-                <div className="wa-phone-badge">
-                  <CheckCircle2 size={16} color="#10b981" />
-                  <span className="wa-phone-number">{session.phone || '+91 Connected Phone'}</span>
+          <div style={{ padding: '8px 0 0 0' }}>
+            {/* Top Status & Disconnect Strip */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderRadius: '10px',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                marginBottom: '16px',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)',
+                  }}
+                >
+                  <CheckCircle2 size={22} />
                 </div>
-                <span className="wa-detail-sub">{session.accountName || 'Official Campaign Device'}</span>
-              </div>
-
-              {/* Instance ID */}
-              <div className="wa-detail-col">
-                <span className="wa-detail-label">Instance Identifier</span>
-                <span className="wa-code-badge">{session.instanceId || 'INST-MAHAPURA-01'}</span>
-                <span className="wa-detail-sub">Port 8500 Local Engine</span>
-              </div>
-
-              {/* Access Token */}
-              <div className="wa-detail-col">
-                <span className="wa-detail-label">Security Access Token</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="wa-code-badge">
-                    {session.accessToken ? `${session.accessToken.slice(0, 12)}••••••` : 'wa_sec_live••••'}
-                  </span>
-                  <button onClick={copyToken} className="wa-icon-btn" title="Copy Token">
-                    <Copy size={14} />
-                  </button>
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#065f46' }}>
+                    🟢 WhatsApp Account Connected & Live
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#047857' }}>
+                    ⚡ Contacts List में <strong>Instant Send (⚡ Send)</strong> बटन अब चालू है!
+                  </div>
                 </div>
-                <span className="wa-detail-sub">Encrypted internal session</span>
               </div>
 
-              {/* Status & Disconnect Action */}
-              <div className="wa-detail-col" style={{ alignItems: 'flex-start' }}>
-                <span className="wa-detail-label">Connection Action</span>
-                <button onClick={handleDisconnect} className="wa-disconnect-btn">
-                  <Trash2 size={14} />
-                  <span>Disconnect Device</span>
-                </button>
+              <button
+                onClick={handleDisconnect}
+                className="wa-disconnect-btn"
+                style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 700, gap: '6px' }}
+                title="Remove & Logout this WhatsApp account"
+              >
+                <Trash2 size={15} />
+                <span>Disconnect / Account हटाएं</span>
+              </button>
+            </div>
+
+            {/* Account Details 4-Card Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+                gap: '14px',
+              }}
+            >
+              {/* 1. Phone Number */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  padding: '14px',
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  📱 Connected Mobile Number
+                </div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', letterSpacing: '0.02em' }}>
+                  {session.phone || '+91 Linked Device'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#059669', marginTop: '4px', fontWeight: 600 }}>
+                  ✓ Official Dispatch Number
+                </div>
+              </div>
+
+              {/* 2. Account Profile Name */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  padding: '14px',
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  👤 WhatsApp Profile Name
+                </div>
+                <div style={{ fontSize: '1.02rem', fontWeight: 700, color: '#1e293b' }}>
+                  {session.accountName || 'Official Campaign Device'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
+                  Verified Device Account
+                </div>
+              </div>
+
+              {/* 3. Connection Time */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  padding: '14px',
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  ⏱️ Connection Timestamp
+                </div>
+                <div style={{ fontSize: '0.96rem', fontWeight: 700, color: '#1e293b' }}>
+                  {session.connectedAt || 'Active Session'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
+                  {session.platform || 'Multi-Device Phone Link'}
+                </div>
+              </div>
+
+              {/* 4. WhatsApp JID / Channel */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  padding: '14px',
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  🔑 WhatsApp Session JID
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    fontFamily: 'monospace',
+                    fontWeight: 600,
+                    color: '#334155',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {session.jid || (session.phone ? `${session.phone.replace('+', '')}@s.whatsapp.net` : session.instanceId || 'INST-MAHAPURA-01')}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
+                  Encrypted local socket
+                </div>
               </div>
             </div>
           </div>
         ) : (
           <div className="wa-empty-state">
-            <div className="wa-empty-icon-wrap">
-              <Smartphone size={32} color="#059669" />
+            <div className="wa-empty-icon-wrap" style={{ background: '#fef2f2', color: '#dc2626' }}>
+              <Smartphone size={32} color="#dc2626" />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
-              No WhatsApp Device Linked
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
+              No WhatsApp Device Linked (कोई अकाउंट नहीं जुड़ा है)
             </h3>
-            <p style={{ fontSize: '0.86rem', color: '#64748b', maxWidth: '480px', margin: '0 0 18px 0', lineHeight: 1.5 }}>
-              Scan the QR code with WhatsApp on your Android or iPhone to link your official phone for instant 1-click campaign outreach.
+            <p style={{ fontSize: '0.86rem', color: '#64748b', maxWidth: '520px', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+              Scan the QR code with WhatsApp on your phone to link your account. <strong>Instant 1-Click Send (⚡ Send)</strong> button will appear in the contacts list only after your WhatsApp account is connected.
             </p>
             <button onClick={() => setQrModalOpen(true)} className="btn btn-whatsapp wa-scan-btn">
               <QrCode size={18} />
-              <span>Scan QR Code to Connect</span>
+              <span>Scan QR Code to Connect (QR स्कैन करके अकाउंट जोड़ें)</span>
             </button>
           </div>
         )}
