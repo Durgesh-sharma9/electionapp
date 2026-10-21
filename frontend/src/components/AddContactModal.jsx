@@ -323,8 +323,8 @@ export default function AddContactModal({
                     style={{ paddingLeft: '32px', height: '36px', fontSize: '0.82rem', cursor: 'pointer' }}
                   >
                     <option value="">— Unassigned (None) —</option>
-                    <option value="__NEW__" style={{ fontWeight: 700, color: '#ea580c' }}>
-                      ➕ + Add New Locality (नया क्षेत्र जोड़ें)...
+                    <option value="__NEW__" style={{ fontWeight: 600, color: '#ea580c' }}>
+                      + Add New Locality (नया क्षेत्र जोड़ें)...
                     </option>
                     {localities.map((loc) => (
                       <option key={loc._id || loc.name} value={loc.name}>
