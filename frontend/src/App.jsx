@@ -198,15 +198,6 @@ export default function App() {
   // Filtered contacts
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
-      // Category filter
-      if (categoryFilter === 'CONTACTED') {
-        if (!c.contacted) return false;
-      } else if (categoryFilter === 'PENDING') {
-        if (c.contacted) return false;
-      } else if (categoryFilter !== 'ALL' && c.category !== categoryFilter) {
-        return false;
-      }
-
       // Contacted filter
       if (contactedFilter === 'CONTACTED' && !c.contacted) return false;
       if (contactedFilter === 'PENDING' && c.contacted) return false;
@@ -660,20 +651,6 @@ export default function App() {
                   </select>
                 )}
 
-                {/* Category Filter */}
-                <select
-                  className="input-field"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '4px 8px', fontSize: '0.8rem', height: '34px' }}
-                >
-                  <option value="ALL">All Categories</option>
-                  <option value="General">General</option>
-                  <option value="Supporter">Supporters</option>
-                  <option value="Key Person">Key Persons</option>
-                  <option value="Volunteer">Volunteers</option>
-                  <option value="Undecided">Undecided</option>
-                </select>
 
                 {/* Contacted Filter */}
                 <select
@@ -877,7 +854,6 @@ export default function App() {
                     <th style={{ padding: '10px 12px' }}>PHONE NUMBER</th>
                     <th style={{ padding: '10px 12px' }}>LOCALITY / क्षेत्र</th>
                     <th style={{ padding: '10px 12px' }}>REFERENCE</th>
-                    <th style={{ padding: '10px 12px' }}>CATEGORY</th>
                     <th style={{ padding: '10px 12px' }}>STATUS</th>
                     <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
                   </tr>
@@ -974,11 +950,6 @@ export default function App() {
                         ) : (
                           <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— None</span>
                         )}
-                      </td>
-                      <td style={{ padding: '9px 12px' }}>
-                        <span className="badge badge-pending" style={{ fontSize: '0.72rem', padding: '2px 7px' }}>
-                          {contact.category || 'General'}
-                        </span>
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button

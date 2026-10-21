@@ -361,24 +361,6 @@ export default function AddContactModal({
             </div>
           </div>
 
-          {/* Category */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-              Tag / Category
-            </label>
-            <select
-              className="input-field"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={{ height: '36px', fontSize: '0.85rem', cursor: 'pointer' }}
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
 
           {/* Notes */}
           <div>

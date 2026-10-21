@@ -218,9 +218,6 @@ export default function ContactCard({
 
           {/* Badges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
-            <span className={`badge ${getCategoryClass(contact.category)}`}>
-              {contact.category || 'General'}
-            </span>
 
             {contact.locality && (
               <span className="badge" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
