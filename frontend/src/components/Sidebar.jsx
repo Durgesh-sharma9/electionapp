@@ -6,6 +6,7 @@ import {
   FileText,
   Smartphone,
   MapPin,
+  BarChart3,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -111,6 +112,18 @@ export default function Sidebar({
             }}
             title={waConnected ? 'WhatsApp Connected' : 'WhatsApp Disconnected'}
           />
+        </button>
+
+        {/* Tab 5: Link Analytics */}
+        <button
+          type="button"
+          onClick={() => onTabChange('analytics')}
+          className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
+        >
+          <div className="sidebar-nav-left">
+            <BarChart3 size={18} />
+            <span className="sidebar-nav-label">Analytics</span>
+          </div>
         </button>
       </nav>
     </aside>

@@ -32,6 +32,7 @@ import SendMessageModal from './components/SendMessageModal';
 import ShareLinkModal from './components/ShareLinkModal';
 import PublicShareView from './components/PublicShareView';
 import LocalityMaster from './components/LocalityMaster';
+import AnalyticsView from './components/AnalyticsView';
 
 export default function App() {
   // Check if opening a shared outreach link (?share=sh_xxxx)
@@ -1076,6 +1077,13 @@ export default function App() {
         />
       )}
 
+      {/* ============================================================== */}
+      {/* TAB 6: ANALYTICS VIEW (Share Link Stats, Caller Action Tracking) */}
+      {/* ============================================================== */}
+      {activeTab === 'analytics' && (
+        <AnalyticsView onToast={showToast} />
+      )}
+
       </div>
 
       {/* Add / Edit Contact Modal */}
@@ -1119,6 +1127,7 @@ export default function App() {
         onClose={() => setIsShareModalOpen(false)}
         contacts={contacts}
         selectedIds={selectedIds}
+        localities={localities}
         activeTemplateText={customText}
         onToast={showToast}
       />

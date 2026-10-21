@@ -17,15 +17,27 @@ const shareLinkSchema = new mongoose.Schema(
       type: String,
       default: 'Hello {name}, reaching out from our outreach team. Please let us know if you need any assistance!',
     },
+    localityFilter: {
+      type: String,
+      default: '',
+    },
     contacts: [
       {
         serialNo: { type: Number, default: 0 },
         name: { type: String, required: true },
         phone: { type: String, required: true },
+        locality: { type: String, default: 'Mahima' },
+        reference: { type: String, default: '' },
         category: { type: String, default: 'General' },
         notes: { type: String, default: '' },
         contacted: { type: Boolean, default: false },
         contactCount: { type: Number, default: 0 },
+        called: { type: Boolean, default: false },
+        calledAt: { type: Date, default: null },
+        callCount: { type: Number, default: 0 },
+        messaged: { type: Boolean, default: false },
+        messagedAt: { type: Date, default: null },
+        messageCount: { type: Number, default: 0 },
       },
     ],
     totalCount: {

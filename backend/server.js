@@ -656,9 +656,16 @@ app.post('/api/whatsapp/logout', async (req, res) => {
 // POST /api/shares (Generate a new shareable list link)
 app.post('/api/shares', async (req, res) => {
   try {
-    const { title, messageTemplate, contacts, countLimit } = req.body;
+    const { title, messageTemplate, contacts, countLimit, localityFilter } = req.body;
 
     let selectedContacts = Array.isArray(contacts) ? contacts : [];
+
+    // Filter by locality if specified
+    if (localityFilter && localityFilter.trim() && localityFilter !== 'ALL') {
+      selectedContacts = selectedContacts.filter(
+        (c) => (c.locality || 'Mahima').toLowerCase() === localityFilter.trim().toLowerCase()
+      );
+    }
 
     // If countLimit is specified and smaller than length, slice it
     if (countLimit && Number(countLimit) > 0 && Number(countLimit) < selectedContacts.length) {
@@ -675,14 +682,23 @@ app.post('/api/shares', async (req, res) => {
       shareId,
       title: title?.trim() || 'Outreach Contact List',
       messageTemplate: messageTemplate || 'Hello {name}, reaching out to connect with you.',
+      localityFilter: localityFilter || '',
       contacts: selectedContacts.map((c, i) => ({
         serialNo: c.serialNo || i + 1,
         name: c.name,
         phone: normalizePhone(c.phone),
+        locality: c.locality || 'Mahima',
+        reference: c.reference || '',
         category: c.category || 'General',
         notes: c.notes || '',
         contacted: Boolean(c.contacted),
         contactCount: c.contactCount || 0,
+        called: Boolean(c.called),
+        calledAt: c.calledAt || null,
+        callCount: c.callCount || 0,
+        messaged: Boolean(c.messaged),
+        messagedAt: c.messagedAt || null,
+        messageCount: c.messageCount || 0,
       })),
       totalCount: selectedContacts.length,
     });
@@ -695,8 +711,45 @@ app.post('/api/shares', async (req, res) => {
       totalCount: saved.totalCount,
       title: saved.title,
       messageTemplate: saved.messageTemplate,
+      localityFilter: saved.localityFilter,
       createdAt: saved.createdAt,
     });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/shares (List all generated share links with analytics)
+app.get('/api/shares', async (req, res) => {
+  try {
+    const list = await ShareLink.find().sort({ createdAt: -1 }).lean();
+
+    const formatted = list.map((item) => {
+      const contacts = item.contacts || [];
+      const total = contacts.length;
+      const called = contacts.filter((c) => c.called).length;
+      const messaged = contacts.filter((c) => c.messaged).length;
+      const both = contacts.filter((c) => c.called && c.messaged).length;
+      const contacted = contacts.filter((c) => c.contacted || c.called || c.messaged).length;
+      const untouched = total - contacted;
+      const percent = total > 0 ? Math.round((contacted / total) * 100) : 0;
+
+      return {
+        shareId: item.shareId,
+        title: item.title,
+        messageTemplate: item.messageTemplate,
+        localityFilter: item.localityFilter || 'All Localities',
+        totalCount: total,
+        calledCount: called,
+        messagedCount: messaged,
+        bothCount: both,
+        untouchedCount: untouched > 0 ? untouched : 0,
+        percentComplete: percent,
+        createdAt: item.createdAt,
+      };
+    });
+
+    res.json({ success: true, data: formatted });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -721,7 +774,128 @@ app.get('/api/shares/:shareId', async (req, res) => {
   }
 });
 
-// PATCH /api/shares/:shareId/contact/:phone/toggle (Mark as contacted in shared list)
+// GET /api/shares/:shareId/analytics (Fetch detailed analytics for a share link)
+app.get('/api/shares/:shareId/analytics', async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    const shareDoc = await ShareLink.findOne({ shareId }).lean();
+
+    if (!shareDoc) {
+      return res.status(404).json({ success: false, error: 'Share link not found' });
+    }
+
+    const contacts = shareDoc.contacts || [];
+    const total = contacts.length;
+    const called = contacts.filter((c) => c.called).length;
+    const messaged = contacts.filter((c) => c.messaged).length;
+    const both = contacts.filter((c) => c.called && c.messaged).length;
+    const contacted = contacts.filter((c) => c.contacted || c.called || c.messaged).length;
+    const untouched = total - contacted;
+    const percent = total > 0 ? Math.round((contacted / total) * 100) : 0;
+
+    // Locality breakdown
+    const localityMap = {};
+    contacts.forEach((c) => {
+      const loc = c.locality || 'Mahima';
+      if (!localityMap[loc]) {
+        localityMap[loc] = { total: 0, called: 0, messaged: 0, untouched: 0 };
+      }
+      localityMap[loc].total += 1;
+      if (c.called) localityMap[loc].called += 1;
+      if (c.messaged) localityMap[loc].messaged += 1;
+      if (!c.called && !c.messaged && !c.contacted) localityMap[loc].untouched += 1;
+    });
+
+    res.json({
+      success: true,
+      shareId: shareDoc.shareId,
+      title: shareDoc.title,
+      createdAt: shareDoc.createdAt,
+      localityFilter: shareDoc.localityFilter,
+      summary: {
+        total,
+        called,
+        messaged,
+        both,
+        untouched: untouched > 0 ? untouched : 0,
+        percentComplete: percent,
+      },
+      localityBreakdown: localityMap,
+      contacts,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/shares/:shareId/contact/:phone/action (Record Call or WhatsApp message or status toggle)
+app.post('/api/shares/:shareId/contact/:phone/action', async (req, res) => {
+  try {
+    const { shareId, phone } = req.params;
+    const { action } = req.body; // 'call' | 'message' | 'toggle'
+    const cleanPhone = normalizePhone(phone);
+
+    const shareDoc = await ShareLink.findOne({ shareId });
+    if (!shareDoc) {
+      return res.status(404).json({ success: false, error: 'Share link not found' });
+    }
+
+    const targetContact = shareDoc.contacts.find((c) => c.phone === cleanPhone);
+    if (!targetContact) {
+      return res.status(404).json({ success: false, error: 'Contact not found in share link' });
+    }
+
+    const now = new Date();
+    if (action === 'call') {
+      targetContact.called = true;
+      targetContact.calledAt = now;
+      targetContact.callCount = (targetContact.callCount || 0) + 1;
+      targetContact.contacted = true;
+    } else if (action === 'message') {
+      targetContact.messaged = true;
+      targetContact.messagedAt = now;
+      targetContact.messageCount = (targetContact.messageCount || 0) + 1;
+      targetContact.contacted = true;
+    } else if (action === 'toggle') {
+      targetContact.contacted = !targetContact.contacted;
+    }
+
+    await shareDoc.save();
+
+    // Sync to master MongoDB Contact directory as well
+    await Contact.findOneAndUpdate(
+      { phone: cleanPhone },
+      {
+        contacted: true,
+        lastContactedDate: now,
+        $inc: { contactCount: 1 },
+      }
+    );
+
+    res.json({
+      success: true,
+      contact: targetContact,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/shares/:shareId (Delete a share link)
+app.delete('/api/shares/:shareId', async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    const deleted = await ShareLink.findOneAndDelete({ shareId });
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Share link not found' });
+    }
+    res.json({ success: true, message: 'Share link deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PATCH /api/shares/:shareId/contact/:phone/toggle (Backwards compatibility)
 app.patch('/api/shares/:shareId/contact/:phone/toggle', async (req, res) => {
   try {
     const { shareId, phone } = req.params;
@@ -740,14 +914,13 @@ app.patch('/api/shares/:shareId/contact/:phone/toggle', async (req, res) => {
       }
       await shareDoc.save();
 
-      // Also update master Contact document in MongoDB!
       await Contact.findOneAndUpdate(
         { phone: cleanPhone },
         { contacted: targetContact.contacted, $inc: { contactCount: targetContact.contacted ? 1 : 0 } }
       );
     }
 
-    res.json({ success: true, contacted: targetContact?.contacted });
+    res.json({ success: true, contacted: targetContact?.contacted, contact: targetContact });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

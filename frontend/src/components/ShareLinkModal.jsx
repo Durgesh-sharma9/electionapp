@@ -17,6 +17,7 @@ export default function ShareLinkModal({
   isOpen,
   onClose,
   contacts = [],
+  localities = [],
   selectedIds = new Set(),
   activeTemplateText = '',
   onToast,
@@ -27,7 +28,10 @@ export default function ShareLinkModal({
 
   // Form State
   const [title, setTitle] = useState('Mahapura Outreach Campaign');
-  const [scopeMode, setScopeMode] = useState('all'); // 'all' | 'custom_count' | 'selected'
+  const [scopeMode, setScopeMode] = useState('all'); // 'all' | 'selected' | 'locality' | 'custom_count'
+  const [selectedLocality, setSelectedLocality] = useState(() => {
+    return localities[0]?.name || 'Mahima';
+  });
   const [customCount, setCustomCount] = useState(totalContacts);
   const [messageTemplate, setMessageTemplate] = useState(
     activeTemplateText || 'Hello {name}, hope you are doing well! Reaching out to connect and stay in touch.'
@@ -43,7 +47,12 @@ export default function ShareLinkModal({
   const getIncludedContacts = () => {
     if (scopeMode === 'selected') {
       const selected = contacts.filter((c) => selectedIds.has(c._id));
-      return selected.length > 0 ? selected : contacts;
+      return selected;
+    }
+    if (scopeMode === 'locality') {
+      const locTarget = (selectedLocality || '').trim().toLowerCase();
+      const inLoc = contacts.filter((c) => (c.locality || 'Mahima').trim().toLowerCase() === locTarget);
+      return inLoc;
     }
     if (scopeMode === 'custom_count') {
       const limit = Math.max(1, Math.min(totalContacts, Number(customCount) || totalContacts));
@@ -58,6 +67,11 @@ export default function ShareLinkModal({
   // Generate Share Link
   const handleGenerate = async (e) => {
     e.preventDefault();
+    if (includedList.length === 0) {
+      alert('No contacts match your selection. Please select at least 1 contact.');
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
@@ -69,6 +83,7 @@ export default function ShareLinkModal({
           messageTemplate,
           contacts: includedList,
           countLimit: includedList.length,
+          localityFilter: scopeMode === 'locality' ? selectedLocality : '',
         }),
       });
 
@@ -107,6 +122,15 @@ export default function ShareLinkModal({
     const shareMsg = `*${title}*\n\nHere is your assigned outreach contact list (${includedList.length} contacts) with direct WhatsApp and Call buttons:\n\n👉 Open List: ${generatedLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(shareMsg)}`, '_blank');
   };
+
+  // Derive available locality names
+  const availableLocalities = useMemo(() => {
+    const set = new Set();
+    localities.forEach((l) => { if (l.name) set.add(l.name.trim()); });
+    contacts.forEach((c) => { if (c.locality) set.add(c.locality.trim()); });
+    if (set.size === 0) set.add('Mahima');
+    return Array.from(set);
+  }, [localities, contacts]);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -201,7 +225,7 @@ export default function ShareLinkModal({
                     />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                        All Contacts (Default - All {totalContacts} Included) ✅
+                        1. All Contacts (सब को - All {totalContacts} Contacts) ✅
                       </div>
                       <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                         Includes all contacts currently in your directory from #1 to #{totalContacts}.
@@ -209,7 +233,95 @@ export default function ShareLinkModal({
                     </div>
                   </label>
 
-                  {/* Option 2: Custom Number (Kitne Contacts Chahiye) */}
+                  {/* Option 2: Selected Contacts Only (जो जो सिलेक्ट करें बस वो) */}
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: scopeMode === 'selected' ? '2px solid #0284c7' : '1px solid #e2e8f0',
+                      background: scopeMode === 'selected' ? '#f0f9ff' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="scope"
+                      value="selected"
+                      checked={scopeMode === 'selected'}
+                      onChange={() => setScopeMode('selected')}
+                      style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
+                        2. Selected Contacts Only (जो जो सिलेक्ट करें बस वो)
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        {selectedIds.size > 0
+                          ? `Currently ${selectedIds.size} contacts checked with checkboxes.`
+                          : 'List me checkbox se tick kiye gaye contacts ka link banega (Currently 0 checked).'}
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Option 3: By Specific Locality (एक-एक Locality अनुसार) */}
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: scopeMode === 'locality' ? '2px solid #0284c7' : '1px solid #e2e8f0',
+                      background: scopeMode === 'locality' ? '#f0f9ff' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="scope"
+                      value="locality"
+                      checked={scopeMode === 'locality'}
+                      onChange={() => setScopeMode('locality')}
+                      style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                    />
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
+                          3. By Locality (एक Locality अनुसार) 📍
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          Only include contacts from a single selected locality.
+                        </div>
+                      </div>
+
+                      {scopeMode === 'locality' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                          <select
+                            value={selectedLocality}
+                            onChange={(e) => setSelectedLocality(e.target.value)}
+                            className="input-field"
+                            style={{ height: '32px', fontSize: '0.82rem', padding: '2px 8px', minWidth: '130px' }}
+                          >
+                            {availableLocalities.map((loc) => {
+                              const count = contacts.filter((c) => (c.locality || 'Mahima').trim().toLowerCase() === loc.toLowerCase()).length;
+                              return (
+                                <option key={loc} value={loc}>
+                                  {loc} ({count})
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Option 4: Custom Quantity (संख्या अनुसार) */}
                   <label
                     style={{
                       display: 'flex',
@@ -234,7 +346,7 @@ export default function ShareLinkModal({
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                          Custom Quantity (Pehle N Contacts)
+                          4. Custom Quantity (संख्या अनुसार - जैसे पहले N Contacts)
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                           Example: Give first 5, 10, or 15 contacts to a specific person.
@@ -264,40 +376,6 @@ export default function ShareLinkModal({
                       )}
                     </div>
                   </label>
-
-                  {/* Option 3: Selected Contacts only (if any checked) */}
-                  {selectedIds.size > 0 && (
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: scopeMode === 'selected' ? '2px solid #0284c7' : '1px solid #e2e8f0',
-                        background: scopeMode === 'selected' ? '#f0f9ff' : '#ffffff',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="scope"
-                        value="selected"
-                        checked={scopeMode === 'selected'}
-                        onChange={() => setScopeMode('selected')}
-                        style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                          Currently Checked Contacts Only ({selectedIds.size} Selected)
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                          Only share the specific contacts you ticked on the directory screen.
-                        </div>
-                      </div>
-                    </label>
-                  )}
 
                 </div>
               </div>

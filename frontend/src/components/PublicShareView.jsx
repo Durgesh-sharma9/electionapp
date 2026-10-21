@@ -58,19 +58,29 @@ export default function PublicShareView({ shareId }) {
     }
   }, [shareId]);
 
-  // Toggle Contacted Status
-  const handleToggleContacted = async (phone) => {
-    if (!data) return;
-
+  // Record Action: Call or Message or Toggle
+  const recordAction = async (phone, action) => {
+    const now = new Date();
     // Optimistic UI update
     setData((prev) => {
+      if (!prev || !Array.isArray(prev.contacts)) return prev;
       const nextContacts = prev.contacts.map((c) => {
         if (c.phone === phone) {
-          const newStatus = !c.contacted;
+          const isCall = action === 'call';
+          const isMsg = action === 'message';
+          const isToggle = action === 'toggle';
+
+          const newContacted = isToggle ? !c.contacted : true;
           return {
             ...c,
-            contacted: newStatus,
-            contactCount: newStatus ? (c.contactCount || 0) + 1 : c.contactCount,
+            contacted: newContacted,
+            contactCount: (c.contactCount || 0) + 1,
+            called: isCall ? true : c.called,
+            calledAt: isCall ? now : c.calledAt,
+            callCount: isCall ? (c.callCount || 0) + 1 : (c.callCount || 0),
+            messaged: isMsg ? true : c.messaged,
+            messagedAt: isMsg ? now : c.messagedAt,
+            messageCount: isMsg ? (c.messageCount || 0) + 1 : (c.messageCount || 0),
           };
         }
         return c;
@@ -79,10 +89,19 @@ export default function PublicShareView({ shareId }) {
     });
 
     try {
-      await fetch(`/api/shares/${shareId}/contact/${phone}/toggle`, { method: 'PATCH' });
+      await fetch(`/api/shares/${shareId}/contact/${phone}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
     } catch (err) {
-      console.error('Failed to sync toggle:', err);
+      console.error('Failed to record action:', err);
     }
+  };
+
+  // Toggle Contacted Status
+  const handleToggleContacted = (phone) => {
+    recordAction(phone, 'toggle');
   };
 
   // Handle WhatsApp Click
@@ -93,10 +112,7 @@ export default function PublicShareView({ shareId }) {
     const cleanPhone = contact.phone.replace(/\D/g, '');
     const fullPhone = cleanPhone.startsWith('91') && cleanPhone.length === 12 ? cleanPhone : `91${cleanPhone}`;
 
-    // Auto mark as contacted
-    if (!contact.contacted) {
-      handleToggleContacted(contact.phone);
-    }
+    recordAction(contact.phone, 'message');
 
     showToast(`Opening WhatsApp for ${contact.name}...`);
     window.open(`https://wa.me/${fullPhone}?text=${encoded}`, '_blank');
@@ -110,6 +126,8 @@ export default function PublicShareView({ shareId }) {
     navigator.clipboard.writeText(cleanDigits);
     setCopiedPhone(contact.phone);
     setTimeout(() => setCopiedPhone(null), 2500);
+
+    recordAction(contact.phone, 'call');
 
     showToast(`Calling ${contact.name} (${fullPhone} copied)`);
     window.location.href = `tel:${fullPhone}`;
@@ -126,18 +144,21 @@ export default function PublicShareView({ shareId }) {
   const filteredContacts = useMemo(() => {
     if (!data || !Array.isArray(data.contacts)) return [];
     return data.contacts.filter((c) => {
-      // Status filter
-      if (statusFilter === 'PENDING' && c.contacted) return false;
-      if (statusFilter === 'DONE' && !c.contacted) return false;
+      // Status filter: ALL | CALLED | MESSAGED | UNTOUCHED | DONE
+      if (statusFilter === 'CALLED' && !c.called) return false;
+      if (statusFilter === 'MESSAGED' && !c.messaged) return false;
+      if (statusFilter === 'UNTOUCHED' && (c.called || c.messaged || c.contacted)) return false;
+      if (statusFilter === 'DONE' && !(c.contacted || c.called || c.messaged)) return false;
 
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = (c.name || '').toLowerCase().includes(q);
         const matchesPhone = (c.phone || '').includes(q);
+        const matchesLoc = (c.locality || '').toLowerCase().includes(q);
         const matchesNotes = (c.notes || '').toLowerCase().includes(q);
         const matchesSerial = String(c.serialNo || '').includes(q);
-        return matchesName || matchesPhone || matchesNotes || matchesSerial;
+        return matchesName || matchesPhone || matchesLoc || matchesNotes || matchesSerial;
       }
       return true;
     });
@@ -145,12 +166,16 @@ export default function PublicShareView({ shareId }) {
 
   // Stats calculation
   const stats = useMemo(() => {
-    if (!data || !Array.isArray(data.contacts)) return { total: 0, done: 0, pending: 0, percent: 0 };
+    if (!data || !Array.isArray(data.contacts)) {
+      return { total: 0, called: 0, messaged: 0, untouched: 0, done: 0, percent: 0 };
+    }
     const total = data.contacts.length;
-    const done = data.contacts.filter((c) => c.contacted).length;
-    const pending = total - done;
+    const called = data.contacts.filter((c) => c.called).length;
+    const messaged = data.contacts.filter((c) => c.messaged).length;
+    const done = data.contacts.filter((c) => c.contacted || c.called || c.messaged).length;
+    const untouched = total - done;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { total, done, pending, percent };
+    return { total, called, messaged, untouched: untouched > 0 ? untouched : 0, done, percent };
   }, [data]);
 
   if (loading) {
@@ -297,18 +322,22 @@ export default function PublicShareView({ shareId }) {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-            <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>TOTAL CONTACTS</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>{stats.total}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+            <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700 }}>TOTAL ASSIGNED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>{stats.total}</div>
+            </div>
+            <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+              <div style={{ fontSize: '0.7rem', color: '#047857', fontWeight: 700 }}>📞 CALLED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#059669' }}>{stats.called}</div>
             </div>
             <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-              <div style={{ fontSize: '0.72rem', color: '#166534', fontWeight: 600 }}>COMPLETED (DONE)</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#15803d' }}>{stats.done}</div>
+              <div style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 700 }}>💬 MESSAGED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#15803d' }}>{stats.messaged}</div>
             </div>
-            <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#fffbeb', border: '1px solid #fde68a' }}>
-              <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 600 }}>PENDING</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#b45309' }}>{stats.pending}</div>
+            <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
+              <div style={{ fontSize: '0.7rem', color: '#c2410c', fontWeight: 700 }}>⚪ UNTOUCHED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ea580c' }}>{stats.untouched}</div>
             </div>
           </div>
         </div>
@@ -332,7 +361,7 @@ export default function PublicShareView({ shareId }) {
             <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
-              placeholder="Search by name, phone, or #..."
+              placeholder="Search by name, phone, locality..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input-field"
@@ -340,14 +369,14 @@ export default function PublicShareView({ shareId }) {
             />
           </div>
 
-          {/* Status Tabs */}
-          <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '3px', borderRadius: '8px' }}>
+          {/* Status Tabs: ALL | CALLED | MESSAGED | UNTOUCHED */}
+          <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '3px', borderRadius: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setStatusFilter('ALL')}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 borderRadius: '6px',
-                fontSize: '0.78rem',
+                fontSize: '0.76rem',
                 fontWeight: statusFilter === 'ALL' ? 700 : 500,
                 border: 'none',
                 background: statusFilter === 'ALL' ? '#ffffff' : 'transparent',
@@ -359,36 +388,52 @@ export default function PublicShareView({ shareId }) {
               All ({stats.total})
             </button>
             <button
-              onClick={() => setStatusFilter('PENDING')}
+              onClick={() => setStatusFilter('CALLED')}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 borderRadius: '6px',
-                fontSize: '0.78rem',
-                fontWeight: statusFilter === 'PENDING' ? 700 : 500,
+                fontSize: '0.76rem',
+                fontWeight: statusFilter === 'CALLED' ? 700 : 500,
                 border: 'none',
-                background: statusFilter === 'PENDING' ? '#ffffff' : 'transparent',
-                color: statusFilter === 'PENDING' ? '#b45309' : '#64748b',
-                boxShadow: statusFilter === 'PENDING' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                background: statusFilter === 'CALLED' ? '#ffffff' : 'transparent',
+                color: statusFilter === 'CALLED' ? '#059669' : '#64748b',
+                boxShadow: statusFilter === 'CALLED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 cursor: 'pointer',
               }}
             >
-              Pending ({stats.pending})
+              📞 Called ({stats.called})
             </button>
             <button
-              onClick={() => setStatusFilter('DONE')}
+              onClick={() => setStatusFilter('MESSAGED')}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 borderRadius: '6px',
-                fontSize: '0.78rem',
-                fontWeight: statusFilter === 'DONE' ? 700 : 500,
+                fontSize: '0.76rem',
+                fontWeight: statusFilter === 'MESSAGED' ? 700 : 500,
                 border: 'none',
-                background: statusFilter === 'DONE' ? '#ffffff' : 'transparent',
-                color: statusFilter === 'DONE' ? '#15803d' : '#64748b',
-                boxShadow: statusFilter === 'DONE' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                background: statusFilter === 'MESSAGED' ? '#ffffff' : 'transparent',
+                color: statusFilter === 'MESSAGED' ? '#15803d' : '#64748b',
+                boxShadow: statusFilter === 'MESSAGED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 cursor: 'pointer',
               }}
             >
-              Done ({stats.done})
+              💬 Messaged ({stats.messaged})
+            </button>
+            <button
+              onClick={() => setStatusFilter('UNTOUCHED')}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '6px',
+                fontSize: '0.76rem',
+                fontWeight: statusFilter === 'UNTOUCHED' ? 700 : 500,
+                border: 'none',
+                background: statusFilter === 'UNTOUCHED' ? '#ffffff' : 'transparent',
+                color: statusFilter === 'UNTOUCHED' ? '#c2410c' : '#64748b',
+                boxShadow: statusFilter === 'UNTOUCHED' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              ⚪ Untouched ({stats.untouched})
             </button>
           </div>
         </div>
@@ -408,8 +453,8 @@ export default function PublicShareView({ shareId }) {
               className="glass-panel"
               style={{
                 padding: '16px',
-                background: contact.contacted ? '#fafffc' : '#ffffff',
-                border: contact.contacted ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                background: (contact.called || contact.messaged || contact.contacted) ? '#fafffc' : '#ffffff',
+                border: (contact.called || contact.messaged || contact.contacted) ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
                 borderRadius: '12px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -419,10 +464,10 @@ export default function PublicShareView({ shareId }) {
                 position: 'relative',
               }}
             >
-              {/* Top Row: Serial & Name */}
+              {/* Top Row: Serial, Name & Status Badges */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span
                       style={{
                         background: '#e0f2fe',
@@ -447,6 +492,21 @@ export default function PublicShareView({ shareId }) {
                     >
                       {contact.name}
                     </h3>
+
+                    {contact.locality && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '1px 7px',
+                          borderRadius: '10px',
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          fontWeight: 600,
+                        }}
+                      >
+                        📍 {contact.locality}
+                      </span>
+                    )}
                   </div>
 
                   {/* Toggle Done Button */}
@@ -458,12 +518,31 @@ export default function PublicShareView({ shareId }) {
                       cursor: 'pointer',
                       padding: 0,
                     }}
-                    title="Toggle Completed Status"
+                    title="Toggle Done Status"
                   >
-                    <span className={contact.contacted ? 'badge badge-contacted' : 'badge badge-pending'}>
-                      {contact.contacted ? '✅ Done' : '⏳ Pending'}
+                    <span className={(contact.contacted || contact.called || contact.messaged) ? 'badge badge-contacted' : 'badge badge-pending'}>
+                      {(contact.contacted || contact.called || contact.messaged) ? '✅ Done' : '⏳ Pending'}
                     </span>
                   </button>
+                </div>
+
+                {/* Sub-badges: Call & Message Status */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                  {contact.called ? (
+                    <span style={{ fontSize: '0.72rem', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                      📞 Called
+                    </span>
+                  ) : null}
+                  {contact.messaged ? (
+                    <span style={{ fontSize: '0.72rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                      💬 Messaged
+                    </span>
+                  ) : null}
+                  {!contact.called && !contact.messaged && !contact.contacted && (
+                    <span style={{ fontSize: '0.72rem', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                      ⚪ Untouched
+                    </span>
+                  )}
                 </div>
 
                 {/* Phone Number */}

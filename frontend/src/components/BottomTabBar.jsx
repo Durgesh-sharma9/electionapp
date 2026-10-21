@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, FileText, UserPlus, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, UserPlus, Smartphone, BarChart3 } from 'lucide-react';
 
 export default function BottomTabBar({
   activeTab,
@@ -83,6 +83,16 @@ export default function BottomTabBar({
           />
         </div>
         <span className="bottom-tab-label">WA Link</span>
+      </button>
+
+      {/* 5. Analytics Tab */}
+      <button
+        type="button"
+        onClick={() => onTabChange('analytics')}
+        className={`bottom-tab-item ${activeTab === 'analytics' ? 'active' : ''}`}
+      >
+        <BarChart3 size={20} />
+        <span className="bottom-tab-label">Analytics</span>
       </button>
     </nav>
   );
