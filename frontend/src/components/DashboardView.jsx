@@ -260,45 +260,6 @@ export default function DashboardView({
         </div>
 
       </div>
-
-      {/* Category Breakdown (If available) */}
-      {categoryStats.length > 0 && (
-        <div className="section-card" style={{ padding: '20px 22px' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
-            Contacts by Category
-          </h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {categoryStats.map((cat, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '12px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
-                  {cat._id || 'General'}
-                </span>
-                <span style={{
-                  fontSize: '0.74rem',
-                  fontWeight: 700,
-                  background: '#e2e8f0',
-                  color: '#1e293b',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                }}>
-                  {cat.count}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

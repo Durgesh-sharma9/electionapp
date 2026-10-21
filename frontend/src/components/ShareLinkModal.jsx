@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   X,
   Share2,
@@ -193,7 +193,7 @@ export default function ShareLinkModal({
               {/* Scope: How Many Contacts to Include */}
               <div>
                 <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Kitni list ka link banana hai? (Contacts to Include):</span>
+                  <span>Contacts to Include in Link:</span>
                   <span style={{ color: '#0284c7', fontWeight: 700 }}>
                     {includedList.length} Contacts Selected
                   </span>
@@ -225,7 +225,7 @@ export default function ShareLinkModal({
                     />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                        1. All Contacts (सब को - All {totalContacts} Contacts) ✅
+                        1. All Contacts (All {totalContacts} Directory Contacts)
                       </div>
                       <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                         Includes all contacts currently in your directory from #1 to #{totalContacts}.
@@ -233,7 +233,7 @@ export default function ShareLinkModal({
                     </div>
                   </label>
 
-                  {/* Option 2: Selected Contacts Only (जो जो सिलेक्ट करें बस वो) */}
+                  {/* Option 2: Selected Contacts Only */}
                   <label
                     style={{
                       display: 'flex',
@@ -257,17 +257,17 @@ export default function ShareLinkModal({
                     />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                        2. Selected Contacts Only (जो जो सिलेक्ट करें बस वो)
+                        2. Selected Contacts Only
                       </div>
                       <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                         {selectedIds.size > 0
-                          ? `Currently ${selectedIds.size} contacts checked with checkboxes.`
-                          : 'List me checkbox se tick kiye gaye contacts ka link banega (Currently 0 checked).'}
+                          ? `Currently ${selectedIds.size} contacts selected via checkboxes.`
+                          : 'Only contacts selected with checkboxes in the list will be included (Currently 0 selected).'}
                       </div>
                     </div>
                   </label>
 
-                  {/* Option 3: By Specific Locality (एक-एक Locality अनुसार) */}
+                  {/* Option 3: By Specific Locality */}
                   <label
                     style={{
                       display: 'flex',
@@ -292,7 +292,7 @@ export default function ShareLinkModal({
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                          3. By Locality (एक Locality अनुसार) 📍
+                          3. By Locality 📍
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                           Only include contacts from a single selected locality.
@@ -346,7 +346,7 @@ export default function ShareLinkModal({
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
-                          4. Custom Quantity (संख्या अनुसार - जैसे पहले N Contacts)
+                          4. Custom Quantity (e.g. First N Contacts)
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                           Example: Give first 5, 10, or 15 contacts to a specific person.
