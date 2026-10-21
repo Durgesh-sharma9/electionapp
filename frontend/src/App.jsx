@@ -403,8 +403,6 @@ export default function App() {
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
         templatesCount={templates.length}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
-        onOpenBulkModal={() => setIsBulkModalOpen(true)}
         waConnected={waConnected}
       />
 

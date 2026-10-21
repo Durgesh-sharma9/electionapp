@@ -4,8 +4,6 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  UserPlus,
-  FileSpreadsheet,
   Smartphone,
 } from 'lucide-react';
 
@@ -14,8 +12,6 @@ export default function Sidebar({
   onTabChange,
   totalContacts = 0,
   templatesCount = 0,
-  onOpenAddModal,
-  onOpenBulkModal,
   waConnected = false,
 }) {
   return (
@@ -98,28 +94,6 @@ export default function Sidebar({
           />
         </button>
       </nav>
-
-      {/* Primary Action Buttons */}
-      <div className="sidebar-quick-actions">
-        <button
-          type="button"
-          onClick={onOpenAddModal}
-          className="btn btn-primary w-full justify-center text-xs font-semibold py-2.5"
-        >
-          <UserPlus size={15} />
-          <span>+ Add Contact</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={onOpenBulkModal}
-          className="btn btn-secondary w-full justify-center text-xs font-semibold py-2.5"
-          style={{ borderColor: '#c7d2fe', background: '#eef2ff', color: '#4338ca' }}
-        >
-          <FileSpreadsheet size={15} color="#4f46e5" />
-          <span>📋 Paste Bulk List</span>
-        </button>
-      </div>
     </aside>
   );
 }
