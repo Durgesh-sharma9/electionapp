@@ -15,12 +15,15 @@ export default function Navbar({
   onOpenShareModal,
   onRefresh,
   onLogout,
+  onNavigateTab,
   loading = false,
 }) {
   const getPageTitle = () => {
     switch (activeTab) {
       case 'dashboard':
         return 'Overview Dashboard';
+      case 'sure-voters':
+        return 'Sure Voters Tracker';
       case 'localities':
         return 'Ward & Locality Master';
       case 'analytics':
@@ -120,28 +123,37 @@ export default function Navbar({
           flexShrink: 0,
         }}
       >
-        {/* Live Sure Voters Counter Pill */}
-        <div
+        {/* Live Sure Voters Counter Pill (Clickable -> Opens Sure Voters Page) */}
+        <button
+          type="button"
+          onClick={() => onNavigateTab && onNavigateTab('sure-voters')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-            border: '1px solid #f59e0b',
+            background: activeTab === 'sure-voters'
+              ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+              : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: activeTab === 'sure-voters' ? '1.5px solid #d97706' : '1px solid #f59e0b',
+            color: activeTab === 'sure-voters' ? '#ffffff' : '#92400e',
             padding: '4px 9px',
             borderRadius: '20px',
-            boxShadow: '0 1px 4px rgba(245, 158, 11, 0.2)',
+            boxShadow: activeTab === 'sure-voters'
+              ? '0 2px 8px rgba(245, 158, 11, 0.4)'
+              : '0 1px 4px rgba(245, 158, 11, 0.2)',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
           }}
-          title="Confirmed Sure Voters in Campaign"
+          title="Click to view Sure Voters Analytics & List"
         >
           <span style={{ fontSize: '0.8rem' }}>⭐</span>
-          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#92400e', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 800, fontFamily: 'monospace' }}>
             {sureCount}
           </span>
-          <span className="hide-on-mobile" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#b45309' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>
             Sure
           </span>
-        </div>
+        </button>
 
         {/* 1. Share Link Button */}
         <button

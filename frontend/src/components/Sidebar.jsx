@@ -14,6 +14,7 @@ export default function Sidebar({
   activeTab,
   onTabChange,
   totalContacts = 0,
+  sureCount = 0,
   templatesCount = 0,
   localitiesCount = 0,
   waConnected = false,
@@ -58,6 +59,31 @@ export default function Sidebar({
           </div>
           {totalContacts > 0 && (
             <span className="sidebar-nav-badge">{totalContacts}</span>
+          )}
+        </button>
+
+        {/* Tab 2.5: Sure Voters Tracker */}
+        <button
+          type="button"
+          onClick={() => onTabChange('sure-voters')}
+          className={`sidebar-nav-item ${activeTab === 'sure-voters' ? 'active' : ''}`}
+          style={activeTab === 'sure-voters' ? { background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' } : {}}
+        >
+          <div className="sidebar-nav-left">
+            <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>⭐</span>
+            <span className="sidebar-nav-label">Sure Voters</span>
+          </div>
+          {sureCount > 0 && (
+            <span
+              className="sidebar-nav-badge"
+              style={{
+                background: activeTab === 'sure-voters' ? '#b45309' : '#f59e0b',
+                color: '#ffffff',
+                fontWeight: 800,
+              }}
+            >
+              {sureCount}
+            </span>
           )}
         </button>
 

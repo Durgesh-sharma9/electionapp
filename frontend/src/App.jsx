@@ -35,6 +35,7 @@ import ShareLinkModal from './components/ShareLinkModal';
 import PublicShareView from './components/PublicShareView';
 import LocalityMaster from './components/LocalityMaster';
 import AnalyticsView from './components/AnalyticsView';
+import SureVotersView from './components/SureVotersView';
 import LoginView from './components/LoginView';
 
 export default function App() {
@@ -627,6 +628,7 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         totalContacts={contacts.length}
+        sureCount={stats?.sureCount ?? contacts.filter((c) => c.isSureVoter).length}
         templatesCount={templates.length}
         localitiesCount={localities.length}
         waConnected={waConnected}
@@ -646,6 +648,7 @@ export default function App() {
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onRefresh={fetchData}
           onLogout={handleLogout}
+          onNavigateTab={setActiveTab}
           loading={loading}
         />
 
@@ -1251,6 +1254,33 @@ export default function App() {
   )}
 </>
 )}
+
+      {/* ============================================================== */}
+      {/* TAB 2.5: SURE VOTERS TRACKER & WARD/LOCALITY ANALYTICS         */}
+      {/* ============================================================== */}
+      {activeTab === 'sure-voters' && (
+        <SureVotersView
+          contacts={contacts}
+          wards={wards}
+          localities={localities}
+          references={references}
+          onToggleSureVoter={handleToggleSureVoter}
+          onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
+          onOpenTemplateModal={(c) => setMessageModalContact(c)}
+          onCallRedirect={handleCallRedirect}
+          onEditContact={(c) => {
+            setEditingContact(c);
+            setIsAddModalOpen(true);
+          }}
+          onDeleteContact={handleDeleteContact}
+          onOpenAddModal={() => {
+            setEditingContact(null);
+            setIsAddModalOpen(true);
+          }}
+          waConnected={waConnected}
+          onToast={showToast}
+        />
+      )}
 
       {/* ============================================================== */}
       {/* TAB 3: TEMPLATES MANAGER VIEW (Saved WhatsApp templates)       */}
