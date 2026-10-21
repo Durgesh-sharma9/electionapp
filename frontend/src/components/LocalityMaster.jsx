@@ -172,7 +172,7 @@ export default function LocalityMaster({
               </div>
               <div>
                 <h2 style={{ fontSize: 'clamp(1.1rem, 3.5vw, 1.35rem)', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                  Locality Master (क्षेत्र / मोहल्ला प्रबंधन)
+                  Locality Master
                 </h2>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
                   Manage localities, wards, and group voters by their living areas

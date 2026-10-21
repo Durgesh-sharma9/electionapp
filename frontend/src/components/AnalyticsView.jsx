@@ -496,8 +496,8 @@ export default function AnalyticsView({ onToast }) {
                 }}
                 title="Filter by Locality"
               >
-                <option value="ALL">📍 All Localities (सभी)</option>
-                <option value="Mahima">📍 Mahima (महिमा)</option>
+                <option value="ALL">📍 All Localities</option>
+                <option value="Mahima">📍 Mahima</option>
               </select>
 
               {/* Status Filter Tabs */}
@@ -591,9 +591,9 @@ export default function AnalyticsView({ onToast }) {
                 <thead>
                   <tr>
                     <th style={{ width: '40px', textAlign: 'center', padding: '9px 8px' }}>#</th>
-                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Name / नाम</th>
-                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Mobile / फोन</th>
-                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Locality / क्षेत्र</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Name</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Phone</th>
+                    <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Locality</th>
                     <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Call Status</th>
                     <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>WhatsApp Status</th>
                     <th style={{ padding: '9px 10px', whiteSpace: 'nowrap' }}>Status</th>

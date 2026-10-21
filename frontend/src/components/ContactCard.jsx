@@ -270,7 +270,7 @@ export default function ContactCard({
             gap: '4px',
             boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
           }}
-          title="Direct WhatsApp Chat (सीधा व्हाट्सएप)"
+          title="Direct WhatsApp Chat"
         >
           <Zap size={13} fill="#ffffff" />
           <span>Direct WA</span>
@@ -290,7 +290,7 @@ export default function ContactCard({
             fontWeight: 600,
             gap: '4px',
           }}
-          title="Choose Template / Edit Message (टेम्पलेट चुनें)"
+          title="Choose Template / Edit Message"
         >
           <Sparkles size={13} color="#f59e0b" />
           <span>Template</span>

@@ -141,7 +141,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
 
   // Disconnect handler
   const handleDisconnect = async () => {
-    if (!window.confirm('Are you sure you want to remove & disconnect this WhatsApp account? (क्या आप यह अकाउंट हटाना चाहते हैं?)')) {
+    if (!window.confirm('Are you sure you want to remove & disconnect this WhatsApp account?')) {
       return;
     }
     try {
@@ -158,7 +158,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
         connectedAt: null,
       });
       setLiveQr(null);
-      if (onToast) onToast('WhatsApp account disconnected & removed successfully (अकाउंट सफलतापूर्वक हटा दिया गया)', 'info');
+      if (onToast) onToast('WhatsApp account disconnected & removed successfully', 'info');
       fetchStatus();
     } catch (err) {
       alert('Error disconnecting: ' + err.message);
@@ -293,7 +293,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
       <div className="wa-card glass-panel">
         <div className="wa-card-header" style={{ paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="wa-card-title">WhatsApp Linked Account Details (अकाउंट विवरण)</span>
+            <span className="wa-card-title">WhatsApp Linked Account Details</span>
           </div>
           {isActive ? (
             <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 700, background: '#ecfdf5', padding: '3px 10px', borderRadius: '12px', border: '1px solid #a7f3d0' }}>
@@ -301,7 +301,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
             </span>
           ) : (
             <span style={{ fontSize: '0.78rem', color: '#dc2626', fontWeight: 600, background: '#fef2f2', padding: '3px 10px', borderRadius: '12px', border: '1px solid #fecaca' }}>
-              ○ Disconnected (अकाउंट लिंक नहीं है)
+              ○ Disconnected
             </span>
           )}
         </div>
@@ -344,7 +344,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
                     🟢 WhatsApp Account Connected & Live
                   </div>
                   <div style={{ fontSize: '0.78rem', color: '#047857' }}>
-                    ⚡ Contacts List में <strong>Instant Send (⚡ Send)</strong> बटन अब चालू है!
+                    ⚡ Direct WhatsApp & Instant Send features are now active!
                   </div>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
                 title="Remove & Logout this WhatsApp account"
               >
                 <Trash2 size={15} />
-                <span>Disconnect / Account हटाएं</span>
+                <span>Disconnect Account</span>
               </button>
             </div>
 
@@ -463,14 +463,14 @@ export default function WhatsAppConnectView({ contacts = [], templates = [], onT
               <Smartphone size={32} color="#dc2626" />
             </div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
-              No WhatsApp Device Linked (कोई अकाउंट नहीं जुड़ा है)
+              No WhatsApp Device Linked
             </h3>
             <p style={{ fontSize: '0.86rem', color: '#64748b', maxWidth: '520px', margin: '0 0 20px 0', lineHeight: 1.5 }}>
               Scan the QR code with WhatsApp on your phone to link your account. <strong>Instant 1-Click Send (⚡ Send)</strong> button will appear in the contacts list only after your WhatsApp account is connected.
             </p>
             <button onClick={() => setQrModalOpen(true)} className="btn btn-whatsapp wa-scan-btn">
               <QrCode size={18} />
-              <span>Scan QR Code to Connect (QR स्कैन करके अकाउंट जोड़ें)</span>
+              <span>Scan QR Code to Connect</span>
             </button>
           </div>
         )}

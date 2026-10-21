@@ -37,24 +37,7 @@ export default function Navbar({
   const currentTitle = getPageTitle();
 
   return (
-    <header
-      className="main-top-navbar"
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        width: '100%',
-        minHeight: '56px',
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '0 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
-        boxSizing: 'border-box',
-      }}
-    >
+    <header className="main-top-navbar">
       {/* LEFT: Logo Emblem + Brand Name + Session Year + Active Section */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
         {/* Emblem / Badge */}

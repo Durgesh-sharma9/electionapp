@@ -108,7 +108,7 @@ export default function SendMessageModal({
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
-                WhatsApp Message (व्हाट्सएप भेजें)
+                WhatsApp Message
               </h3>
               <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
                 {contact.serialNo ? <span style={{ fontWeight: 700, color: '#0284c7' }}>#{contact.serialNo} </span> : null}
@@ -154,7 +154,7 @@ export default function SendMessageModal({
             }}
           >
             <Zap size={15} color={activeMode === 'direct' ? '#10b981' : '#94a3b8'} />
-            <span>1. Redirect to WhatsApp (सीधा व्हाट्सएप)</span>
+            <span>1. Redirect to WhatsApp</span>
           </button>
 
           <button
@@ -179,7 +179,7 @@ export default function SendMessageModal({
             }}
           >
             <Sparkles size={15} color={activeMode === 'template' ? '#f59e0b' : '#94a3b8'} />
-            <span>2. Choose Template & Edit (टेम्पलेट चुनें)</span>
+            <span>2. Choose Template & Edit</span>
           </button>
         </div>
 
@@ -216,10 +216,10 @@ export default function SendMessageModal({
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '0.94rem', fontWeight: 700, color: '#065f46' }}>
-                    सीधा व्हाट्सएप चैट पर जाएं (Direct WhatsApp Redirect)
+                    Direct WhatsApp Redirect
                   </h4>
                   <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#047857' }}>
-                    नीचे बटन दबाते ही तुरंत <strong>+91 {contact.phone}</strong> की चैट खुल जाएगी।
+                    Click below to open chat with <strong>+91 {contact.phone}</strong>.
                   </p>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function SendMessageModal({
                 }}
               >
                 <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>
-                  मैसेज प्रीव्यू (Active Message):
+                  Message Preview:
                 </div>
                 {messageText}
               </div>
@@ -298,7 +298,7 @@ export default function SendMessageModal({
               <div>
                 <label className="form-label" style={{ margin: '0 0 6px 0', fontSize: '0.82rem', fontWeight: 600 }}>
                   <Sparkles size={13} color="#f59e0b" style={{ display: 'inline', marginRight: '4px' }} />
-                  टेम्पलेट चुनें (Choose Template):
+                  Choose Template:
                 </label>
                 <div
                   style={{
@@ -345,7 +345,7 @@ export default function SendMessageModal({
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label className="form-label" style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600 }}>
                     <Edit3 size={13} color="#2563eb" style={{ display: 'inline', marginRight: '4px' }} />
-                    बॉक्स में मैसेज लिखें / भरें (Message Box):
+                    Message Box:
                   </label>
                   <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
                     {messageText.length} characters
@@ -375,7 +375,7 @@ export default function SendMessageModal({
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
                   <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                    💡 नाम <strong>{contact.name}</strong> अपने आप जुड़ जाता है।
+                    💡 Name <strong>{contact.name}</strong> is inserted automatically.
                   </span>
                   {contact.notes && (
                     <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600 }}>
@@ -405,7 +405,7 @@ export default function SendMessageModal({
                   }}
                 >
                   <ExternalLink size={15} />
-                  <span>व्हाट्सएप पर भेजें (Send via WhatsApp) ➔</span>
+                  <span>Send via WhatsApp ➔</span>
                 </button>
               </div>
 
@@ -426,7 +426,7 @@ export default function SendMessageModal({
           }}
         >
           <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSending}>
-            Cancel (रद्द करें)
+            Cancel
           </button>
 
           <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>

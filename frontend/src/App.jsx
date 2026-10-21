@@ -67,7 +67,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    if (window.confirm('क्या आप एडमिन पोर्टल से लॉगआउट करना चाहते हैं? (Logout?)')) {
+    if (window.confirm('Are you sure you want to logout?')) {
       try {
         localStorage.removeItem('mahapura_admin_auth');
       } catch {}
@@ -889,10 +889,10 @@ export default function App() {
                         }}
                       />
                     </th>
-                    <th style={{ width: '56px', textAlign: 'center', padding: '10px 10px' }}>क्र.</th>
+                    <th style={{ width: '56px', textAlign: 'center', padding: '10px 10px' }}>#</th>
                     <th style={{ padding: '10px 12px' }}>NAME / DESCRIPTION</th>
                     <th style={{ padding: '10px 12px' }}>PHONE NUMBER</th>
-                    <th style={{ padding: '10px 12px' }}>LOCALITY / क्षेत्र</th>
+                    <th style={{ padding: '10px 12px' }}>LOCALITY</th>
                     <th style={{ padding: '10px 12px' }}>REFERENCE</th>
                     <th style={{ padding: '10px 12px' }}>STATUS</th>
                     <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
@@ -1004,18 +1004,18 @@ export default function App() {
                       </td>
                       <td style={{ padding: '9px 12px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                          {/* 1. Direct WhatsApp Redirect (सीधा व्हाट्सएप) */}
+                          {/* 1. Direct WhatsApp Redirect */}
                           <button
                             className="btn btn-whatsapp"
                             onClick={() => handleSendWebFromModal(contact, customText)}
                             style={{ padding: '4px 9px', fontSize: '0.76rem', borderRadius: '6px', gap: '4px', fontWeight: 700 }}
-                            title="Direct WhatsApp Redirect (सीधा व्हाट्सएप खोलें)"
+                            title="Direct WhatsApp Chat"
                           >
                             <Zap size={12} fill="#ffffff" />
                             <span>Direct WA</span>
                           </button>
 
-                          {/* 2. Choose Template / Edit Message Box (टेम्पलेट चुनें) */}
+                          {/* 2. Choose Template / Edit Message */}
                           <button
                             className="btn btn-secondary"
                             onClick={() => setMessageModalContact(contact)}
@@ -1031,7 +1031,7 @@ export default function App() {
                               alignItems: 'center',
                               gap: '4px',
                             }}
-                            title="Choose Template / Edit Box (टेम्पलेट चुनें)"
+                            title="Choose Template / Edit Message"
                           >
                             <Sparkles size={12} color="#f59e0b" />
                             <span>Template</span>

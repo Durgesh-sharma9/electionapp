@@ -231,7 +231,7 @@ export default function AddContactModal({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 600, color: isAddingNewLocality ? '#ea580c' : '#334155' }}>
-                  {isAddingNewLocality ? '+ Add New Area' : 'Locality / क्षेत्र (Mohalla)'}
+                  {isAddingNewLocality ? '+ Add New Area' : 'Locality / Area'}
                 </label>
                 {!isAddingNewLocality ? (
                   <button
@@ -324,7 +324,7 @@ export default function AddContactModal({
                   >
                     <option value="">— Unassigned (None) —</option>
                     <option value="__NEW__" style={{ fontWeight: 600, color: '#ea580c' }}>
-                      + Add New Locality (नया क्षेत्र जोड़ें)...
+                      + Add New Locality...
                     </option>
                     {localities.map((loc) => (
                       <option key={loc._id || loc.name} value={loc.name}>
@@ -339,7 +339,7 @@ export default function AddContactModal({
             {/* Reference (Input with Datalist) */}
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Reference (किसके संदर्भ से)
+                Reference Person (Optional)
               </label>
               <div style={{ position: 'relative' }}>
                 <UserCheck size={15} color="#7c3aed" style={{ position: 'absolute', left: '10px', top: '11px' }} />

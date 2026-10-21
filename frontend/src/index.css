@@ -31,7 +31,7 @@
 }
 
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   width: 100%;
 }
 
@@ -861,10 +861,28 @@ body {
   }
 
   .app-page-container {
-    padding: 16px 20px 80px 20px;
+    padding: 72px 20px 80px 20px;
     width: 100%;
     max-width: 1400px;
     box-sizing: border-box;
+  }
+
+  .main-top-navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 220px !important;
+    right: 0 !important;
+    width: auto !important;
+    height: 56px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
   }
 
   .bottom-tab-bar {
@@ -910,8 +928,25 @@ body {
     flex-direction: column !important;
   }
 
+  .main-top-navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 0 12px !important;
+    height: 52px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
   .app-page-container {
-    padding: 10px 10px 110px 10px;
+    padding: 64px 10px 110px 10px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -1596,7 +1631,7 @@ body {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 230px;
+  width: 220px;
   height: 100vh;
   background: #ffffff;
   border-right: 1px solid #e2e8f0;
@@ -1719,21 +1754,33 @@ body {
 
 /* MAIN CONTENT: Offset left margin by sidebar width on desktop */
 .app-main-content {
-  margin-left: 230px;
-  width: calc(100% - 230px);
+  margin-left: 220px;
+  width: calc(100% - 220px);
   min-height: 100vh;
-  padding: 14px 20px 80px 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Page body container below fixed navbar */
+.app-page-container {
+  padding: 72px 20px 80px 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* MOBILE RESPONSIVE ADAPTATION */
-@media (max-width: 768px) {
+@media (max-width: 880px) {
   .app-sidebar {
     display: none !important;
   }
   .app-main-content {
     margin-left: 0 !important;
     width: 100% !important;
-    padding: 10px 12px 90px 10px;
+    padding: 0 !important;
+  }
+  .app-page-container {
+    padding: 64px 12px 90px 12px !important;
   }
 }
 
