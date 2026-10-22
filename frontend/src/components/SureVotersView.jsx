@@ -156,7 +156,9 @@ export default function SureVotersView({
       }
 
       return true;
-    });
+    }).sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
   }, [contacts, scopeFilter, wardFilter, localityFilter, referenceFilter, searchQuery]);
 
   // Export Sure Voters CSV
@@ -744,10 +746,13 @@ export default function SureVotersView({
         </div>
       ) : (
         <div className="contact-grid">
-          {filteredContacts.map((contact) => (
+          {filteredContacts.map((contact, index) => (
             <ContactCard
               key={contact._id}
-              contact={contact}
+              contact={{
+                ...contact,
+                displaySerial: index + 1,
+              }}
               isSelected={selectedIds.has(contact._id)}
               onSelectToggle={(id, checked) => {
                 const next = new Set(selectedIds);

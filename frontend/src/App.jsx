@@ -236,7 +236,10 @@ export default function App() {
       const res = await fetch('/api/wards');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
-        setWards(data.data);
+        const sorted = [...data.data].sort((a, b) =>
+          (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+        );
+        setWards(sorted);
       }
     } catch (err) {
       console.error('Error fetching wards:', err);
@@ -249,7 +252,10 @@ export default function App() {
       const res = await fetch('/api/localities');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
-        setLocalities(data.data);
+        const sorted = [...data.data].sort((a, b) =>
+          (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+        );
+        setLocalities(sorted);
       }
     } catch (err) {
       console.error('Error fetching localities:', err);
@@ -262,7 +268,10 @@ export default function App() {
       const res = await fetch('/api/references');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
-        setReferences(data.data);
+        const sorted = [...data.data].sort((a, b) =>
+          String(a || '').trim().localeCompare(String(b || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+        );
+        setReferences(sorted);
       }
     } catch (err) {
       console.error('Error fetching references:', err);
@@ -289,7 +298,10 @@ export default function App() {
       const contactsRes = await fetch('/api/contacts');
       const contactsData = await contactsRes.json();
       if (contactsData.success) {
-        setContacts(contactsData.data);
+        const sorted = [...contactsData.data].sort((a, b) =>
+          (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+        );
+        setContacts(sorted);
       }
 
       // Refresh wards, localities and references counts
@@ -388,7 +400,9 @@ export default function App() {
       }
 
       return true;
-    });
+    }).sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
   }, [contacts, localities, categoryFilter, contactedFilter, wardFilter, localityFilter, referenceFilter, searchQuery]);
 
   // Open Send Message Modal (allows template selection and custom message editing)
@@ -1124,12 +1138,13 @@ export default function App() {
           ) : isMobile || viewMode === 'cards' ? (
             /* Native App-Style Responsive Contact Cards */
             <div className="contact-grid">
-                  {filteredContacts.map((contact) => (
+                  {filteredContacts.map((contact, index) => (
                     <ContactCard
                       key={contact._id}
                       contact={{
                         ...contact,
                         ward: getContactWard(contact),
+                        displaySerial: index + 1,
                       }}
                       isSelected={selectedIds.has(contact._id)}
                       onSelectToggle={(id, checked) => {
@@ -1202,7 +1217,7 @@ export default function App() {
                         />
                       </td>
                       <td style={{ textAlign: 'center', padding: '5px 4px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '0.76rem' }}>
-                        #{contact.serialNo && contact.serialNo > 0 ? contact.serialNo : index + 1}
+                        #{index + 1}
                       </td>
                       <td style={{ padding: '5px 6px', fontWeight: 600, color: '#0f172a' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>

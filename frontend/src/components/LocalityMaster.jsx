@@ -254,12 +254,17 @@ export default function LocalityMaster({
 
   // ----------------- FILTERED DATA -----------------
   const filteredWards = useMemo(() => {
-    if (!search.trim()) return wards;
-    const q = search.toLowerCase().trim();
-    return wards.filter(
-      (w) =>
-        (w.name && w.name.toLowerCase().includes(q)) ||
-        (w.description && w.description.toLowerCase().includes(q))
+    let list = wards;
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      list = wards.filter(
+        (w) =>
+          (w.name && w.name.toLowerCase().includes(q)) ||
+          (w.description && w.description.toLowerCase().includes(q))
+      );
+    }
+    return [...list].sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
     );
   }, [wards, search]);
 
@@ -278,7 +283,9 @@ export default function LocalityMaster({
           (l.description && l.description.toLowerCase().includes(q))
       );
     }
-    return list;
+    return [...list].sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
   }, [localities, filterWardForLocality, search]);
 
   // ----------------- SUB-LOCALITY HANDLERS & DATA -----------------
@@ -366,7 +373,9 @@ export default function LocalityMaster({
           (s.ward && s.ward.toLowerCase().includes(q))
       );
     }
-    return list;
+    return [...list].sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
   }, [subLocalities, filterLocalityForSub, search]);
 
   const subLocStats = useMemo(() => {

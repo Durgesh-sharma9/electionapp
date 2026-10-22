@@ -161,7 +161,9 @@ export default function PublicShareView({ shareId }) {
         return matchesName || matchesPhone || matchesLoc || matchesNotes || matchesSerial;
       }
       return true;
-    });
+    }).sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
   }, [data, searchQuery, statusFilter]);
 
   // Stats calculation
@@ -479,7 +481,7 @@ export default function PublicShareView({ shareId }) {
                         fontFamily: 'monospace',
                       }}
                     >
-                      #{contact.serialNo || index + 1}
+                      #{index + 1}
                     </span>
                     <h3
                       style={{

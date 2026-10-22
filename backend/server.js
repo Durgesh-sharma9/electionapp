@@ -205,14 +205,16 @@ app.get('/api/contacts', async (req, res) => {
 
     const sortObj = {};
     if (sort === 'createdAt' && order === 'desc') {
-      // Default to ascending serialNo first if available, otherwise createdAt
-      sortObj.serialNo = 1;
-      sortObj.createdAt = 1;
+      // Default to alphabetical order by name
+      sortObj.name = 1;
     } else {
       sortObj[sort] = order === 'asc' ? 1 : -1;
     }
 
-    const contacts = await Contact.find(filter).sort(sortObj).lean();
+    const contacts = await Contact.find(filter)
+      .collation({ locale: 'en', strength: 2 })
+      .sort(sortObj)
+      .lean();
 
     res.json({
       success: true,
@@ -918,7 +920,8 @@ app.delete('/api/localities/:id', async (req, res) => {
 app.get('/api/references', async (req, res) => {
   try {
     const refs = await Contact.distinct('reference', { reference: { $exists: true, $ne: '' } });
-    res.json({ success: true, data: refs.filter(Boolean).sort() });
+    const sorted = refs.filter(Boolean).map((r) => r.trim()).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }));
+    res.json({ success: true, data: sorted });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -1169,6 +1172,11 @@ app.post('/api/shares', async (req, res) => {
       );
     }
 
+    // Auto arrange contacts alphabetically before slicing & saving
+    selectedContacts.sort((a, b) =>
+      (a.name || '').trim().localeCompare((b.name || '').trim(), undefined, { sensitivity: 'base', numeric: true })
+    );
+
     // If countLimit is specified and smaller than length, slice it
     if (countLimit && Number(countLimit) > 0 && Number(countLimit) < selectedContacts.length) {
       selectedContacts = selectedContacts.slice(0, Number(countLimit));
@@ -1186,7 +1194,7 @@ app.post('/api/shares', async (req, res) => {
       messageTemplate: messageTemplate || 'Hello {name}, reaching out to connect with you.',
       localityFilter: localityFilter || '',
       contacts: selectedContacts.map((c, i) => ({
-        serialNo: c.serialNo || i + 1,
+        serialNo: i + 1,
         name: c.name,
         phone: normalizePhone(c.phone),
         locality: c.locality || 'Mahima',
