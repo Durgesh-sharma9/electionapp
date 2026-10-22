@@ -103,8 +103,8 @@ export default function ContactCard({
       }}
     >
       {/* Row 1: Checkbox + Avatar + Name + Serial + Edit/Delete */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px', width: '100%', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
           {/* Checkbox */}
           <input
             type="checkbox"
@@ -122,35 +122,35 @@ export default function ContactCard({
           {/* Compact Modern Avatar */}
           <div
             style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '9px',
               background: getAvatarBg(contact.name),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.05rem',
+              fontSize: '1rem',
               fontWeight: 800,
               color: '#ffffff',
               flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.10)',
             }}
           >
             {initial}
           </div>
 
           {/* Name & Serial No */}
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, width: '100%' }}>
               {contact.serialNo && (
                 <span
                   style={{
                     background: '#e0f2fe',
                     color: '#0284c7',
-                    fontSize: '0.72rem',
+                    fontSize: '0.70rem',
                     fontWeight: 800,
                     padding: '1px 5px',
-                    borderRadius: '5px',
+                    borderRadius: '4px',
                     fontFamily: 'monospace',
                     flexShrink: 0,
                   }}
@@ -161,13 +161,15 @@ export default function ContactCard({
               <h4
                 style={{
                   margin: 0,
-                  fontSize: '0.94rem',
+                  fontSize: '0.92rem',
                   fontWeight: 800,
                   color: '#0f172a',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   lineHeight: 1.25,
+                  minWidth: 0,
+                  flex: 1,
                 }}
                 title={contact.name}
               >
@@ -458,11 +460,13 @@ export default function ContactCard({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '6px',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '5px',
           paddingTop: '6px',
           borderTop: '1px solid #f1f5f9',
           position: 'relative',
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
         {/* 1. Direct WhatsApp */}

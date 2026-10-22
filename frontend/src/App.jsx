@@ -829,11 +829,11 @@ export default function App() {
       {activeTab === 'contacts' && (
         <>
           {/* Search & Filter Toolbar (Balanced) */}
-          <div className="glass-panel" style={{ padding: '8px 14px', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <div className="glass-panel" style={{ padding: isMobile ? '8px 10px' : '8px 14px', marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', flexWrap: isMobile ? 'nowrap' : 'wrap', gap: '8px', width: '100%', minWidth: 0 }}>
               
               {/* Search Box */}
-              <div style={{ position: 'relative', flex: '1 1 200px' }}>
+              <div style={{ position: 'relative', flex: isMobile ? '1 1 auto' : '1 1 200px', width: isMobile ? '100%' : 'auto', minWidth: 0 }}>
                 <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
@@ -846,7 +846,7 @@ export default function App() {
               </div>
 
               {/* Filter Controls (Horizontally scrollable on mobile) */}
-              <div className="mobile-filter-row" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div className="mobile-filter-row" style={{ display: 'flex', alignItems: 'center', gap: '6px', width: isMobile ? '100%' : 'auto', minWidth: 0, overflowX: 'auto' }}>
                 
                 {/* Ward Filter */}
                 <select
