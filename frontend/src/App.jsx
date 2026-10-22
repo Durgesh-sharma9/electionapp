@@ -1197,7 +1197,7 @@ export default function App() {
                         />
                       </td>
                       <td style={{ textAlign: 'center', padding: '5px 4px', fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '0.76rem' }}>
-                        #{contact.serialNo || index + 1}
+                        #{contact.serialNo && contact.serialNo > 0 ? contact.serialNo : index + 1}
                       </td>
                       <td style={{ padding: '5px 6px', fontWeight: 600, color: '#0f172a' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>

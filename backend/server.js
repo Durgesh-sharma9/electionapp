@@ -238,8 +238,14 @@ app.post('/api/contacts', async (req, res) => {
       }
     }
 
+    let calculatedSerial = Number(serialNo);
+    if (!calculatedSerial || isNaN(calculatedSerial) || calculatedSerial <= 0) {
+      const highestContact = await Contact.findOne({ serialNo: { $gt: 0 } }).sort({ serialNo: -1 });
+      calculatedSerial = (highestContact?.serialNo || 0) + 1;
+    }
+
     const contact = new Contact({
-      serialNo: Number(serialNo) || 0,
+      serialNo: calculatedSerial,
       name: name.trim(),
       phone: cleanedPhone,
       secondaryPhone: cleanedSecondaryPhone,

@@ -142,7 +142,7 @@ export default function ContactCard({
           {/* Name & Serial No */}
           <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, width: '100%' }}>
-              {contact.serialNo && (
+              {Boolean(contact.serialNo && contact.serialNo > 0) && (
                 <span
                   style={{
                     background: '#e0f2fe',
