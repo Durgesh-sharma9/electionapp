@@ -1799,6 +1799,7 @@ export default function App() {
           stats={stats}
           wards={wards}
           localities={localities}
+          onOpenShareModal={() => setIsShareModalOpen(true)}
           onToast={showToast}
         />
       )}

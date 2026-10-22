@@ -31,6 +31,7 @@ export default function AnalyticsView({
   stats = null,
   wards = [],
   localities = [],
+  onOpenShareModal,
   onToast,
 }) {
   // Sub-tabs: 'campaign' (Ward & Voters Analytics) vs 'shares' (Share link caller actions)
@@ -768,6 +769,24 @@ export default function AnalyticsView({
               </div>
 
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                {onOpenShareModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenShareModal}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      gap: '4px',
+                      background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    <Share2 size={12} />
+                    <span>+ New Link</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -848,8 +867,30 @@ export default function AnalyticsView({
                 No Outreach Share Links Yet
               </h3>
               <p style={{ margin: '6px auto 16px', color: '#64748b', fontSize: '0.82rem', maxWidth: '400px' }}>
-                Generate a shareable outreach webpage link using the <strong>"Share Link"</strong> button in the top navigation bar.
+                Generate a shareable outreach webpage link using the <strong>"Share Link"</strong> button in the top navigation bar or the button below.
               </p>
+              {onOpenShareModal && (
+                <button
+                  type="button"
+                  onClick={onOpenShareModal}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '8px 18px',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: '0 auto',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+                    boxShadow: '0 2px 8px rgba(2, 132, 199, 0.28)',
+                  }}
+                >
+                  <Share2 size={15} />
+                  <span>+ Create Share Link</span>
+                </button>
+              )}
             </div>
           ) : (
             <>
