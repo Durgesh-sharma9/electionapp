@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Zap,
   Sparkles,
+  Users,
 } from 'lucide-react';
 
 export default function ContactCard({
@@ -271,6 +272,25 @@ export default function ContactCard({
           </span>
         )}
 
+        {/* Family Votes Badge */}
+        <span
+          style={{
+            fontSize: '0.72rem',
+            padding: '2px 7px',
+            background: (contact.voterCount || 1) > 1 ? '#e0f2fe' : '#f8fafc',
+            color: (contact.voterCount || 1) > 1 ? '#0369a1' : '#475569',
+            border: `1px solid ${(contact.voterCount || 1) > 1 ? '#bae6fd' : '#e2e8f0'}`,
+            borderRadius: '6px',
+            fontWeight: 700,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '3px',
+          }}
+          title={`${contact.voterCount || 1} voters in this family`}
+        >
+          👥 {contact.voterCount || 1} {(contact.voterCount || 1) > 1 ? 'Votes' : 'Vote'}
+        </span>
+
         {/* ⭐ Sure Voter Toggle Button */}
         <button
           type="button"
@@ -290,9 +310,9 @@ export default function ContactCard({
             transition: 'all 0.15s ease',
             boxShadow: contact.isSureVoter ? '0 1px 3px rgba(245, 158, 11, 0.25)' : 'none',
           }}
-          title={contact.isSureVoter ? 'Confirmed Sure Voter (Click to toggle)' : 'Click to mark as Confirmed Sure Voter'}
+          title={contact.isSureVoter ? `Confirmed: ${contact.voterCount || 1} Sure Votes (Click to toggle)` : `Mark as Sure (+${contact.voterCount || 1} Votes)`}
         >
-          <span>{contact.isSureVoter ? '⭐ Sure Voter' : '☆ Make Sure'}</span>
+          <span>{contact.isSureVoter ? `⭐ ${contact.voterCount || 1} Sure` : `☆ Mark Sure (${contact.voterCount || 1})`}</span>
         </button>
 
         {/* Reference Person if any */}

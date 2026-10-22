@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus, Landmark, Star } from 'lucide-react';
+import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus, Landmark, Star, Users } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -29,6 +29,7 @@ export default function AddContactModal({
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
   const [isSureVoter, setIsSureVoter] = useState(false);
+  const [voterCount, setVoterCount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,6 +53,7 @@ export default function AddContactModal({
       setCategory(contact.category || 'General');
       setNotes(contact.notes || '');
       setIsSureVoter(Boolean(contact.isSureVoter));
+      setVoterCount(contact.voterCount || 1);
     } else {
       setName('');
       setPhone('');
@@ -61,6 +63,7 @@ export default function AddContactModal({
       setCategory('General');
       setNotes('');
       setIsSureVoter(false);
+      setVoterCount(1);
     }
     setError('');
   }, [contact, isOpen, wards]);
@@ -146,6 +149,7 @@ export default function AddContactModal({
         category,
         notes: notes.trim(),
         isSureVoter,
+        voterCount: Math.max(1, Number(voterCount) || 1),
       });
       onClose();
     } catch (err) {
@@ -446,7 +450,104 @@ export default function AddContactModal({
             </div>
           </div>
 
-          {/* Row 4: Sure Voter Toggle (Prominent) */}
+          {/* Row 4: Number of Family Voters (घर में कुल वोट) */}
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={16} color="#0284c7" />
+                <label style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
+                  Total Voters in Family / House
+                </label>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>(घर में कुल वोट)</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: isSureVoter ? '#b45309' : '#64748b', marginTop: '2px', fontWeight: isSureVoter ? 600 : 400 }}>
+                {isSureVoter
+                  ? `⭐ Sure karne par poore ${voterCount || 1} votes tally me judenge`
+                  : `Is parivaar ke kul kitne vote milenge (Default: 1)`}
+              </div>
+            </div>
+
+            {/* Stepper with +/- and number input */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setVoterCount((prev) => Math.max(1, (Number(prev) || 1) - 1))}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#475569',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                -
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="99"
+                value={voterCount}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  setVoterCount(isNaN(val) ? '' : Math.max(1, val));
+                }}
+                onBlur={() => {
+                  if (!voterCount || voterCount < 1) setVoterCount(1);
+                }}
+                style={{
+                  width: '46px',
+                  height: '32px',
+                  textAlign: 'center',
+                  borderRadius: '8px',
+                  border: '1.5px solid #0284c7',
+                  background: '#f0f9ff',
+                  fontWeight: 800,
+                  fontSize: '0.94rem',
+                  color: '#0369a1',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setVoterCount((prev) => (Number(prev) || 1) + 1)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#475569',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Row 5: Sure Voter Toggle (Prominent) */}
           <div
             onClick={() => setIsSureVoter(!isSureVoter)}
             style={{
@@ -478,10 +579,12 @@ export default function AddContactModal({
               </div>
               <div>
                 <div style={{ fontSize: '0.86rem', fontWeight: 700, color: isSureVoter ? '#92400e' : '#1e293b' }}>
-                  Confirmed Sure Voter ⭐
+                  Confirmed Sure Voter ⭐ {isSureVoter && `(+${voterCount || 1} Sure Votes)`}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: isSureVoter ? '#b45309' : '#64748b' }}>
-                  {isSureVoter ? 'Marked as guaranteed campaign voter' : 'Click to mark as confirmed supporter/voter'}
+                  {isSureVoter
+                    ? `Marked as guaranteed: poore ${voterCount || 1} votes campaign tally me judenge`
+                    : `Click to mark as confirmed supporter (+${voterCount || 1} Votes)`}
                 </div>
               </div>
             </div>

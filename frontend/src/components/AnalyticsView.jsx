@@ -45,12 +45,15 @@ export default function AnalyticsView({
   const [campaignSearch, setCampaignSearch] = useState('');
 
   // Overall Campaign Metrics
-  const totalVoters = contacts.length;
+  const totalVoters = useMemo(() => {
+    return contacts.reduce((sum, c) => sum + (c.voterCount || 1), 0);
+  }, [contacts]);
+  const totalFamilies = contacts.length;
   const sureVotersCount = useMemo(() => {
-    return contacts.filter((c) => c.isSureVoter).length;
+    return contacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
   }, [contacts]);
   const contactedVotersCount = useMemo(() => {
-    return contacts.filter((c) => c.contacted).length;
+    return contacts.filter((c) => c.contacted).reduce((sum, c) => sum + (c.voterCount || 1), 0);
   }, [contacts]);
   const pendingVotersCount = totalVoters - contactedVotersCount;
 
@@ -62,15 +65,17 @@ export default function AnalyticsView({
     const list = wards.length > 0 ? wards : [{ _id: 'default', name: 'Ward 1', targetVoters: 500 }];
     return list.map((w) => {
       const wardContacts = contacts.filter((c) => (c.ward || '') === w.name);
-      const total = wardContacts.length;
-      const sure = wardContacts.filter((c) => c.isSureVoter).length;
-      const contacted = wardContacts.filter((c) => c.contacted).length;
+      const total = wardContacts.reduce((sum, c) => sum + (c.voterCount || 1), 0);
+      const totalFamilies = wardContacts.length;
+      const sure = wardContacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
+      const contacted = wardContacts.filter((c) => c.contacted).reduce((sum, c) => sum + (c.voterCount || 1), 0);
       const target = w.targetVoters || 500;
       const percentOfTotal = total > 0 ? Math.round((sure / total) * 100) : 0;
       const percentOfTarget = target > 0 ? Math.min(100, Math.round((sure / target) * 100)) : 0;
       return {
         ...w,
         total,
+        totalFamilies,
         sure,
         contacted,
         target,
@@ -84,12 +89,14 @@ export default function AnalyticsView({
   const localityBreakdown = useMemo(() => {
     return localities.map((loc) => {
       const locContacts = contacts.filter((c) => c.locality === loc.name);
-      const total = locContacts.length;
-      const sure = locContacts.filter((c) => c.isSureVoter).length;
-      const contacted = locContacts.filter((c) => c.contacted).length;
+      const total = locContacts.reduce((sum, c) => sum + (c.voterCount || 1), 0);
+      const totalFamilies = locContacts.length;
+      const sure = locContacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
+      const contacted = locContacts.filter((c) => c.contacted).reduce((sum, c) => sum + (c.voterCount || 1), 0);
       return {
         ...loc,
         total,
+        totalFamilies,
         sure,
         contacted,
         percentSure: total > 0 ? Math.round((sure / total) * 100) : 0,
@@ -125,15 +132,16 @@ export default function AnalyticsView({
 
   // Export Campaign Analytics CSV
   const handleExportCampaignCSV = () => {
-    const headers = ['Serial No', 'Name', 'Phone', 'Ward', 'Locality', 'Reference', 'Sure Voter (⭐)', 'Contacted Status', 'Notes'];
+    const headers = ['Serial No', 'Name', 'Votes in Family', 'Phone', 'Ward', 'Locality', 'Reference', 'Sure Voter (⭐)', 'Contacted Status', 'Notes'];
     const rows = filteredCampaignContacts.map((c, i) => [
       c.serialNo || i + 1,
       `"${(c.name || '').replace(/"/g, '""')}"`,
+      c.voterCount || 1,
       `"${c.phone}"`,
       `"${c.ward || '—'}"`,
       `"${c.locality || ''}"`,
       `"${c.reference || ''}"`,
-      c.isSureVoter ? 'YES (Confirmed)' : 'NO',
+      c.isSureVoter ? `YES (${c.voterCount || 1} Votes)` : 'NO',
       c.contacted ? 'Contacted' : 'Pending',
       `"${(c.notes || '').replace(/"/g, '""')}"`,
     ]);
@@ -376,7 +384,7 @@ export default function AnalyticsView({
                 {totalVoters}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
-                {wards.length} Wards • {localities.length} Localities
+                {totalFamilies} Families • {wards.length} Wards
               </div>
             </div>
 
@@ -392,7 +400,7 @@ export default function AnalyticsView({
                 {sureVotersCount}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#92400e', marginTop: '2px', fontWeight: 700 }}>
-                {surePercentage}% Guaranteed Support
+                {surePercentage}% of {totalVoters} Votes
               </div>
             </div>
 
@@ -659,6 +667,7 @@ export default function AnalyticsView({
                   <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                     <th style={{ padding: '8px 10px', width: '40px' }}>#</th>
                     <th style={{ padding: '8px 10px' }}>NAME</th>
+                    <th style={{ padding: '8px 10px' }}>FAMILY VOTES</th>
                     <th style={{ padding: '8px 10px' }}>PHONE</th>
                     <th style={{ padding: '8px 10px' }}>WARD</th>
                     <th style={{ padding: '8px 10px' }}>LOCALITY</th>
@@ -669,7 +678,7 @@ export default function AnalyticsView({
                 <tbody>
                   {filteredCampaignContacts.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
                         No voters found matching the selected filters.
                       </td>
                     </tr>
@@ -681,6 +690,11 @@ export default function AnalyticsView({
                         </td>
                         <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0f172a' }}>
                           {c.name}
+                        </td>
+                        <td style={{ padding: '8px 10px' }}>
+                          <span style={{ fontSize: '0.74rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #bae6fd' }}>
+                            👥 {c.voterCount || 1} { (c.voterCount || 1) > 1 ? 'Votes' : 'Vote'}
+                          </span>
                         </td>
                         <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: '#334155' }}>
                           +91 {c.phone}
@@ -698,7 +712,7 @@ export default function AnalyticsView({
                         <td style={{ padding: '8px 10px' }}>
                           {c.isSureVoter ? (
                             <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
-                              ⭐ Sure Voter
+                              ⭐ Sure ({c.voterCount || 1} { (c.voterCount || 1) > 1 ? 'Votes' : 'Vote'})
                             </span>
                           ) : (
                             <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>— Not Confirmed</span>

@@ -36,11 +36,13 @@ export default function DashboardView({
   onCallRedirect,
 }) {
   const total = stats?.total || contactsCount || contacts.length || 0;
+  const totalVotes = stats?.totalVotes || contacts.reduce((sum, c) => sum + (c.voterCount || 1), 0);
   const contacted = stats?.contactedCount || contacts.filter((c) => c.contacted).length || 0;
   const pending = stats?.pendingCount !== undefined ? stats.pendingCount : Math.max(0, total - contacted);
   const sureCount = stats?.sureCount || contacts.filter((c) => c.isSureVoter).length || 0;
+  const sureVotes = stats?.totalSureVotes || contacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
   const progressPercent = total > 0 ? Math.round((contacted / total) * 100) : 0;
-  const surePercent = total > 0 ? Math.round((sureCount / total) * 100) : 0;
+  const surePercent = totalVotes > 0 ? Math.round((sureVotes / totalVotes) * 100) : 0;
 
   // Ward-wise aggregation fallback
   const wardBreakdown = React.useMemo(() => {
@@ -50,12 +52,17 @@ export default function DashboardView({
     const map = {};
     contacts.forEach((c) => {
       const w = c.ward && c.ward.trim() ? c.ward : 'Unassigned';
-      if (!map[w]) map[w] = { _id: w, total: 0, sureCount: 0, contactedCount: 0 };
+      if (!map[w]) map[w] = { _id: w, total: 0, totalVotes: 0, sureCount: 0, sureVotes: 0, contactedCount: 0 };
+      const v = c.voterCount || 1;
       map[w].total += 1;
-      if (c.isSureVoter) map[w].sureCount += 1;
+      map[w].totalVotes += v;
+      if (c.isSureVoter) {
+        map[w].sureCount += v;
+        map[w].sureVotes += v;
+      }
       if (c.contacted) map[w].contactedCount += 1;
     });
-    return Object.values(map).sort((a, b) => b.total - a.total);
+    return Object.values(map).sort((a, b) => (b.totalVotes || b.total) - (a.totalVotes || a.total));
   }, [stats?.wardStats, contacts]);
 
   // Recent 5 contacts for quick outreach queue
@@ -149,10 +156,10 @@ export default function DashboardView({
             </div>
           </div>
           <div style={{ fontSize: '1.6rem', fontFamily: 'var(--font-heading)', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
-            {total}
+            {totalVotes}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '3px' }}>
-            All voters loaded
+            Votes across {total} families
           </div>
         </div>
 
@@ -164,16 +171,16 @@ export default function DashboardView({
           title="Click to view confirmed sure voters"
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <span style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 700 }}>⭐ Sure Voters</span>
+            <span style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 700 }}>⭐ Sure Votes</span>
             <div style={{ padding: '5px', borderRadius: '8px', background: '#fef3c7', color: '#d97706' }}>
               <Star size={15} fill="#d97706" />
             </div>
           </div>
           <div style={{ fontSize: '1.6rem', fontFamily: 'var(--font-heading)', fontWeight: 800, color: '#b45309', lineHeight: 1.1 }}>
-            {sureCount}
+            {sureVotes}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#b45309', marginTop: '3px', fontWeight: 600 }}>
-            {surePercent}% of total list
+            {sureCount} families ({surePercent}% of {totalVotes})
           </div>
         </div>
 

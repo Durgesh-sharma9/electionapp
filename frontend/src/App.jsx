@@ -85,10 +85,18 @@ export default function App() {
 
   const getTabFromUrl = () => {
     try {
-      const path = window.location.pathname.replace(/^\/+/, '').toLowerCase();
-      if (VALID_TABS.includes(path)) return path;
-      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      const rawPath = decodeURIComponent(window.location.pathname.replace(/^\/+/, '')).toLowerCase().trim();
+      if (VALID_TABS.includes(rawPath)) return rawPath;
+      if (rawPath === 'sure' || rawPath === 'sure voters' || rawPath === 'sure-voters' || rawPath === 'surevoters') return 'sure-voters';
+      if (rawPath === 'wards' || rawPath === 'ward' || rawPath === 'locality' || rawPath === 'localities') return 'localities';
+      if (rawPath === 'template' || rawPath === 'templates') return 'templates';
+      if (rawPath === 'dash' || rawPath === 'dashboard') return 'dashboard';
+      if (rawPath === 'wa' || rawPath === 'whatsapp') return 'whatsapp';
+      if (rawPath === 'analytic' || rawPath === 'analytics') return 'analytics';
+
+      const hash = decodeURIComponent(window.location.hash.replace(/^#\/?/, '')).toLowerCase().trim();
       if (VALID_TABS.includes(hash)) return hash;
+      if (hash === 'sure' || hash === 'sure voters' || hash === 'sure-voters' || hash === 'surevoters') return 'sure-voters';
     } catch {}
     return 'contacts';
   };
@@ -920,11 +928,19 @@ export default function App() {
             )}
           </div>
 
-          {/* Results Summary */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', padding: '0 4px' }}>
-            <span style={{ fontSize: '0.86rem', color: '#64748b', fontWeight: 500 }}>
-              Showing <strong>{filteredContacts.length}</strong> of {contacts.length} contacts
-            </span>
+          {/* Results Summary with Total and Sure Votes Tally */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', padding: '0 4px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.86rem', color: '#64748b', fontWeight: 500 }}>
+                Showing <strong>{filteredContacts.length}</strong> contacts
+              </span>
+              <span style={{ fontSize: '0.78rem', color: '#0369a1', background: '#e0f2fe', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                👥 {filteredContacts.reduce((sum, c) => sum + (c.voterCount || 1), 0)} Total Votes
+              </span>
+              <span style={{ fontSize: '0.78rem', color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                ⭐ {filteredContacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0)} Sure Votes
+              </span>
+            </div>
 
             {filteredContacts.length > 0 && (
               <button
@@ -1072,6 +1088,20 @@ export default function App() {
                       <td style={{ padding: '9px 12px', fontWeight: 600, color: '#0f172a' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.88rem' }}>{contact.name}</span>
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              padding: '1px 6px',
+                              background: (contact.voterCount || 1) > 1 ? '#e0f2fe' : '#f8fafc',
+                              color: (contact.voterCount || 1) > 1 ? '#0369a1' : '#64748b',
+                              border: `1px solid ${(contact.voterCount || 1) > 1 ? '#bae6fd' : '#e2e8f0'}`,
+                              borderRadius: '5px',
+                              fontWeight: 700,
+                            }}
+                            title={`${contact.voterCount || 1} voters in family`}
+                          >
+                            👥 {contact.voterCount || 1} {(contact.voterCount || 1) > 1 ? 'Votes' : 'Vote'}
+                          </span>
                           {contact.notes && (
                             <span style={{ fontSize: '0.72rem', color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', padding: '2px 6px', fontWeight: 500 }}>
                               ⚠️ {contact.notes}
@@ -1158,9 +1188,9 @@ export default function App() {
                             boxShadow: contact.isSureVoter ? '0 1px 3px rgba(245, 158, 11, 0.2)' : 'none',
                             transition: 'all 0.15s ease',
                           }}
-                          title={contact.isSureVoter ? 'Confirmed Sure Voter (Click to toggle)' : 'Click to mark as Confirmed Sure Voter'}
+                          title={contact.isSureVoter ? `Confirmed: ${contact.voterCount || 1} Sure Votes (Click to toggle)` : `Click to mark as Confirmed (+${contact.voterCount || 1} Votes)`}
                         >
-                          <span>{contact.isSureVoter ? '⭐ Sure' : '☆ Mark Sure'}</span>
+                          <span>{contact.isSureVoter ? `⭐ ${contact.voterCount || 1} Sure` : `☆ Mark (${contact.voterCount || 1})`}</span>
                         </button>
                       </td>
                       <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>

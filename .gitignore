@@ -6,3 +6,15 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# WhatsApp Baileys credentials & session data
+backend/auth_info_baileys/
+auth_info_baileys/

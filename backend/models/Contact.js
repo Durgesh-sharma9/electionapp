@@ -49,6 +49,11 @@ const contactSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    voterCount: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
     contactCount: {
       type: Number,
       default: 0,

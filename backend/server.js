@@ -60,19 +60,50 @@ app.get('/api/stats', async (req, res) => {
     const pendingCount = total - contactedCount;
     const sureCount = await Contact.countDocuments({ isSureVoter: true });
 
+    // Aggregate family votes count
+    const voteAgg = await Contact.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalVotes: { $sum: { $ifNull: ['$voterCount', 1] } },
+          totalSureVotes: {
+            $sum: {
+              $cond: [{ $eq: ['$isSureVoter', true] }, { $ifNull: ['$voterCount', 1] }, 0],
+            },
+          },
+          totalContactedVotes: {
+            $sum: {
+              $cond: [{ $eq: ['$contacted', true] }, { $ifNull: ['$voterCount', 1] }, 0],
+            },
+          },
+        },
+      },
+    ]);
+    const totalVotes = voteAgg[0]?.totalVotes || total;
+    const totalSureVotes = voteAgg[0]?.totalSureVotes || sureCount;
+    const totalContactedVotes = voteAgg[0]?.totalContactedVotes || contactedCount;
+
     // Category breakdown
     const categoryStats = await Contact.aggregate([
-      { $group: { _id: '$category', count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          votes: { $sum: { $ifNull: ['$voterCount', 1] } },
+        },
+      },
     ]);
 
-    // Ward-wise aggregation
+    // Ward-wise aggregation (counts both families and total votes)
     const wardStats = await Contact.aggregate([
       {
         $group: {
           _id: { $ifNull: ['$ward', 'Unassigned'] },
           total: { $sum: 1 },
-          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
-          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, 1, 0] } },
+          totalVotes: { $sum: { $ifNull: ['$voterCount', 1] } },
+          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, { $ifNull: ['$voterCount', 1] }, 0] } },
+          sureFamilies: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
+          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, { $ifNull: ['$voterCount', 1] }, 0] } },
         },
       },
       { $sort: { total: -1 } },
@@ -85,8 +116,10 @@ app.get('/api/stats', async (req, res) => {
           _id: { $ifNull: ['$locality', 'Unassigned'] },
           ward: { $first: '$ward' },
           total: { $sum: 1 },
-          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
-          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, 1, 0] } },
+          totalVotes: { $sum: { $ifNull: ['$voterCount', 1] } },
+          sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, { $ifNull: ['$voterCount', 1] }, 0] } },
+          sureFamilies: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, 1, 0] } },
+          contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, { $ifNull: ['$voterCount', 1] }, 0] } },
         },
       },
       { $sort: { total: -1 } },
@@ -96,9 +129,12 @@ app.get('/api/stats', async (req, res) => {
       success: true,
       data: {
         total,
+        totalVotes,
         contactedCount,
+        totalContactedVotes,
         pendingCount,
         sureCount,
+        totalSureVotes,
         categoryStats,
         wardStats,
         localityStats,
@@ -177,7 +213,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { serialNo, name, phone, ward, locality, reference, category, notes, isSureVoter } = req.body;
+    const { serialNo, name, phone, ward, locality, reference, category, notes, isSureVoter, voterCount } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -198,6 +234,7 @@ app.post('/api/contacts', async (req, res) => {
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
       isSureVoter: Boolean(isSureVoter),
+      voterCount: Math.max(1, Number(voterCount) || 1),
     });
 
     const saved = await contact.save();
@@ -244,6 +281,7 @@ app.post('/api/contacts/bulk', async (req, res) => {
         notes: item.notes?.trim() || '',
         contacted: false,
         contactCount: 0,
+        voterCount: Math.max(1, Number(item.voterCount) || 1),
       });
     }
 
@@ -330,7 +368,7 @@ app.patch('/api/contacts/:id/sure', async (req, res) => {
 app.put('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, ward, locality, reference, category, notes, contacted, isSureVoter } = req.body;
+    const { name, phone, ward, locality, reference, category, notes, contacted, isSureVoter, voterCount } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
@@ -342,6 +380,7 @@ app.put('/api/contacts/:id', async (req, res) => {
     if (notes !== undefined) updateData.notes = notes.trim();
     if (contacted !== undefined) updateData.contacted = Boolean(contacted);
     if (isSureVoter !== undefined) updateData.isSureVoter = Boolean(isSureVoter);
+    if (voterCount !== undefined) updateData.voterCount = Math.max(1, Number(voterCount) || 1);
 
     const updated = await Contact.findByIdAndUpdate(id, updateData, { new: true });
     if (!updated) {

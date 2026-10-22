@@ -39,28 +39,39 @@ export default function SureVotersView({
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   // ----------------- ANALYTICS CALCULATIONS -----------------
-  const totalCount = contacts.length;
-  const sureCount = contacts.filter((c) => c.isSureVoter).length;
-  const remainingCount = totalCount - sureCount;
-  const surePercentage = totalCount > 0 ? ((sureCount / totalCount) * 100).toFixed(1) : 0;
+  const totalFamilies = contacts.length;
+  const totalCount = totalFamilies;
+  const totalVotes = contacts.reduce((sum, c) => sum + (c.voterCount || 1), 0);
+  const sureFamilies = contacts.filter((c) => c.isSureVoter).length;
+  const sureCount = sureFamilies;
+  const sureVotes = contacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
+  const remainingVotes = Math.max(0, totalVotes - sureVotes);
+  const remainingFamilies = Math.max(0, totalFamilies - sureFamilies);
+  const remainingCount = remainingFamilies;
+  const surePercentage = totalVotes > 0 ? ((sureVotes / totalVotes) * 100).toFixed(1) : 0;
 
-  // Ward breakdown
+  // Ward breakdown (calculating both votes and families)
   const wardStats = useMemo(() => {
     const map = {};
     // Seed with all known wards
     wards.forEach((w) => {
-      map[w.name] = { ward: w.name, total: 0, sure: 0 };
+      map[w.name] = { ward: w.name, total: 0, sure: 0, totalVotes: 0, sureVotes: 0 };
     });
     // Add default if none
     if (Object.keys(map).length === 0) {
-      map['Ward 1'] = { ward: 'Ward 1', total: 0, sure: 0 };
+      map['Ward 1'] = { ward: 'Ward 1', total: 0, sure: 0, totalVotes: 0, sureVotes: 0 };
     }
 
     contacts.forEach((c) => {
       const w = c.ward && c.ward.trim() ? c.ward : 'Unassigned';
-      if (!map[w]) map[w] = { ward: w, total: 0, sure: 0 };
+      if (!map[w]) map[w] = { ward: w, total: 0, sure: 0, totalVotes: 0, sureVotes: 0 };
+      const v = c.voterCount || 1;
       map[w].total += 1;
-      if (c.isSureVoter) map[w].sure += 1;
+      map[w].totalVotes += v;
+      if (c.isSureVoter) {
+        map[w].sure += 1;
+        map[w].sureVotes += v;
+      }
     });
 
     return Object.values(map);
@@ -77,19 +88,26 @@ export default function SureVotersView({
           ward: c.ward && c.ward.trim() ? c.ward : '—',
           total: 0,
           sure: 0,
+          totalVotes: 0,
+          sureVotes: 0,
         };
       }
+      const v = c.voterCount || 1;
       map[loc].total += 1;
-      if (c.isSureVoter) map[loc].sure += 1;
+      map[loc].totalVotes += v;
+      if (c.isSureVoter) {
+        map[loc].sure += 1;
+        map[loc].sureVotes += v;
+      }
     });
 
-    return Object.values(map).sort((a, b) => b.sure - a.sure);
+    return Object.values(map).sort((a, b) => b.sureVotes - a.sureVotes);
   }, [contacts]);
 
-  // Leading Ward
+  // Leading Ward by Sure Votes
   const topWard = useMemo(() => {
     if (wardStats.length === 0) return null;
-    return [...wardStats].sort((a, b) => b.sure - a.sure)[0];
+    return [...wardStats].sort((a, b) => b.sureVotes - a.sureVotes)[0];
   }, [wardStats]);
 
   // ----------------- FILTERING -----------------
@@ -147,11 +165,12 @@ export default function SureVotersView({
       if (onToast) onToast('No sure voters to export yet.');
       return;
     }
-    const headers = ['Serial', 'Name', 'Phone', 'Ward', 'Locality', 'Reference', 'Contacted', 'Notes'];
+    const headers = ['Serial', 'Name', 'Phone', 'Family Votes', 'Ward', 'Locality', 'Reference', 'Contacted', 'Notes'];
     const rows = listToExport.map((c, i) => [
       c.serialNo || i + 1,
       `"${(c.name || '').replace(/"/g, '""')}"`,
       c.phone,
+      c.voterCount || 1,
       `"${c.ward || '—'}"`,
       `"${(c.locality || '').replace(/"/g, '""')}"`,
       `"${(c.reference || '').replace(/"/g, '""')}"`,
@@ -279,20 +298,20 @@ export default function SureVotersView({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Confirmed Sure Voters
+              Confirmed Sure Votes
             </span>
             <span style={{ fontSize: '1.1rem' }}>⭐</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
             <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#b45309', fontFamily: 'monospace', lineHeight: 1 }}>
-              {sureCount}
+              {sureVotes}
             </span>
             <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#059669' }}>
-              ({surePercentage}%)
+              Sure Votes ({surePercentage}%)
             </span>
           </div>
           <div style={{ fontSize: '0.74rem', color: '#78716c', marginTop: '6px' }}>
-            out of {totalCount} total registered voters
+            from <strong>{sureFamilies}</strong> families (out of {totalVotes} total voters)
           </div>
         </div>
 
@@ -314,14 +333,14 @@ export default function SureVotersView({
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
             <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#1e293b', fontFamily: 'monospace', lineHeight: 1 }}>
-              {remainingCount}
+              {remainingVotes}
             </span>
             <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748b' }}>
-              ({totalCount > 0 ? ((remainingCount / totalCount) * 100).toFixed(1) : 0}%)
+              Votes ({totalVotes > 0 ? ((remainingVotes / totalVotes) * 100).toFixed(1) : 0}%)
             </span>
           </div>
           <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '6px' }}>
-            Active contacts needing follow-up
+            across {remainingFamilies} families needing outreach
           </div>
         </div>
 
@@ -407,8 +426,10 @@ export default function SureVotersView({
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
           {wardStats.map((w) => {
-            const pct = w.total > 0 ? ((w.sure / w.total) * 100).toFixed(0) : 0;
-            const remainingInWard = w.total - w.sure;
+            const wardTotal = w.totalVotes || w.total;
+            const wardSure = w.sureVotes || w.sure;
+            const pct = wardTotal > 0 ? ((wardSure / wardTotal) * 100).toFixed(0) : 0;
+            const remainingInWard = Math.max(0, wardTotal - wardSure);
             const isFilterSelected = wardFilter === w.ward;
 
             return (
@@ -439,7 +460,7 @@ export default function SureVotersView({
                       borderRadius: '6px',
                     }}
                   >
-                    {pct}% Sure
+                    ⭐ {w.sureVotes || w.sure} / {w.totalVotes || w.total} Votes ({pct}%)
                   </span>
                 </div>
 
