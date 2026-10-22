@@ -1037,23 +1037,7 @@ select.input-field {
     box-sizing: border-box !important;
   }
 
-  .mobile-filter-row {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .mobile-filter-row::-webkit-scrollbar {
-    display: none;
-  }
-  .mobile-filter-row select {
-    flex-shrink: 0;
-  }
+
 }
 
 /* Native App-Style Contact Cards */

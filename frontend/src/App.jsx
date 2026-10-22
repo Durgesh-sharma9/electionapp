@@ -845,10 +845,18 @@ export default function App() {
                 />
               </div>
 
-              {/* Filter Controls (Horizontally scrollable on mobile) */}
-              <div className="mobile-filter-row" style={{ display: 'flex', alignItems: 'center', gap: '6px', width: isMobile ? '100%' : 'auto', minWidth: 0, overflowX: 'auto' }}>
-                
-                {/* Ward Filter */}
+              {/* Filter Controls: Clean 2-column grid on mobile (NO horizontal sliding/cut-off) */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'auto auto auto auto',
+                  gap: '6px',
+                  width: isMobile ? '100%' : 'auto',
+                  boxSizing: 'border-box',
+                  alignItems: 'center',
+                }}
+              >
+                {/* 1. Ward Filter */}
                 <select
                   className="input-field"
                   value={wardFilter}
@@ -857,13 +865,14 @@ export default function App() {
                     setLocalityFilter('ALL'); // Reset locality filter when ward changes
                   }}
                   style={{
-                    width: 'auto',
-                    padding: '4px 10px',
-                    fontSize: '0.8rem',
-                    height: '34px',
+                    width: '100%',
+                    padding: '5px 8px',
+                    fontSize: '0.80rem',
+                    height: '36px',
                     borderColor: wardFilter !== 'ALL' ? '#2563eb' : undefined,
                     background: wardFilter !== 'ALL' ? '#eff6ff' : '#ffffff',
                     fontWeight: 600,
+                    boxSizing: 'border-box',
                   }}
                   title="Filter by Ward"
                 >
@@ -876,12 +885,21 @@ export default function App() {
                   ))}
                 </select>
 
-                {/* Locality Filter - dynamically filtered to selected Ward if one is picked */}
+                {/* 2. Locality Filter */}
                 <select
                   className="input-field"
                   value={localityFilter}
                   onChange={(e) => setLocalityFilter(e.target.value)}
-                  style={{ width: 'auto', padding: '4px 10px', fontSize: '0.8rem', height: '34px', borderColor: localityFilter !== 'ALL' ? '#f59e0b' : undefined, background: localityFilter !== 'ALL' ? '#fef3c7' : '#ffffff' }}
+                  style={{
+                    width: '100%',
+                    padding: '5px 8px',
+                    fontSize: '0.80rem',
+                    height: '36px',
+                    borderColor: localityFilter !== 'ALL' ? '#f59e0b' : undefined,
+                    background: localityFilter !== 'ALL' ? '#fef3c7' : '#ffffff',
+                    fontWeight: localityFilter !== 'ALL' ? 700 : 500,
+                    boxSizing: 'border-box',
+                  }}
                   title="Filter by Locality / Area"
                 >
                   <option value="ALL">📍 All Localities</option>
@@ -893,13 +911,21 @@ export default function App() {
                   ))}
                 </select>
 
-                {/* Reference Filter (if any distinct references exist) */}
+                {/* 3. Reference Filter (only if distinct references exist) */}
                 {references.length > 0 && (
                   <select
                     className="input-field"
                     value={referenceFilter}
                     onChange={(e) => setReferenceFilter(e.target.value)}
-                    style={{ width: 'auto', padding: '4px 10px', fontSize: '0.8rem', height: '34px', borderColor: referenceFilter !== 'ALL' ? '#8b5cf6' : undefined, background: referenceFilter !== 'ALL' ? '#ede9fe' : '#ffffff' }}
+                    style={{
+                      width: '100%',
+                      padding: '5px 8px',
+                      fontSize: '0.80rem',
+                      height: '36px',
+                      borderColor: referenceFilter !== 'ALL' ? '#8b5cf6' : undefined,
+                      background: referenceFilter !== 'ALL' ? '#ede9fe' : '#ffffff',
+                      boxSizing: 'border-box',
+                    }}
                     title="Filter by Reference person"
                   >
                     <option value="ALL">👤 All References</option>
@@ -912,22 +938,24 @@ export default function App() {
                   </select>
                 )}
 
-                {/* Status / Sure Filter */}
+                {/* 4. Status / Sure Filter */}
                 <select
                   className="input-field"
                   value={contactedFilter}
                   onChange={(e) => setContactedFilter(e.target.value)}
                   style={{
-                    width: 'auto',
-                    padding: '4px 8px',
-                    fontSize: '0.8rem',
-                    height: '34px',
+                    width: '100%',
+                    gridColumn: isMobile && references.length === 0 ? 'span 2' : 'auto',
+                    padding: '5px 8px',
+                    fontSize: '0.80rem',
+                    height: '36px',
                     borderColor: contactedFilter === 'SURE' ? '#f59e0b' : undefined,
                     background: contactedFilter === 'SURE' ? '#fef3c7' : '#ffffff',
                     fontWeight: contactedFilter === 'SURE' ? 700 : 500,
+                    boxSizing: 'border-box',
                   }}
                 >
-                  <option value="ALL">All Status</option>
+                  <option value="ALL">⏳ All Status</option>
                   <option value="PENDING">⏳ Pending</option>
                   <option value="CONTACTED">✅ Contacted</option>
                   <option value="SYMBOL_SENT">🗳️ Symbol Sent</option>
