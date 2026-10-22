@@ -69,7 +69,7 @@ export default function AnalyticsView({
       const totalFamilies = wardContacts.length;
       const sure = wardContacts.filter((c) => c.isSureVoter).reduce((sum, c) => sum + (c.voterCount || 1), 0);
       const contacted = wardContacts.filter((c) => c.contacted).reduce((sum, c) => sum + (c.voterCount || 1), 0);
-      const target = w.targetVoters || 500;
+      const target = Number(w.targetVoters) || 0;
       const percentOfTotal = total > 0 ? Math.round((sure / total) * 100) : 0;
       const percentOfTarget = target > 0 ? Math.min(100, Math.round((sure / target) * 100)) : 0;
       return {
@@ -520,24 +520,28 @@ export default function AnalyticsView({
                         </span>
                       </td>
                       <td style={{ padding: '10px 12px', color: '#64748b', fontWeight: 600 }}>
-                        🎯 {w.target}
+                        {w.target > 0 ? `🎯 ${w.target}` : <span style={{ color: '#94a3b8' }}>— Not set</span>}
                       </td>
                       <td style={{ padding: '10px 12px', minWidth: '150px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ flex: 1, height: '7px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div
-                              style={{
-                                width: `${w.percentOfTarget}%`,
-                                height: '100%',
-                                background: w.percentOfTarget >= 75 ? '#10b981' : '#f59e0b',
-                                borderRadius: '4px',
-                              }}
-                            />
+                        {w.target > 0 ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ flex: 1, height: '7px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div
+                                style={{
+                                  width: `${w.percentOfTarget}%`,
+                                  height: '100%',
+                                  background: w.percentOfTarget >= 75 ? '#10b981' : '#f59e0b',
+                                  borderRadius: '4px',
+                                }}
+                              />
+                            </div>
+                            <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#475569' }}>
+                              {w.percentOfTarget}%
+                            </span>
                           </div>
-                          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#475569' }}>
-                            {w.percentOfTarget}%
-                          </span>
-                        </div>
+                        ) : (
+                          <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>—</span>
+                        )}
                       </td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{ background: '#ecfdf5', color: '#047857', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
