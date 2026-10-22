@@ -27,6 +27,8 @@ const shareLinkSchema = new mongoose.Schema(
         name: { type: String, required: true },
         phone: { type: String, required: true },
         locality: { type: String, default: 'Mahima' },
+        subLocality: { type: String, default: '' },
+        houseNo: { type: String, default: '' },
         reference: { type: String, default: '' },
         category: { type: String, default: 'General' },
         notes: { type: String, default: '' },

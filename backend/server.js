@@ -148,7 +148,7 @@ app.get('/api/stats', async (req, res) => {
 // GET /api/contacts
 app.get('/api/contacts', async (req, res) => {
   try {
-    const { search, category, ward, locality, reference, contacted, status, isSureVoter, sort = 'createdAt', order = 'desc' } = req.query;
+    const { search, category, ward, locality, subLocality, houseNo, reference, contacted, status, isSureVoter, sort = 'createdAt', order = 'desc' } = req.query;
 
     const filter = {};
 
@@ -162,6 +162,14 @@ app.get('/api/contacts', async (req, res) => {
 
     if (locality && locality !== 'ALL') {
       filter.locality = locality;
+    }
+
+    if (subLocality && subLocality !== 'ALL') {
+      filter.subLocality = subLocality;
+    }
+
+    if (houseNo && houseNo !== 'ALL') {
+      filter.houseNo = houseNo;
     }
 
     if (reference && reference !== 'ALL') {
@@ -188,6 +196,8 @@ app.get('/api/contacts', async (req, res) => {
         { phone: regex },
         { ward: regex },
         { locality: regex },
+        { subLocality: regex },
+        { houseNo: regex },
         { reference: regex },
         { notes: regex },
       ];
@@ -217,7 +227,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { serialNo, name, phone, secondaryPhone, ward, locality, reference, category, notes, status, isSureVoter, voterCount } = req.body;
+    const { serialNo, name, phone, secondaryPhone, ward, locality, subLocality, houseNo, reference, category, notes, status, isSureVoter, voterCount } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -244,13 +254,26 @@ app.post('/api/contacts', async (req, res) => {
       calculatedSerial = (highestContact?.serialNo || 0) + 1;
     }
 
+    const trimmedSubLoc = subLocality?.trim() || '';
+    const trimmedLoc = locality?.trim() || '';
+
+    // Auto-register sub-locality under Locality if provided
+    if (trimmedSubLoc && trimmedLoc) {
+      await Locality.updateOne(
+        { name: { $regex: new RegExp(`^${trimmedLoc}$`, 'i') } },
+        { $addToSet: { subLocalities: trimmedSubLoc } }
+      ).catch(() => {});
+    }
+
     const contact = new Contact({
       serialNo: calculatedSerial,
       name: name.trim(),
       phone: cleanedPhone,
       secondaryPhone: cleanedSecondaryPhone,
       ward: finalWard,
-      locality: locality?.trim() || '',
+      locality: trimmedLoc,
+      subLocality: trimmedSubLoc,
+      houseNo: houseNo?.trim() || '',
       reference: reference?.trim() || '',
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
@@ -309,6 +332,8 @@ app.post('/api/contacts/bulk', async (req, res) => {
         secondaryPhone: item.secondaryPhone ? normalizePhone(item.secondaryPhone) : '',
         ward: assignedWard,
         locality: itemLocality,
+        subLocality: item.subLocality ? String(item.subLocality).trim() : '',
+        houseNo: item.houseNo ? String(item.houseNo).trim() : '',
         reference: item.reference?.trim() || '',
         category: item.category?.trim() || defaultCategory,
         notes: item.notes?.trim() || '',
@@ -437,7 +462,7 @@ app.patch('/api/contacts/:id/sure', async (req, res) => {
 app.put('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, secondaryPhone, ward, locality, reference, category, notes, status, contacted, isSureVoter, voterCount } = req.body;
+    const { name, phone, secondaryPhone, ward, locality, subLocality, houseNo, reference, category, notes, status, contacted, isSureVoter, voterCount } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
@@ -453,6 +478,19 @@ app.put('/api/contacts/:id', async (req, res) => {
         }
       }
     }
+    if (subLocality !== undefined) {
+      updateData.subLocality = subLocality.trim();
+      if (updateData.subLocality) {
+        const locTarget = updateData.locality || locality;
+        if (locTarget) {
+          await Locality.updateOne(
+            { name: { $regex: new RegExp(`^${locTarget.trim()}$`, 'i') } },
+            { $addToSet: { subLocalities: updateData.subLocality } }
+          ).catch(() => {});
+        }
+      }
+    }
+    if (houseNo !== undefined) updateData.houseNo = houseNo.trim();
     if (reference !== undefined) updateData.reference = reference.trim();
     if (category !== undefined) updateData.category = category.trim();
     if (notes !== undefined) updateData.notes = notes.trim();
@@ -886,6 +924,32 @@ app.get('/api/references', async (req, res) => {
   }
 });
 
+// GET /api/sub-localities (List distinct sub-localities, optionally filtered by locality)
+app.get('/api/sub-localities', async (req, res) => {
+  try {
+    const { locality } = req.query;
+    const filter = { subLocality: { $exists: true, $ne: '' } };
+    if (locality && locality !== 'ALL') {
+      filter.locality = { $regex: new RegExp(`^${locality.trim()}$`, 'i') };
+    }
+    const fromContacts = await Contact.distinct('subLocality', filter);
+    let fromLocalities = [];
+    if (locality && locality !== 'ALL') {
+      const locObj = await Locality.findOne({ name: { $regex: new RegExp(`^${locality.trim()}$`, 'i') } }).lean();
+      fromLocalities = locObj?.subLocalities || [];
+    } else {
+      const allLocs = await Locality.find({ subLocalities: { $exists: true, $ne: [] } }).lean();
+      allLocs.forEach((l) => {
+        if (Array.isArray(l.subLocalities)) fromLocalities.push(...l.subLocalities);
+      });
+    }
+    const combined = Array.from(new Set([...fromContacts, ...fromLocalities].map((s) => s.trim()))).filter(Boolean).sort();
+    res.json({ success: true, data: combined });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ==============================================================
 // WHATSAPP LIVE BAILEYS ENDPOINTS (QR LOGIN & DIRECT SEND)
 // ==============================================================
@@ -993,6 +1057,8 @@ app.post('/api/shares', async (req, res) => {
         name: c.name,
         phone: normalizePhone(c.phone),
         locality: c.locality || 'Mahima',
+        subLocality: c.subLocality || '',
+        houseNo: c.houseNo || '',
         reference: c.reference || '',
         category: c.category || 'General',
         notes: c.notes || '',

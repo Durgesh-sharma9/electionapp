@@ -22,6 +22,12 @@ const localitySchema = new mongoose.Schema(
       type: String,
       default: '#0284c7',
     },
+    subLocalities: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
   },
   {
     timestamps: true,

@@ -379,8 +379,10 @@ export default function App() {
         const matchPhone = c.phone?.toLowerCase().includes(q);
         const matchNotes = c.notes?.toLowerCase().includes(q);
         const matchLocality = c.locality?.toLowerCase().includes(q);
+        const matchSubLocality = c.subLocality?.toLowerCase().includes(q);
+        const matchHouseNo = c.houseNo?.toLowerCase().includes(q);
         const matchReference = c.reference?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchNotes && !matchLocality && !matchReference) {
+        if (!matchName && !matchPhone && !matchNotes && !matchLocality && !matchSubLocality && !matchHouseNo && !matchReference) {
           return false;
         }
       }
@@ -663,11 +665,14 @@ export default function App() {
       alert('No contacts to export.');
       return;
     }
-    const headers = ['Name', 'Phone', 'Locality', 'Reference', 'Category', 'Status', 'Contact Count', 'Notes'];
+    const headers = ['Name', 'Phone', 'Ward', 'Locality', 'House No', 'Apartment / Sub-Locality', 'Reference', 'Category', 'Status', 'Contact Count', 'Notes'];
     const rows = contacts.map((c) => [
       `"${(c.name || '').replace(/"/g, '""')}"`,
       `"${c.phone || ''}"`,
+      `"${(getContactWard(c) || '').replace(/"/g, '""')}"`,
       `"${(c.locality || '').replace(/"/g, '""')}"`,
+      `"${(c.houseNo || '').replace(/"/g, '""')}"`,
+      `"${(c.subLocality || '').replace(/"/g, '""')}"`,
       `"${(c.reference || '').replace(/"/g, '""')}"`,
       `"${(c.category || '').replace(/"/g, '""')}"`,
       c.contacted ? 'Contacted' : 'Pending',
@@ -837,7 +842,7 @@ export default function App() {
                 <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Search name, phone, locality, ref..."
+                  placeholder="Search name, phone, locality, house #, apartment..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-field"
@@ -1248,25 +1253,42 @@ export default function App() {
                       </td>
                       <td style={{ padding: '5px 5px', whiteSpace: 'nowrap' }}>
                         {contact.locality ? (
-                          <span
-                            className="badge"
-                            style={{
-                              fontSize: '0.68rem',
-                              padding: '1px 5px',
-                              background: '#fef3c7',
-                              color: '#92400e',
-                              border: '1px solid #fde68a',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              fontWeight: 600,
-                              borderRadius: '4px',
-                            }}
-                          >
-                            📍 {contact.locality}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start' }}>
+                            <span
+                              className="badge"
+                              style={{
+                                fontSize: '0.68rem',
+                                padding: '1px 5px',
+                                background: '#fef3c7',
+                                color: '#92400e',
+                                border: '1px solid #fde68a',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                              }}
+                            >
+                              📍 {contact.locality}
+                            </span>
+                            {(contact.subLocality || contact.houseNo) && (
+                              <div style={{ fontSize: '0.66rem', color: '#0369a1', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                {contact.houseNo && <span>🏠 {contact.houseNo}</span>}
+                                {contact.houseNo && contact.subLocality && <span>•</span>}
+                                {contact.subLocality && <span>🏢 {contact.subLocality}</span>}
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <span style={{ fontSize: '0.70rem', color: '#94a3b8' }}>—</span>
+                          (contact.subLocality || contact.houseNo) ? (
+                            <div style={{ fontSize: '0.66rem', color: '#0369a1', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              {contact.houseNo && <span>🏠 {contact.houseNo}</span>}
+                              {contact.houseNo && contact.subLocality && <span>•</span>}
+                              {contact.subLocality && <span>🏢 {contact.subLocality}</span>}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.70rem', color: '#94a3b8' }}>—</span>
+                          )
                         )}
                       </td>
                       <td style={{ padding: '5px 5px', fontFamily: 'monospace', color: '#334155', fontWeight: 600, whiteSpace: 'nowrap' }}>

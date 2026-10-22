@@ -31,6 +31,16 @@ const contactSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    subLocality: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    houseNo: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     reference: {
       type: String,
       default: '',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus, Landmark, Star, Users } from 'lucide-react';
+import { X, UserPlus, Phone, User, Edit2, MapPin, UserCheck, Check, Plus, Landmark, Star, Users, Building2, Home } from 'lucide-react';
 
 const CATEGORIES = [
   'General',
@@ -26,6 +26,9 @@ export default function AddContactModal({
   const [secondaryPhone, setSecondaryPhone] = useState('');
   const [ward, setWard] = useState('');
   const [locality, setLocality] = useState('');
+  const [subLocality, setSubLocality] = useState('');
+  const [houseNo, setHouseNo] = useState('');
+  const [availableSubLocalities, setAvailableSubLocalities] = useState([]);
   const [reference, setReference] = useState('');
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
@@ -55,6 +58,8 @@ export default function AddContactModal({
       const initWard = contact.ward || (matchedLoc?.ward || '');
       setWard(initWard);
       setLocality(initLoc);
+      setSubLocality(contact.subLocality || '');
+      setHouseNo(contact.houseNo || '');
       setReference(contact.reference || '');
       setCategory(contact.category || 'General');
       setNotes(contact.notes || '');
@@ -67,6 +72,8 @@ export default function AddContactModal({
       setSecondaryPhone('');
       setWard('');
       setLocality('');
+      setSubLocality('');
+      setHouseNo('');
       setReference('');
       setCategory('General');
       setNotes('');
@@ -76,6 +83,30 @@ export default function AddContactModal({
     }
     setError('');
   }, [contact, isOpen, wards, localities]);
+
+  // Fetch available sub-localities whenever locality changes
+  useEffect(() => {
+    if (!locality) {
+      setAvailableSubLocalities([]);
+      return;
+    }
+    const matched = localities.find((l) => l.name?.toLowerCase() === locality.toLowerCase());
+    const initialSubs = Array.isArray(matched?.subLocalities) ? matched.subLocalities : [];
+
+    fetch(`/api/sub-localities?locality=${encodeURIComponent(locality)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          const merged = Array.from(new Set([...initialSubs, ...data.data])).filter(Boolean);
+          setAvailableSubLocalities(merged);
+        } else {
+          setAvailableSubLocalities(initialSubs);
+        }
+      })
+      .catch(() => {
+        setAvailableSubLocalities(initialSubs);
+      });
+  }, [locality, localities]);
 
   // Dynamically filter localities: show localities for this ward + unassigned general localities
   const filteredLocalities = useMemo(() => {
@@ -164,6 +195,8 @@ export default function AddContactModal({
         secondaryPhone: cleanSecDigits ? cleanSecDigits.slice(-10) : '',
         ward: ward.trim(),
         locality: locality.trim(),
+        subLocality: subLocality.trim(),
+        houseNo: houseNo.trim(),
         reference: reference.trim(),
         category,
         notes: notes.trim(),
@@ -475,6 +508,51 @@ export default function AddContactModal({
                   </select>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Row 2.5: Sub-Locality / Apartment / Society / Row & House / Flat No. */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '10px' }}>
+            {/* Sub-Locality / Apartment / Row / Road No. */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                Apartment / Sub-Locality / Road (Optional)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Building2 size={15} color="#059669" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type="text"
+                  list="sublocalities-datalist"
+                  className="input-field"
+                  placeholder="e.g. Dream Avenue, Block B..."
+                  value={subLocality}
+                  onChange={(e) => setSubLocality(e.target.value)}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
+                />
+                <datalist id="sublocalities-datalist">
+                  {availableSubLocalities.map((sl) => (
+                    <option key={sl} value={sl} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* House / Flat No. */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                House / Flat No. (Optional)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Home size={15} color="#334155" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="e.g. 101, Villa 12, Plot 4"
+                  value={houseNo}
+                  onChange={(e) => setHouseNo(e.target.value)}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
+                />
+              </div>
             </div>
           </div>
 

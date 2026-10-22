@@ -659,6 +659,32 @@ export default function LocalityMaster({
                     <Users size={14} color="#64748b" />
                     <span>{loc.contactCount || 0} Voters Tagged</span>
                   </div>
+
+                  {loc.subLocalities && loc.subLocalities.length > 0 && (
+                    <div style={{ marginTop: '8px' }}>
+                      <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>
+                        🏢 Sub-Localities / Apartments ({loc.subLocalities.length}):
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {loc.subLocalities.map((sub, i) => (
+                          <span
+                            key={i}
+                            style={{
+                              fontSize: '0.68rem',
+                              background: '#f0f9ff',
+                              color: '#0369a1',
+                              border: '1px solid #bae6fd',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {sub}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid #f1f5f9' }}>

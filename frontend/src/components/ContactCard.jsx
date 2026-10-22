@@ -330,6 +330,48 @@ export default function ContactCard({
           </span>
         )}
 
+        {/* House / Flat No Badge */}
+        {contact.houseNo && (
+          <span
+            style={{
+              fontSize: '0.72rem',
+              padding: '2px 7px',
+              background: '#f1f5f9',
+              color: '#334155',
+              border: '1px solid #cbd5e1',
+              borderRadius: '6px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+            title="House / Flat No."
+          >
+            🏠 {contact.houseNo}
+          </span>
+        )}
+
+        {/* Sub-Locality / Apartment Badge */}
+        {contact.subLocality && (
+          <span
+            style={{
+              fontSize: '0.72rem',
+              padding: '2px 7px',
+              background: '#f0fdf4',
+              color: '#166534',
+              border: '1px solid #bbf7d0',
+              borderRadius: '6px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+            title="Apartment / Sub-Locality / Road"
+          >
+            🏢 {contact.subLocality}
+          </span>
+        )}
+
         {/* Family Votes Badge */}
         <span
           style={{

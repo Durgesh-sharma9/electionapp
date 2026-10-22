@@ -507,6 +507,38 @@ export default function PublicShareView({ shareId }) {
                         📍 {contact.locality}
                       </span>
                     )}
+
+                    {contact.subLocality && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '1px 7px',
+                          borderRadius: '10px',
+                          background: '#f0f9ff',
+                          color: '#0369a1',
+                          border: '1px solid #bae6fd',
+                          fontWeight: 600,
+                        }}
+                      >
+                        🏢 {contact.subLocality}
+                      </span>
+                    )}
+
+                    {contact.houseNo && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '1px 7px',
+                          borderRadius: '10px',
+                          background: '#f8fafc',
+                          color: '#475569',
+                          border: '1px solid #e2e8f0',
+                          fontWeight: 600,
+                        }}
+                      >
+                        🏠 {contact.houseNo}
+                      </span>
+                    )}
                   </div>
 
                   {/* Toggle Done Button */}
