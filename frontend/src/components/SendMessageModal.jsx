@@ -25,6 +25,7 @@ export default function SendMessageModal({
   if (!isOpen || !contact) return null;
 
   const [selectedTemplateId, setSelectedTemplateId] = useState(activeTemplateId || '');
+  const [selectedPhone, setSelectedPhone] = useState(contact.phone);
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [activeMode, setActiveMode] = useState('direct'); // 'direct' | 'template'
@@ -39,6 +40,7 @@ export default function SendMessageModal({
   // Initialize message text when modal opens or contact changes
   useEffect(() => {
     if (!contact) return;
+    setSelectedPhone(contact.phone);
 
     let tpl = templates.find((t) => t._id === selectedTemplateId);
     if (!tpl) {
@@ -63,7 +65,7 @@ export default function SendMessageModal({
   const handleDirectRedirect = (textToSend) => {
     const finalMsg = textToSend || messageText;
     if (!finalMsg.trim()) return;
-    onSendWeb(contact, finalMsg.trim());
+    onSendWeb(contact, finalMsg.trim(), selectedPhone);
     onClose();
   };
 
@@ -113,6 +115,9 @@ export default function SendMessageModal({
               <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
                 {contact.serialNo ? <span style={{ fontWeight: 700, color: '#0284c7' }}>#{contact.serialNo} </span> : null}
                 <strong>{contact.name}</strong> • <span style={{ fontFamily: 'monospace' }}>+91 {contact.phone}</span>
+                {contact.secondaryPhone && (
+                  <span style={{ fontFamily: 'monospace', color: '#6366f1' }}> / +91 {contact.secondaryPhone}</span>
+                )}
               </p>
             </div>
           </div>
@@ -120,6 +125,45 @@ export default function SendMessageModal({
             <X size={18} />
           </button>
         </div>
+
+        {/* Optional 2nd Phone Toggle Chip */}
+        {contact.secondaryPhone && (
+          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', padding: '6px 10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.76rem', fontWeight: 600, color: '#475569' }}>Send to:</span>
+            <button
+              type="button"
+              onClick={() => setSelectedPhone(contact.phone)}
+              style={{
+                padding: '3px 8px',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                border: selectedPhone === contact.phone ? '1.5px solid #059669' : '1px solid #cbd5e1',
+                background: selectedPhone === contact.phone ? '#ecfdf5' : '#ffffff',
+                color: selectedPhone === contact.phone ? '#047857' : '#64748b',
+              }}
+            >
+              📱 Main: +91 {contact.phone}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedPhone(contact.secondaryPhone)}
+              style={{
+                padding: '3px 8px',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                border: selectedPhone === contact.secondaryPhone ? '1.5px solid #6366f1' : '1px solid #cbd5e1',
+                background: selectedPhone === contact.secondaryPhone ? '#eef2ff' : '#ffffff',
+                color: selectedPhone === contact.secondaryPhone ? '#4338ca' : '#64748b',
+              }}
+            >
+              📱 2nd: +91 {contact.secondaryPhone}
+            </button>
+          </div>
+        )}
 
         {/* Two Clear Mode Tabs: 1. Redirect to WhatsApp | 2. Template / Custom */}
         <div

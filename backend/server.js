@@ -148,7 +148,7 @@ app.get('/api/stats', async (req, res) => {
 // GET /api/contacts
 app.get('/api/contacts', async (req, res) => {
   try {
-    const { search, category, ward, locality, reference, contacted, isSureVoter, sort = 'createdAt', order = 'desc' } = req.query;
+    const { search, category, ward, locality, reference, contacted, status, isSureVoter, sort = 'createdAt', order = 'desc' } = req.query;
 
     const filter = {};
 
@@ -170,6 +170,10 @@ app.get('/api/contacts', async (req, res) => {
 
     if (contacted !== undefined && contacted !== 'ALL') {
       filter.contacted = contacted === 'true';
+    }
+
+    if (status !== undefined && status !== 'ALL') {
+      filter.status = status;
     }
 
     if (isSureVoter !== undefined && isSureVoter !== 'ALL') {
@@ -213,7 +217,7 @@ app.get('/api/contacts', async (req, res) => {
 // POST /api/contacts (Single contact)
 app.post('/api/contacts', async (req, res) => {
   try {
-    const { serialNo, name, phone, ward, locality, reference, category, notes, isSureVoter, voterCount } = req.body;
+    const { serialNo, name, phone, secondaryPhone, ward, locality, reference, category, notes, status, isSureVoter, voterCount } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -223,16 +227,29 @@ app.post('/api/contacts', async (req, res) => {
     }
 
     const cleanedPhone = normalizePhone(phone);
+    const cleanedSecondaryPhone = secondaryPhone ? normalizePhone(secondaryPhone) : '';
+    const initialStatus = status || 'Pending';
+
+    let finalWard = ward?.trim() || '';
+    if (!finalWard && locality?.trim()) {
+      const locObj = await Locality.findOne({ name: { $regex: new RegExp(`^${locality.trim()}$`, 'i') } });
+      if (locObj && locObj.ward) {
+        finalWard = locObj.ward;
+      }
+    }
 
     const contact = new Contact({
       serialNo: Number(serialNo) || 0,
       name: name.trim(),
       phone: cleanedPhone,
-      ward: ward?.trim() || '',
+      secondaryPhone: cleanedSecondaryPhone,
+      ward: finalWard,
       locality: locality?.trim() || '',
       reference: reference?.trim() || '',
       category: category?.trim() || 'General',
       notes: notes?.trim() || '',
+      status: initialStatus,
+      contacted: initialStatus !== 'Pending',
       isSureVoter: Boolean(isSureVoter),
       voterCount: Math.max(1, Number(voterCount) || 1),
     });
@@ -256,6 +273,12 @@ app.post('/api/contacts/bulk', async (req, res) => {
       });
     }
 
+    const allLocalities = await Locality.find({ ward: { $exists: true, $ne: '' } }).lean();
+    const locWardMap = {};
+    allLocalities.forEach((l) => {
+      if (l.name && l.ward) locWardMap[l.name.trim().toLowerCase()] = l.ward.trim();
+    });
+
     const validDocs = [];
     const skipped = [];
 
@@ -270,16 +293,21 @@ app.post('/api/contacts/bulk', async (req, res) => {
         continue;
       }
 
+      const itemLocality = item.locality ? String(item.locality).trim() : '';
+      const assignedWard = item.ward?.trim() || locWardMap[itemLocality.toLowerCase()] || '';
+
       validDocs.push({
         serialNo: item.serialNo ? Number(item.serialNo) : i + 1,
         name,
         phone,
-        ward: item.ward?.trim() || '',
-        locality: item.locality?.trim() || '',
+        secondaryPhone: item.secondaryPhone ? normalizePhone(item.secondaryPhone) : '',
+        ward: assignedWard,
+        locality: itemLocality,
         reference: item.reference?.trim() || '',
         category: item.category?.trim() || defaultCategory,
         notes: item.notes?.trim() || '',
-        contacted: false,
+        status: item.status?.trim() || 'Pending',
+        contacted: item.status && item.status !== 'Pending' ? true : Boolean(item.contacted),
         contactCount: 0,
         voterCount: Math.max(1, Number(item.voterCount) || 1),
       });
@@ -311,19 +339,54 @@ app.post('/api/contacts/bulk', async (req, res) => {
 app.patch('/api/contacts/:id/contacted', async (req, res) => {
   try {
     const { id } = req.params;
-    const { contacted } = req.body;
+    const { contacted, status } = req.body;
 
     const contact = await Contact.findById(id);
     if (!contact) {
       return res.status(404).json({ success: false, error: 'Contact not found' });
     }
 
-    if (contacted !== undefined) {
+    if (status !== undefined) {
+      contact.status = status;
+      contact.contacted = status !== 'Pending';
+      if (contact.contacted) {
+        contact.contactCount = (contact.contactCount || 0) + 1;
+        contact.lastContactedAt = new Date();
+      }
+    } else if (contacted !== undefined) {
       contact.contacted = Boolean(contacted);
+      contact.status = contact.contacted ? (contact.status === 'Symbol Sent' ? 'Symbol Sent' : 'Contacted') : 'Pending';
+      if (contact.contacted) {
+        contact.contactCount = (contact.contactCount || 0) + 1;
+        contact.lastContactedAt = new Date();
+      }
     } else {
       contact.contacted = true;
+      contact.status = 'Contacted';
+      contact.contactCount = (contact.contactCount || 0) + 1;
+      contact.lastContactedAt = new Date();
     }
 
+    await contact.save();
+    res.json({ success: true, data: contact });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PATCH /api/contacts/:id/status (Update contact outreach status: Pending, Contacted, Symbol Sent)
+app.patch('/api/contacts/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const contact = await Contact.findById(id);
+    if (!contact) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+
+    contact.status = status || 'Pending';
+    contact.contacted = contact.status !== 'Pending';
     if (contact.contacted) {
       contact.contactCount = (contact.contactCount || 0) + 1;
       contact.lastContactedAt = new Date();
@@ -368,17 +431,32 @@ app.patch('/api/contacts/:id/sure', async (req, res) => {
 app.put('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, ward, locality, reference, category, notes, contacted, isSureVoter, voterCount } = req.body;
+    const { name, phone, secondaryPhone, ward, locality, reference, category, notes, status, contacted, isSureVoter, voterCount } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
     if (phone) updateData.phone = normalizePhone(phone);
+    if (secondaryPhone !== undefined) updateData.secondaryPhone = secondaryPhone ? normalizePhone(secondaryPhone) : '';
     if (ward !== undefined) updateData.ward = ward.trim();
-    if (locality !== undefined) updateData.locality = locality.trim();
+    if (locality !== undefined) {
+      updateData.locality = locality.trim();
+      if (!updateData.ward && updateData.locality) {
+        const locObj = await Locality.findOne({ name: { $regex: new RegExp(`^${updateData.locality}$`, 'i') } });
+        if (locObj && locObj.ward) {
+          updateData.ward = locObj.ward;
+        }
+      }
+    }
     if (reference !== undefined) updateData.reference = reference.trim();
     if (category !== undefined) updateData.category = category.trim();
     if (notes !== undefined) updateData.notes = notes.trim();
-    if (contacted !== undefined) updateData.contacted = Boolean(contacted);
+    if (status !== undefined) {
+      updateData.status = status;
+      updateData.contacted = status !== 'Pending';
+    } else if (contacted !== undefined) {
+      updateData.contacted = Boolean(contacted);
+      updateData.status = updateData.contacted ? 'Contacted' : 'Pending';
+    }
     if (isSureVoter !== undefined) updateData.isSureVoter = Boolean(isSureVoter);
     if (voterCount !== undefined) updateData.voterCount = Math.max(1, Number(voterCount) || 1);
 
@@ -757,7 +835,10 @@ app.put('/api/localities/:id', async (req, res) => {
       }
     }
 
-    if (ward !== undefined) loc.ward = ward.trim();
+    if (ward !== undefined) {
+      loc.ward = ward.trim();
+      await Contact.updateMany({ locality: loc.name }, { ward: loc.ward });
+    }
     if (description !== undefined) loc.description = description.trim();
     if (color !== undefined) loc.color = color;
 

@@ -16,6 +16,11 @@ const contactSchema = new mongoose.Schema(
       required: [true, 'Phone number is required'],
       trim: true,
     },
+    secondaryPhone: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     ward: {
       type: String,
       default: '',
@@ -39,6 +44,12 @@ const contactSchema = new mongoose.Schema(
     notes: {
       type: String,
       default: '',
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Contacted', 'Symbol Sent'],
+      default: 'Pending',
       trim: true,
     },
     contacted: {

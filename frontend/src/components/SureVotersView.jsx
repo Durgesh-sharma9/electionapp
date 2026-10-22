@@ -21,6 +21,7 @@ export default function SureVotersView({
   localities = [],
   references = [],
   onToggleSureVoter,
+  onStatusChange,
   onWhatsAppRedirect,
   onOpenTemplateModal,
   onCallRedirect,
@@ -755,6 +756,7 @@ export default function SureVotersView({
                 setSelectedIds(next);
               }}
               onToggleSureVoter={onToggleSureVoter}
+              onStatusChange={onStatusChange}
               onDirectWhatsAppSend={(c) => onWhatsAppRedirect(c)}
               onWhatsAppRedirect={(c) => onWhatsAppRedirect(c)}
               onOpenTemplateModal={(c) => onOpenTemplateModal(c)}

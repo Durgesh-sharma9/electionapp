@@ -23,11 +23,13 @@ export default function AddContactModal({
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [secondaryPhone, setSecondaryPhone] = useState('');
   const [ward, setWard] = useState('');
   const [locality, setLocality] = useState('');
   const [reference, setReference] = useState('');
   const [category, setCategory] = useState('General');
   const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState('Pending');
   const [isSureVoter, setIsSureVoter] = useState(false);
   const [voterCount, setVoterCount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -47,26 +49,33 @@ export default function AddContactModal({
     if (contact) {
       setName(contact.name || '');
       setPhone(contact.phone || '');
-      setWard(contact.ward || '');
-      setLocality(contact.locality || '');
+      setSecondaryPhone(contact.secondaryPhone || '');
+      const initLoc = contact.locality || '';
+      const matchedLoc = localities.find((l) => l.name?.toLowerCase() === initLoc.toLowerCase());
+      const initWard = contact.ward || (matchedLoc?.ward || '');
+      setWard(initWard);
+      setLocality(initLoc);
       setReference(contact.reference || '');
       setCategory(contact.category || 'General');
       setNotes(contact.notes || '');
+      setStatus(contact.status || (contact.contacted ? 'Contacted' : 'Pending'));
       setIsSureVoter(Boolean(contact.isSureVoter));
       setVoterCount(contact.voterCount || 1);
     } else {
       setName('');
       setPhone('');
+      setSecondaryPhone('');
       setWard('');
       setLocality('');
       setReference('');
       setCategory('General');
       setNotes('');
+      setStatus('Pending');
       setIsSureVoter(false);
       setVoterCount(1);
     }
     setError('');
-  }, [contact, isOpen, wards]);
+  }, [contact, isOpen, wards, localities]);
 
   // Dynamically filter localities: show localities for this ward + unassigned general localities
   const filteredLocalities = useMemo(() => {
@@ -132,8 +141,17 @@ export default function AddContactModal({
     }
     const cleanDigits = phone.replace(/\D/g, '');
     if (!cleanDigits || cleanDigits.length < 10) {
-      setError('Please enter a valid 10-digit mobile number');
+      setError('Please enter a valid 10-digit primary mobile number');
       return;
+    }
+
+    let cleanSecDigits = '';
+    if (secondaryPhone && secondaryPhone.trim()) {
+      cleanSecDigits = secondaryPhone.replace(/\D/g, '');
+      if (cleanSecDigits.length < 10) {
+        setError('Please enter a valid 10-digit 2nd mobile number (or leave it blank)');
+        return;
+      }
     }
 
     setError('');
@@ -143,11 +161,14 @@ export default function AddContactModal({
         ...(contact?._id ? { _id: contact._id } : {}),
         name: name.trim(),
         phone: cleanDigits.slice(-10),
+        secondaryPhone: cleanSecDigits ? cleanSecDigits.slice(-10) : '',
         ward: ward.trim(),
         locality: locality.trim(),
         reference: reference.trim(),
         category,
         notes: notes.trim(),
+        status,
+        contacted: status !== 'Pending',
         isSureVoter,
         voterCount: Math.max(1, Number(voterCount) || 1),
       });
@@ -161,10 +182,25 @@ export default function AddContactModal({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="glass-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px', width: '100%' }}>
+      <div
+        className="glass-modal no-scrollbar"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '500px',
+          width: '100%',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '16px 18px',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
         
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               width: '36px',
@@ -212,40 +248,54 @@ export default function AddContactModal({
             color: '#dc2626',
             borderRadius: '8px',
             padding: '9px 12px',
-            marginBottom: '14px',
+            marginBottom: '12px',
             fontSize: '0.8rem',
             fontWeight: 500,
+            flexShrink: 0,
           }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '11px',
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            paddingRight: '2px',
+            scrollbarWidth: 'none',
+          }}
+        >
           
-          {/* Row 1: Name & Phone */}
+          {/* Row 1: Full Name */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+              Full Name *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <User size={15} color="#64748b" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <input
+                type="text"
+                className="input-field"
+                placeholder="e.g. Ramesh Kumar"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
+                required
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Row 2: Mobile Numbers (Main + Optional 2nd) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Full Name *
-              </label>
-              <div style={{ position: 'relative' }}>
-                <User size={15} color="#64748b" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="e.g. Ramesh Kumar"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
-                  required
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Mobile Number *
+                Primary Mobile * <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>(Main)</span>
               </label>
               <div style={{ position: 'relative' }}>
                 <Phone size={15} color="#059669" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
@@ -257,6 +307,23 @@ export default function AddContactModal({
                   onChange={(e) => setPhone(e.target.value)}
                   style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
                   required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                2nd Mobile <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 500 }}>(Optional)</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Phone size={15} color="#6366f1" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type="tel"
+                  className="input-field"
+                  placeholder="8239728392"
+                  value={secondaryPhone}
+                  onChange={(e) => setSecondaryPhone(e.target.value)}
+                  style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.85rem' }}
                 />
               </div>
             </div>
@@ -386,7 +453,12 @@ export default function AddContactModal({
                       if (e.target.value === '__NEW__') {
                         setIsAddingNewLocality(true);
                       } else {
-                        setLocality(e.target.value);
+                        const newLoc = e.target.value;
+                        setLocality(newLoc);
+                        const locObj = localities.find((l) => l.name === newLoc);
+                        if (locObj && locObj.ward) {
+                          setWard(locObj.ward);
+                        }
                       }
                     }}
                     style={{ padding: '0 24px 0 34px', height: '40px', fontSize: '0.84rem', cursor: 'pointer' }}
@@ -598,7 +670,44 @@ export default function AddContactModal({
             />
           </div>
 
-          {/* Row 5: Notes */}
+          {/* Row 5: Outreach Status */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+              Outreach Status (संपर्क स्थिति)
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              {[
+                { val: 'Pending', label: '⏳ Pending', bg: '#fffbeb', color: '#b45309', border: '#fde68a' },
+                { val: 'Contacted', label: '✅ Contacted', bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' },
+                { val: 'Symbol Sent', label: '🗳️ Symbol Sent', bg: '#f5f3ff', color: '#6d28d9', border: '#ddd6fe' },
+              ].map((item) => {
+                const isSelected = status === item.val;
+                return (
+                  <button
+                    key={item.val}
+                    type="button"
+                    onClick={() => setStatus(item.val)}
+                    style={{
+                      padding: '8px 6px',
+                      borderRadius: '8px',
+                      border: `1.5px solid ${isSelected ? item.color : '#e2e8f0'}`,
+                      background: isSelected ? item.bg : '#ffffff',
+                      color: isSelected ? item.color : '#64748b',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? `0 2px 4px ${item.border}` : 'none',
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Row 6: Notes */}
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
               Notes / Remarks (Optional)
@@ -613,13 +722,24 @@ export default function AddContactModal({
             />
           </div>
 
-          {/* Buttons */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+          {/* Action Buttons Sticky Footer */}
+          <div style={{
+            position: 'sticky',
+            bottom: -2,
+            background: '#ffffff',
+            paddingTop: '10px',
+            marginTop: '6px',
+            borderTop: '1px solid #f1f5f9',
+            display: 'flex',
+            gap: '10px',
+            zIndex: 10,
+            flexShrink: 0,
+          }}>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              style={{ flex: 1, padding: '8px 12px', fontSize: '0.84rem' }}
+              style={{ flex: 1, padding: '10px 14px', fontSize: '0.86rem' }}
               disabled={submitting}
             >
               Cancel
@@ -629,8 +749,9 @@ export default function AddContactModal({
               className="btn btn-primary"
               style={{
                 flex: 2,
-                padding: '8px 14px',
-                fontSize: '0.86rem',
+                padding: '10px 14px',
+                fontSize: '0.88rem',
+                fontWeight: 700,
                 background: isEditing ? 'linear-gradient(135deg, #0284c7, #0369a1)' : undefined,
               }}
               disabled={submitting}

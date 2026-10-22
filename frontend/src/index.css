@@ -109,6 +109,16 @@ body {
   position: relative;
   z-index: 100000;
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.glass-modal::-webkit-scrollbar,
+.modal-card::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Animations */
@@ -1815,7 +1825,7 @@ select.input-field {
 
 /* Page body container below fixed navbar */
 .app-page-container {
-  padding: 72px 20px 80px 20px;
+  padding: 68px 14px 70px 14px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1831,48 +1841,48 @@ select.input-field {
     padding: 0 !important;
   }
   .app-page-container {
-    padding: 64px 12px 90px 12px !important;
+    padding: 64px 10px 90px 10px !important;
   }
 }
 
 /* ==========================================================================
-   COMPACT LIST / TABLE STYLES (Balanced, Comfortable, Professional)
+   COMPACT LIST / TABLE STYLES (Ultra-compact, No Horizontal Scroll on Laptop)
    ========================================================================== */
 .compact-table-container {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .compact-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.86rem;
+  font-size: 0.80rem;
 }
 
 .compact-table th {
   background: #f8fafc;
   color: #475569;
   font-weight: 700;
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 11px 14px;
+  padding: 7px 6px;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .compact-table td {
-  padding: 10px 14px;
+  padding: 5px 6px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
 .compact-table tbody tr {
-  transition: background-color 0.12s ease;
+  transition: background-color 0.1s ease;
 }
 
 .compact-table tbody tr:hover {

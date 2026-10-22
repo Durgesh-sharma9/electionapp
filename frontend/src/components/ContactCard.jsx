@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Phone,
   MessageCircle,
@@ -23,16 +23,38 @@ export default function ContactCard({
   isSelected,
   onSelectToggle,
   onToggleSureVoter,
+  onStatusChange,
   isSendingDirect = false,
   waConnected = false,
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedSec, setCopiedSec] = useState(false);
+  const [openCardMenu, setOpenCardMenu] = useState(null); // 'wa' | 'call' | null
+
+  useEffect(() => {
+    if (!openCardMenu) return;
+    const handleCardOutsideClick = (e) => {
+      if (!e.target.closest('.card-dropdown-popover') && !e.target.closest('.btn-card-action-trigger')) {
+        setOpenCardMenu(null);
+      }
+    };
+    window.addEventListener('click', handleCardOutsideClick);
+    return () => window.removeEventListener('click', handleCardOutsideClick);
+  }, [openCardMenu]);
 
   const handleCopy = (e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(contact.phone);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopySec = (e) => {
+    e.stopPropagation();
+    if (!contact.secondaryPhone) return;
+    navigator.clipboard.writeText(contact.secondaryPhone);
+    setCopiedSec(true);
+    setTimeout(() => setCopiedSec(false), 2000);
   };
 
   const getAvatarBg = (name) => {
@@ -153,34 +175,68 @@ export default function ContactCard({
               </h4>
             </div>
 
-            {/* Phone Number with Click to Copy */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-              <span
-                style={{
-                  fontSize: '0.84rem',
-                  color: '#0369a1',
-                  fontWeight: 700,
-                  fontFamily: 'monospace',
-                }}
-              >
-                +91 {contact.phone}
-              </span>
-              <button
-                type="button"
-                onClick={handleCopy}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '1px',
-                  color: copied ? '#059669' : '#94a3b8',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-                title="Copy number"
-              >
-                {copied ? <Check size={12} color="#059669" /> : <Copy size={12} />}
-              </button>
+            {/* Phone Numbers with Click to Copy */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '3px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span
+                  style={{
+                    fontSize: '0.84rem',
+                    color: '#0369a1',
+                    fontWeight: 700,
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  +91 {contact.phone}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '1px',
+                    color: copied ? '#059669' : '#94a3b8',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                  title="Copy Main Number"
+                >
+                  {copied ? <Check size={11} color="#059669" /> : <Copy size={11} />}
+                </button>
+              </div>
+
+              {contact.secondaryPhone && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span
+                    style={{
+                      fontSize: '0.78rem',
+                      color: '#6366f1',
+                      fontWeight: 700,
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    +91 {contact.secondaryPhone}
+                  </span>
+                  <span style={{ fontSize: '0.62rem', background: '#e0e7ff', color: '#4338ca', padding: '0 4px', borderRadius: '4px', fontWeight: 700 }}>2nd</span>
+                  <button
+                    type="button"
+                    onClick={handleCopySec}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '1px',
+                      color: copiedSec ? '#059669' : '#94a3b8',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    title="Copy 2nd Number"
+                  >
+                    {copiedSec ? <Check size={11} color="#059669" /> : <Copy size={11} />}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -335,29 +391,50 @@ export default function ContactCard({
           </span>
         )}
 
-        {/* Contacted / Pending Status */}
-        {contact.contacted ? (
-          <span
-            className="badge badge-contacted"
-            style={{
-              fontSize: '0.68rem',
-              padding: '2px 6px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '3px',
-            }}
-          >
-            <CheckCircle2 size={10} />
-            <span>Messaged {contact.contactCount > 1 ? `(${contact.contactCount}x)` : ''}</span>
-          </span>
-        ) : (
-          <span
-            className="badge badge-pending"
-            style={{ fontSize: '0.68rem', padding: '2px 6px' }}
-          >
-            ⏳ Pending
-          </span>
-        )}
+        {/* Status Dropdown */}
+        <select
+          value={contact.status || (contact.contacted ? 'Contacted' : 'Pending')}
+          onChange={(e) => {
+            e.stopPropagation();
+            if (onStatusChange) {
+              onStatusChange(contact._id, e.target.value);
+            }
+          }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            fontSize: '0.70rem',
+            fontWeight: 700,
+            padding: '2px 8px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            outline: 'none',
+            border: '1px solid',
+            transition: 'all 0.15s ease',
+            background:
+              contact.status === 'Symbol Sent'
+                ? '#f5f3ff'
+                : contact.status === 'Contacted' || contact.contacted
+                ? '#ecfdf5'
+                : '#fffbeb',
+            color:
+              contact.status === 'Symbol Sent'
+                ? '#6d28d9'
+                : contact.status === 'Contacted' || contact.contacted
+                ? '#047857'
+                : '#b45309',
+            borderColor:
+              contact.status === 'Symbol Sent'
+                ? '#ddd6fe'
+                : contact.status === 'Contacted' || contact.contacted
+                ? '#a7f3d0'
+                : '#fde68a',
+          }}
+          title="Change outreach status"
+        >
+          <option value="Pending">⏳ Pending</option>
+          <option value="Contacted">✅ Contacted</option>
+          <option value="Symbol Sent">🗳️ Symbol Sent</option>
+        </select>
 
         {/* Notes if any */}
         {contact.notes && (
@@ -381,31 +458,125 @@ export default function ContactCard({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.25fr 1.15fr 0.85fr',
+          gridTemplateColumns: '1.2fr 1.15fr 0.85fr',
           gap: '6px',
           paddingTop: '6px',
           borderTop: '1px solid #f1f5f9',
+          position: 'relative',
         }}
       >
         {/* 1. Direct WhatsApp */}
-        <button
-          type="button"
-          className="btn btn-whatsapp"
-          onClick={() => onWhatsAppRedirect(contact)}
-          style={{
-            padding: '6px 8px',
-            height: '34px',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            gap: '4px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 6px rgba(16, 185, 129, 0.22)',
-          }}
-          title="Direct WhatsApp Chat"
-        >
-          <Zap size={12} fill="#ffffff" />
-          <span>Direct WA</span>
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className="btn btn-whatsapp btn-card-action-trigger"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (contact.secondaryPhone) {
+                setOpenCardMenu((prev) => (prev === 'wa' ? null : 'wa'));
+              } else {
+                onWhatsAppRedirect(contact, contact.phone);
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '6px 6px',
+              height: '34px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              gap: '4px',
+              borderRadius: '8px',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.22)',
+              justifyContent: 'center',
+            }}
+            title={contact.secondaryPhone ? 'Choose WhatsApp Number' : 'Direct WhatsApp Chat'}
+          >
+            <Zap size={12} fill="#ffffff" />
+            <span>WhatsApp</span>
+            {contact.secondaryPhone && (
+              <span style={{ fontSize: '0.60rem', background: 'rgba(255,255,255,0.28)', padding: '0 4px', borderRadius: '4px', fontWeight: 800 }}>
+                2
+              </span>
+            )}
+          </button>
+
+          {/* WhatsApp Popup */}
+          {openCardMenu === 'wa' && (
+            <div
+              className="card-dropdown-popover"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 0,
+                marginBottom: '6px',
+                zIndex: 1000,
+                background: '#ffffff',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '10px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(0, 0, 0, 0.1)',
+                padding: '6px',
+                minWidth: '190px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px',
+                animation: 'fadeIn 0.15s ease-out',
+              }}
+            >
+              <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#64748b', padding: '2px 6px', borderBottom: '1px solid #f1f5f9' }}>
+                Send WhatsApp to:
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onWhatsAppRedirect(contact, contact.phone);
+                  setOpenCardMenu(null);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 9px',
+                  borderRadius: '7px',
+                  border: '1px solid #a7f3d0',
+                  background: '#ecfdf5',
+                  color: '#047857',
+                  fontWeight: 700,
+                  fontSize: '0.76rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <span>📱 Main: +91 {contact.phone}</span>
+                <span style={{ fontSize: '0.62rem', background: '#dcfce7', color: '#15803d', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>1</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onWhatsAppRedirect(contact, contact.secondaryPhone);
+                  setOpenCardMenu(null);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 9px',
+                  borderRadius: '7px',
+                  border: '1px solid #c7d2fe',
+                  background: '#eef2ff',
+                  color: '#4338ca',
+                  fontWeight: 700,
+                  fontSize: '0.76rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <span>📱 2nd: +91 {contact.secondaryPhone}</span>
+                <span style={{ fontSize: '0.62rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>2</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* 2. Choose Template */}
         <button
@@ -413,39 +584,134 @@ export default function ContactCard({
           className="btn btn-secondary"
           onClick={() => (onOpenTemplateModal ? onOpenTemplateModal(contact) : onWhatsAppRedirect(contact))}
           style={{
-            padding: '6px 8px',
+            padding: '6px 5px',
             height: '34px',
-            fontSize: '0.78rem',
+            fontSize: '0.72rem',
             background: '#ffffff',
             borderColor: '#f59e0b',
             color: '#b45309',
             fontWeight: 700,
-            gap: '4px',
+            gap: '3px',
             borderRadius: '8px',
+            justifyContent: 'center',
           }}
           title="Choose Template / Edit Message"
         >
-          <Sparkles size={12} color="#f59e0b" />
+          <Sparkles size={11} color="#f59e0b" />
           <span>Template</span>
         </button>
 
         {/* 3. Direct Phone Call */}
-        <button
-          type="button"
-          className="btn btn-call"
-          onClick={() => onCallRedirect(contact)}
-          style={{
-            padding: '6px 8px',
-            height: '34px',
-            fontSize: '0.78rem',
-            gap: '3px',
-            borderRadius: '8px',
-          }}
-          title="Direct Phone Call"
-        >
-          <Phone size={12} />
-          <span>Call</span>
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className="btn btn-call btn-card-action-trigger"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (contact.secondaryPhone) {
+                setOpenCardMenu((prev) => (prev === 'call' ? null : 'call'));
+              } else {
+                onCallRedirect(contact, contact.phone);
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '6px 6px',
+              height: '34px',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              gap: '3px',
+              borderRadius: '8px',
+              justifyContent: 'center',
+            }}
+            title={contact.secondaryPhone ? 'Choose Number to Call' : `Call: +91 ${contact.phone}`}
+          >
+            <Phone size={12} />
+            <span>Call</span>
+            {contact.secondaryPhone && (
+              <span style={{ fontSize: '0.60rem', background: 'rgba(255,255,255,0.25)', padding: '0 4px', borderRadius: '4px', fontWeight: 800 }}>
+                2
+              </span>
+            )}
+          </button>
+
+          {/* Call Popup */}
+          {openCardMenu === 'call' && (
+            <div
+              className="card-dropdown-popover"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                right: 0,
+                marginBottom: '6px',
+                zIndex: 1000,
+                background: '#ffffff',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '10px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(0, 0, 0, 0.1)',
+                padding: '6px',
+                minWidth: '190px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px',
+                animation: 'fadeIn 0.15s ease-out',
+              }}
+            >
+              <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#64748b', padding: '2px 6px', borderBottom: '1px solid #f1f5f9' }}>
+                Call Phone:
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onCallRedirect(contact, contact.phone);
+                  setOpenCardMenu(null);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 9px',
+                  borderRadius: '7px',
+                  border: '1px solid #bfdbfe',
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  fontWeight: 700,
+                  fontSize: '0.76rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <span>📞 Main: +91 {contact.phone}</span>
+                <span style={{ fontSize: '0.62rem', background: '#dbeafe', color: '#1e40af', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>1</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onCallRedirect(contact, contact.secondaryPhone);
+                  setOpenCardMenu(null);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 9px',
+                  borderRadius: '7px',
+                  border: '1px solid #c7d2fe',
+                  background: '#eef2ff',
+                  color: '#4338ca',
+                  fontWeight: 700,
+                  fontSize: '0.76rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <span>📞 2nd: +91 {contact.secondaryPhone}</span>
+                <span style={{ fontSize: '0.62rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>2</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
