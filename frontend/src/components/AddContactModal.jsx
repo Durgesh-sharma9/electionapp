@@ -512,11 +512,25 @@ export default function AddContactModal({
           </div>
 
           {/* Row 2.5: Sub-Locality / Apartment / Society / Row & House / Flat No. */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '10px' }}>
-            {/* Sub-Locality / Apartment / Row / Road No. */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', alignItems: 'start' }}>
+            {/* Sub-Locality / Apartment / Society */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                Apartment / Sub-Locality / Road (Optional)
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  marginBottom: '5px',
+                  color: '#334155',
+                  height: '20px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title="Apartment / Sub-Locality / Society / Road No."
+              >
+                Apartment / Society (Opt.)
               </label>
               <div style={{ position: 'relative' }}>
                 <Building2 size={15} color="#059669" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
@@ -524,7 +538,7 @@ export default function AddContactModal({
                   type="text"
                   list="sublocalities-datalist"
                   className="input-field"
-                  placeholder="Type new or select existing..."
+                  placeholder="e.g. Dream Avenue"
                   value={subLocality}
                   onChange={(e) => setSubLocality(e.target.value)}
                   style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
@@ -539,7 +553,7 @@ export default function AddContactModal({
               {/* Interactive suggestion pills of previously created apartments */}
               {availableSubLocalities.length > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
-                  <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>Quick pick:</span>
+                  <span style={{ fontSize: '0.66rem', color: '#64748b', fontWeight: 600 }}>Suggested:</span>
                   {availableSubLocalities.map((item) => {
                     const isSelected = subLocality?.toLowerCase().trim() === item.toLowerCase().trim();
                     return (
@@ -552,8 +566,8 @@ export default function AddContactModal({
                           color: isSelected ? '#ffffff' : '#0369a1',
                           border: isSelected ? '1px solid #0284c7' : '1px solid #bae6fd',
                           borderRadius: '12px',
-                          padding: '2px 8px',
-                          fontSize: '0.70rem',
+                          padding: '1px 7px',
+                          fontSize: '0.68rem',
                           fontWeight: 600,
                           cursor: 'pointer',
                           display: 'inline-flex',
@@ -569,23 +583,37 @@ export default function AddContactModal({
                   })}
                 </div>
               ) : locality ? (
-                <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  💡 Type any new apartment/row name above — it will be auto-saved for next time!
+                <div style={{ fontSize: '0.66rem', color: '#94a3b8', marginTop: '4px' }}>
+                  💡 Type any new apartment/row name
                 </div>
               ) : null}
             </div>
 
             {/* House / Flat No. */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
-                House / Flat No. (Optional)
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  marginBottom: '5px',
+                  color: '#334155',
+                  height: '20px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title="House / Flat / Villa / Plot No."
+              >
+                House / Flat No. (Opt.)
               </label>
               <div style={{ position: 'relative' }}>
                 <Home size={15} color="#334155" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="e.g. 101, Villa 12, Plot 4"
+                  placeholder="e.g. 101, Flat 204"
                   value={houseNo}
                   onChange={(e) => setHouseNo(e.target.value)}
                   style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
