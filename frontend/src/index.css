@@ -997,8 +997,11 @@ select.input-field {
     display: none !important;
   }
 
-  .mobile-only-cards {
-    display: flex !important;
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 10px !important;
+    box-sizing: border-box !important;
   }
 
   .mobile-filter-row {
@@ -1017,12 +1020,10 @@ select.input-field {
   }
 }
 
-.mobile-only-cards {
-  display: none;
-}
-
 /* Native App-Style Contact Cards */
 .mobile-app-contact-card {
+  width: 100%;
+  box-sizing: border-box;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -1031,11 +1032,6 @@ select.input-field {
 }
 
 @media (max-width: 640px) {
-  .contact-grid {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-
   .mobile-app-contact-card {
     padding: 10px 12px !important;
     border-radius: 12px !important;

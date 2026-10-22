@@ -158,10 +158,11 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* 1. Share Link Button */}
+        {/* 1. Share Link Button (Desktop only, mobile has bottom bar and drawer) */}
         <button
           type="button"
           onClick={onOpenShareModal}
+          className="hide-on-mobile"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -182,7 +183,7 @@ export default function Navbar({
           title="Create shareable public outreach link"
         >
           <Share2 size={13} color="#ffffff" />
-          <span className="hide-on-mobile">Share</span>
+          <span>Share</span>
         </button>
 
         {/* 2. Add Contact Button */}

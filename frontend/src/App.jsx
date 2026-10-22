@@ -141,7 +141,8 @@ export default function App() {
   const [wardFilter, setWardFilter] = useState('ALL');
   const [localityFilter, setLocalityFilter] = useState('ALL');
   const [referenceFilter, setReferenceFilter] = useState('ALL');
-  const [viewMode, setViewMode] = useState('table'); // Default: 'table' (Compact list view)
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 880 : false));
+  const [viewMode, setViewMode] = useState(() => (typeof window !== 'undefined' && window.innerWidth <= 880 ? 'cards' : 'table'));
 
   // Ward Master & Locality Master & Reference state
   const [wards, setWards] = useState([]);
@@ -309,6 +310,16 @@ export default function App() {
     fetchWards();
     fetchLocalities();
     fetchReferences();
+
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 880;
+      setIsMobile(mobile);
+      if (mobile) {
+        setViewMode('cards');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Helper to get effective ward from contact or inherited from locality
@@ -924,42 +935,44 @@ export default function App() {
                 </select>
 
                 {/* View Mode Switcher (Desktop only - mobile uses dedicated responsive Cards) */}
-                <div className="hide-on-mobile" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0' }}>
-                  <button
-                    onClick={() => setViewMode('cards')}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: viewMode === 'cards' ? '#ffffff' : 'transparent',
-                      color: viewMode === 'cards' ? '#0f172a' : '#64748b',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      boxShadow: viewMode === 'cards' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                    }}
-                    title="Cards Grid"
-                  >
-                    <Grid size={15} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('table')}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: viewMode === 'table' ? '#ffffff' : 'transparent',
-                      color: viewMode === 'table' ? '#0f172a' : '#64748b',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                    }}
-                    title="Compact Table"
-                  >
-                    <List size={15} />
-                  </button>
-                </div>
+                {!isMobile && (
+                  <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: viewMode === 'cards' ? '#ffffff' : 'transparent',
+                        color: viewMode === 'cards' ? '#0f172a' : '#64748b',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        boxShadow: viewMode === 'cards' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                      }}
+                      title="Cards Grid"
+                    >
+                      <Grid size={15} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('table')}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: viewMode === 'table' ? '#ffffff' : 'transparent',
+                        color: viewMode === 'table' ? '#0f172a' : '#64748b',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                      }}
+                      title="Compact Table"
+                    >
+                      <List size={15} />
+                    </button>
+                  </div>
+                )}
 
               </div>
 
@@ -1075,11 +1088,9 @@ export default function App() {
                 </button>
               </div>
             </div>
-          ) : (
-            <>
-              {viewMode === 'cards' ? (
-                /* Native App-Style Responsive Contact Cards */
-                <div className="contact-grid">
+          ) : isMobile || viewMode === 'cards' ? (
+            /* Native App-Style Responsive Contact Cards */
+            <div className="contact-grid">
                   {filteredContacts.map((contact) => (
                     <ContactCard
                       key={contact._id}
@@ -1111,12 +1122,10 @@ export default function App() {
                   ))}
                 </div>
               ) : (
-                <>
-                  {/* Desktop Table View */}
-                  <div className="hide-on-mobile">
-                    <div className="compact-table-container" style={{ overflowX: 'auto' }}>
-                      <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
+                /* Desktop Table View */
+                <div className="compact-table-container" style={{ overflowX: 'auto' }}>
+                  <table className="compact-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
                           <tr>
                             <th style={{ width: '30px', textAlign: 'center', padding: '7px 4px' }}>
                               <input
@@ -1672,45 +1681,9 @@ export default function App() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Mobile Fallback: Shows sleek Contact Cards if table was selected */}
-          <div className="mobile-only-cards">
-            <div className="contact-grid">
-              {filteredContacts.map((contact) => (
-                <ContactCard
-                  key={contact._id}
-                  contact={contact}
-                  isSelected={selectedIds.has(contact._id)}
-                  onSelectToggle={(id, checked) => {
-                    const next = new Set(selectedIds);
-                    if (checked) next.add(id);
-                    else next.delete(id);
-                    setSelectedIds(next);
-                  }}
-                  onToggleSureVoter={handleToggleSureVoter}
-                  onStatusChange={handleStatusChange}
-                  onDirectWhatsAppSend={(c) => handleSendWebFromModal(c, customText)}
-                  onWhatsAppRedirect={(c) => handleSendWebFromModal(c, customText)}
-                  onOpenTemplateModal={(c) => setMessageModalContact(c)}
-                  onCallRedirect={handleCallRedirect}
-                  onDelete={handleDeleteContact}
-                  onEdit={(c) => {
-                    setEditingContact(c);
-                    setIsAddModalOpen(true);
-                  }}
-                  isSendingDirect={sendingDirectId === contact._id}
-                  waConnected={waConnected}
-                />
-              ))}
-            </div>
-          </div>
+          )}
         </>
       )}
-    </>
-  )}
-</>
-)}
 
       {/* ============================================================== */}
       {/* TAB 2.5: SURE VOTERS TRACKER & WARD/LOCALITY ANALYTICS         */}

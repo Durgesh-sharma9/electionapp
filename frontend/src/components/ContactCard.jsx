@@ -454,11 +454,11 @@ export default function ContactCard({
         )}
       </div>
 
-      {/* Row 3: Native App Action Buttons Toolbar (34px height) */}
+      {/* Row 3: Native App Action Buttons Toolbar (Equal 3-column layout) */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.2fr 1.15fr 0.85fr',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '6px',
           paddingTop: '6px',
           borderTop: '1px solid #f1f5f9',
@@ -480,21 +480,22 @@ export default function ContactCard({
             }}
             style={{
               width: '100%',
-              padding: '6px 6px',
-              height: '34px',
-              fontSize: '0.78rem',
+              padding: '6px 4px',
+              height: '35px',
+              fontSize: '0.76rem',
               fontWeight: 700,
               gap: '4px',
               borderRadius: '8px',
               boxShadow: '0 2px 6px rgba(16, 185, 129, 0.22)',
               justifyContent: 'center',
+              whiteSpace: 'nowrap',
             }}
             title={contact.secondaryPhone ? 'Choose WhatsApp Number' : 'Direct WhatsApp Chat'}
           >
             <Zap size={12} fill="#ffffff" />
             <span>WhatsApp</span>
             {contact.secondaryPhone && (
-              <span style={{ fontSize: '0.60rem', background: 'rgba(255,255,255,0.28)', padding: '0 4px', borderRadius: '4px', fontWeight: 800 }}>
+              <span style={{ fontSize: '0.58rem', background: 'rgba(255,255,255,0.28)', padding: '0 3px', borderRadius: '3px', fontWeight: 800 }}>
                 2
               </span>
             )}
@@ -510,13 +511,14 @@ export default function ContactCard({
                 bottom: '100%',
                 left: 0,
                 marginBottom: '6px',
-                zIndex: 1000,
+                zIndex: 10000,
                 background: '#ffffff',
                 border: '1.5px solid #cbd5e1',
                 borderRadius: '10px',
                 boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(0, 0, 0, 0.1)',
                 padding: '6px',
                 minWidth: '190px',
+                maxWidth: 'calc(100vw - 32px)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '5px',
@@ -584,9 +586,9 @@ export default function ContactCard({
           className="btn btn-secondary"
           onClick={() => (onOpenTemplateModal ? onOpenTemplateModal(contact) : onWhatsAppRedirect(contact))}
           style={{
-            padding: '6px 5px',
-            height: '34px',
-            fontSize: '0.72rem',
+            padding: '6px 4px',
+            height: '35px',
+            fontSize: '0.74rem',
             background: '#ffffff',
             borderColor: '#f59e0b',
             color: '#b45309',
@@ -594,6 +596,7 @@ export default function ContactCard({
             gap: '3px',
             borderRadius: '8px',
             justifyContent: 'center',
+            whiteSpace: 'nowrap',
           }}
           title="Choose Template / Edit Message"
         >
@@ -616,20 +619,21 @@ export default function ContactCard({
             }}
             style={{
               width: '100%',
-              padding: '6px 6px',
-              height: '34px',
+              padding: '6px 4px',
+              height: '35px',
               fontSize: '0.74rem',
               fontWeight: 700,
               gap: '3px',
               borderRadius: '8px',
               justifyContent: 'center',
+              whiteSpace: 'nowrap',
             }}
             title={contact.secondaryPhone ? 'Choose Number to Call' : `Call: +91 ${contact.phone}`}
           >
             <Phone size={12} />
             <span>Call</span>
             {contact.secondaryPhone && (
-              <span style={{ fontSize: '0.60rem', background: 'rgba(255,255,255,0.25)', padding: '0 4px', borderRadius: '4px', fontWeight: 800 }}>
+              <span style={{ fontSize: '0.58rem', background: 'rgba(255,255,255,0.25)', padding: '0 3px', borderRadius: '3px', fontWeight: 800 }}>
                 2
               </span>
             )}
