@@ -928,6 +928,14 @@ select.input-field {
     display: none !important;
   }
 
+  .show-on-mobile {
+    display: none !important;
+  }
+
+  .show-on-mobile-grid {
+    display: none !important;
+  }
+
   .mobile-only-status {
     display: none !important;
   }
@@ -1019,6 +1027,19 @@ select.input-field {
 
   .hide-on-mobile {
     display: none !important;
+  }
+
+  .show-on-mobile {
+    display: block !important;
+  }
+
+  .show-on-mobile-grid {
+    display: grid !important;
+  }
+
+  .analytics-metric-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
 
   .contact-grid {

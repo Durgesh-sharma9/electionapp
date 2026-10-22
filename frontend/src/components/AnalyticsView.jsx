@@ -312,45 +312,51 @@ export default function AnalyticsView({
         </div>
 
         {/* Sub-Tab Navigation Switcher */}
-        <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '10px', padding: '3px', border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', width: '100%', maxWidth: '420px', background: '#f1f5f9', borderRadius: '10px', padding: '3px', border: '1px solid #e2e8f0' }}>
           <button
             type="button"
             onClick={() => setActiveSubTab('campaign')}
             style={{
-              padding: '6px 14px',
+              flex: 1,
+              padding: '6px 10px',
               borderRadius: '8px',
               border: 'none',
               background: activeSubTab === 'campaign' ? '#ffffff' : 'transparent',
               color: activeSubTab === 'campaign' ? '#0284c7' : '#64748b',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.80rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              justifyContent: 'center',
+              gap: '5px',
               boxShadow: activeSubTab === 'campaign' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               transition: 'all 0.15s ease',
+              whiteSpace: 'nowrap',
             }}
           >
-            <span>🗳️ Ward & Sure Voters</span>
+            <span>🗳️ Wards & Voters</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveSubTab('shares')}
             style={{
-              padding: '6px 14px',
+              flex: 1,
+              padding: '6px 10px',
               borderRadius: '8px',
               border: 'none',
               background: activeSubTab === 'shares' ? '#ffffff' : 'transparent',
               color: activeSubTab === 'shares' ? '#0284c7' : '#64748b',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.80rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              justifyContent: 'center',
+              gap: '5px',
               boxShadow: activeSubTab === 'shares' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               transition: 'all 0.15s ease',
+              whiteSpace: 'nowrap',
             }}
           >
             <span>🔗 Public Share Links</span>
@@ -365,93 +371,93 @@ export default function AnalyticsView({
         <>
           {/* Top 4 KPI Metrics */}
           <div
-            className="metric-cards-grid"
+            className="metric-cards-grid analytics-metric-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '10px',
-              marginBottom: '14px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))',
+              gap: '8px',
+              marginBottom: '12px',
             }}
           >
             {/* 1. Total Registered Voters */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
                   Total Voters
                 </span>
-                <Users size={16} color="#0284c7" />
+                <Users size={15} color="#0284c7" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', marginTop: '3px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>
                 {totalVoters}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+              <div style={{ fontSize: '0.70rem', color: '#64748b', marginTop: '1px' }}>
                 {totalFamilies} Families • {wards.length} Wards
               </div>
             </div>
 
             {/* 2. Confirmed Sure Voters ⭐ */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#fef3c7', border: '1.5px solid #f59e0b', borderRadius: '12px' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#fef3c7', border: '1.5px solid #f59e0b', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#92400e', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#92400e', textTransform: 'uppercase' }}>
                   ⭐ Sure Voters
                 </span>
-                <Award size={16} color="#d97706" />
+                <Award size={15} color="#d97706" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#b45309', marginTop: '3px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.45rem', fontWeight: 800, color: '#b45309', marginTop: '2px' }}>
                 {sureVotersCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#92400e', marginTop: '2px', fontWeight: 700 }}>
+              <div style={{ fontSize: '0.70rem', color: '#92400e', marginTop: '1px', fontWeight: 700 }}>
                 {surePercentage}% of {totalVoters} Votes
               </div>
             </div>
 
             {/* 3. Reached / Contacted */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '12px' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
                   💬 Contacted
                 </span>
-                <CheckCircle2 size={16} color="#059669" />
+                <CheckCircle2 size={15} color="#059669" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#059669', marginTop: '3px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.45rem', fontWeight: 800, color: '#059669', marginTop: '2px' }}>
                 {contactedVotersCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.70rem', color: '#047857', marginTop: '1px', fontWeight: 600 }}>
                 {contactedPercentage}% Reached Out
               </div>
             </div>
 
             {/* 4. Pending Outreach */}
-            <div className="glass-panel metric-card-box" style={{ padding: '12px 14px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px' }}>
+            <div className="glass-panel metric-card-box" style={{ padding: '10px 12px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c2410c', textTransform: 'uppercase' }}>
                   ⏳ Pending
                 </span>
-                <Clock size={16} color="#ea580c" />
+                <Clock size={15} color="#ea580c" />
               </div>
-              <div className="metric-card-number" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ea580c', marginTop: '3px' }}>
+              <div className="metric-card-number" style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ea580c', marginTop: '2px' }}>
                 {pendingVotersCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.70rem', color: '#c2410c', marginTop: '1px', fontWeight: 600 }}>
                 {totalVoters > 0 ? 100 - contactedPercentage : 0}% Pending
               </div>
             </div>
           </div>
 
           {/* Sure Voters Overall Target Bar */}
-          <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '14px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+          <div className="glass-panel" style={{ padding: '11px 14px', marginBottom: '14px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={16} color="#f59e0b" />
-                <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#0f172a' }}>
+                <Sparkles size={15} color="#f59e0b" />
+                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a' }}>
                   Campaign Sure Voters Strength: {surePercentage}%
                 </span>
               </div>
-              <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600 }}>
                 <strong>{sureVotersCount}</strong> of {totalVoters} Voters Confirmed
               </span>
             </div>
-            <div style={{ width: '100%', height: '10px', background: '#fef3c7', borderRadius: '6px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '8px', background: '#fef3c7', borderRadius: '6px', overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${Math.min(100, Math.max(0, surePercentage))}%`,
@@ -492,35 +498,36 @@ export default function AnalyticsView({
               </button>
             </div>
 
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+            {/* Desktop Table View */}
+            <div className="hide-on-mobile" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>WARD</th>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>REGISTERED</th>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>⭐ SURE VOTERS</th>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>WARD TARGET</th>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>TARGET REACHED</th>
-                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569' }}>CONTACTED</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>WARD</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>REGISTERED</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>⭐ SURE VOTERS</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>WARD TARGET</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>TARGET REACHED</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>CONTACTED</th>
                   </tr>
                 </thead>
                 <tbody>
                   {wardBreakdown.map((w) => (
                     <tr key={w.name} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a' }}>
-                        <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '3px 9px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                      <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                        <span style={{ display: 'inline-block', background: '#eff6ff', color: '#1d4ed8', padding: '3px 9px', borderRadius: '6px', border: '1px solid #bfdbfe', whiteSpace: 'nowrap' }}>
                           🏛️ {w.name}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', fontWeight: 700, color: '#334155' }}>
+                      <td style={{ padding: '10px 12px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap' }}>
                         {w.total} Voters
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
-                        <span style={{ background: '#fef3c7', color: '#92400e', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #fde68a' }}>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                        <span style={{ display: 'inline-block', background: '#fef3c7', color: '#92400e', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #fde68a', whiteSpace: 'nowrap' }}>
                           ⭐ {w.sure} ({w.percentOfTotal}%)
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', color: '#64748b', fontWeight: 600 }}>
+                      <td style={{ padding: '10px 12px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>
                         {w.target > 0 ? `🎯 ${w.target}` : <span style={{ color: '#94a3b8' }}>— Not set</span>}
                       </td>
                       <td style={{ padding: '10px 12px', minWidth: '150px' }}>
@@ -544,8 +551,8 @@ export default function AnalyticsView({
                           <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>—</span>
                         )}
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
-                        <span style={{ background: '#ecfdf5', color: '#047857', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                        <span style={{ display: 'inline-block', background: '#ecfdf5', color: '#047857', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, whiteSpace: 'nowrap' }}>
                           ✅ {w.contacted}
                         </span>
                       </td>
@@ -553,6 +560,63 @@ export default function AnalyticsView({
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Ward Cards View */}
+            <div className="show-on-mobile">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {wardBreakdown.map((w) => (
+                  <div
+                    key={w.name}
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ display: 'inline-block', background: '#eff6ff', color: '#1d4ed8', padding: '3px 10px', borderRadius: '6px', border: '1px solid #bfdbfe', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                        🏛️ {w.name}
+                      </span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
+                        {w.total} Voters
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{ display: 'inline-block', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, fontSize: '0.74rem', border: '1px solid #fde68a', whiteSpace: 'nowrap' }}>
+                        ⭐ {w.sure} Sure ({w.percentOfTotal}%)
+                      </span>
+                      <span style={{ display: 'inline-block', background: '#ecfdf5', color: '#047857', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
+                        ✅ {w.contacted} Contacted
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+                        🎯 Target: {w.target > 0 ? w.target : '—'}
+                      </span>
+                    </div>
+
+                    {w.target > 0 && (
+                      <div style={{ marginTop: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginBottom: '3px' }}>
+                          <span>Target Progress</span>
+                          <span>{w.percentOfTarget}%</span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              width: `${w.percentOfTarget}%`,
+                              height: '100%',
+                              background: w.percentOfTarget >= 75 ? '#10b981' : '#f59e0b',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -665,19 +729,19 @@ export default function AnalyticsView({
               </div>
             </div>
 
-            {/* Contacts Table */}
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+            {/* Desktop Table View */}
+            <div className="hide-on-mobile" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', minWidth: '760px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ padding: '8px 10px', width: '40px' }}>#</th>
-                    <th style={{ padding: '8px 10px' }}>NAME</th>
-                    <th style={{ padding: '8px 10px' }}>FAMILY VOTES</th>
-                    <th style={{ padding: '8px 10px' }}>PHONE</th>
-                    <th style={{ padding: '8px 10px' }}>WARD</th>
-                    <th style={{ padding: '8px 10px' }}>LOCALITY</th>
-                    <th style={{ padding: '8px 10px' }}>SURE STATUS</th>
-                    <th style={{ padding: '8px 10px' }}>CONTACTED</th>
+                    <th style={{ padding: '8px 10px', width: '40px', whiteSpace: 'nowrap' }}>#</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>NAME</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>FAMILY VOTES</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>PHONE</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>WARD</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>LOCALITY</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>SURE STATUS</th>
+                    <th style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>CONTACTED</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -690,46 +754,46 @@ export default function AnalyticsView({
                   ) : (
                     filteredCampaignContacts.map((c, i) => (
                       <tr key={c._id || i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0284c7', fontFamily: 'monospace' }}>
+                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0284c7', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                           #{c.serialNo || i + 1}
                         </td>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0f172a' }}>
+                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap' }}>
                           {c.name}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
-                          <span style={{ fontSize: '0.74rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #bae6fd' }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '0.74rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #bae6fd', whiteSpace: 'nowrap' }}>
                             👥 {c.voterCount || 1} { (c.voterCount || 1) > 1 ? 'Votes' : 'Vote'}
                           </span>
                         </td>
-                        <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: '#334155' }}>
+                        <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: '#334155', whiteSpace: 'nowrap' }}>
                           +91 {c.phone}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
-                          <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontWeight: 700 }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontWeight: 700, whiteSpace: 'nowrap' }}>
                             🏛️ {c.ward || '—'}
                           </span>
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
-                          <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 7px', borderRadius: '4px', fontWeight: 600 }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 7px', borderRadius: '4px', fontWeight: 600, whiteSpace: 'nowrap' }}>
                             📍 {c.locality || 'Mahima'}
                           </span>
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           {c.isSureVoter ? (
-                            <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                            <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, whiteSpace: 'nowrap' }}>
                               ⭐ Sure ({c.voterCount || 1} { (c.voterCount || 1) > 1 ? 'Votes' : 'Vote'})
                             </span>
                           ) : (
-                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>— Not Confirmed</span>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>— Not Confirmed</span>
                           )}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                           {c.contacted ? (
-                            <span style={{ fontSize: '0.7rem', background: '#ecfdf5', color: '#047857', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.7rem', background: '#ecfdf5', color: '#047857', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, whiteSpace: 'nowrap' }}>
                               ✅ Contacted
                             </span>
                           ) : (
-                            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>⏳ Pending</span>
+                            <span style={{ fontSize: '0.7rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>⏳ Pending</span>
                           )}
                         </td>
                       </tr>
@@ -737,6 +801,64 @@ export default function AnalyticsView({
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="show-on-mobile">
+              {filteredCampaignContacts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px', color: '#94a3b8', fontSize: '0.84rem' }}>
+                  No voters found matching the selected filters.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {filteredCampaignContacts.map((c, i) => (
+                    <div
+                      key={c._id || i}
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        padding: '10px 12px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0284c7', fontFamily: 'monospace' }}>
+                            #{c.serialNo || i + 1}
+                          </span>
+                          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
+                            {c.name}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                          👥 {c.voterCount || 1} { (c.voterCount || 1) > 1 ? 'Votes' : 'Vote'}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '0.78rem', color: '#334155', fontFamily: 'monospace', marginBottom: '6px' }}>
+                        📞 +91 {c.phone}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.7rem', background: '#eff6ff', color: '#1d4ed8', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          🏛️ {c.ward || '—'}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          📍 {c.locality || 'Mahima'}
+                        </span>
+                        {c.isSureVoter && (
+                          <span style={{ fontSize: '0.7rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                            ⭐ Sure
+                          </span>
+                        )}
+                        <span style={{ fontSize: '0.7rem', background: c.contacted ? '#ecfdf5' : '#f1f5f9', color: c.contacted ? '#047857' : '#64748b', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, marginLeft: 'auto' }}>
+                          {c.contacted ? '✅ Contacted' : '⏳ Pending'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </>
