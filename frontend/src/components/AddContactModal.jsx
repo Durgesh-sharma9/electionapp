@@ -524,7 +524,7 @@ export default function AddContactModal({
                   type="text"
                   list="sublocalities-datalist"
                   className="input-field"
-                  placeholder="e.g. Dream Avenue, Block B..."
+                  placeholder="Type new or select existing..."
                   value={subLocality}
                   onChange={(e) => setSubLocality(e.target.value)}
                   style={{ padding: '0 12px 0 34px', height: '40px', fontSize: '0.84rem' }}
@@ -535,6 +535,44 @@ export default function AddContactModal({
                   ))}
                 </datalist>
               </div>
+
+              {/* Interactive suggestion pills of previously created apartments */}
+              {availableSubLocalities.length > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                  <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>Quick pick:</span>
+                  {availableSubLocalities.map((item) => {
+                    const isSelected = subLocality?.toLowerCase().trim() === item.toLowerCase().trim();
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setSubLocality(isSelected ? '' : item)}
+                        style={{
+                          background: isSelected ? '#0284c7' : '#f0f9ff',
+                          color: isSelected ? '#ffffff' : '#0369a1',
+                          border: isSelected ? '1px solid #0284c7' : '1px solid #bae6fd',
+                          borderRadius: '12px',
+                          padding: '2px 8px',
+                          fontSize: '0.70rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <span>🏢 {item}</span>
+                        {isSelected && <span>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : locality ? (
+                <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
+                  💡 Type any new apartment/row name above — it will be auto-saved for next time!
+                </div>
+              ) : null}
             </div>
 
             {/* House / Flat No. */}

@@ -924,10 +924,92 @@ app.get('/api/references', async (req, res) => {
   }
 });
 
-// GET /api/sub-localities (List distinct sub-localities, optionally filtered by locality)
+// GET /api/sub-localities (List distinct sub-localities, or detailed analytics breakdown)
 app.get('/api/sub-localities', async (req, res) => {
   try {
-    const { locality } = req.query;
+    const { locality, detailed } = req.query;
+
+    if (detailed === 'true' || detailed === '1') {
+      // 1. Aggregate stats from contacts
+      const matchStage = { subLocality: { $exists: true, $ne: '' } };
+      if (locality && locality !== 'ALL') {
+        matchStage.locality = { $regex: new RegExp(`^${locality.trim()}$`, 'i') };
+      }
+      const agg = await Contact.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: {
+              subLocality: '$subLocality',
+              locality: { $ifNull: ['$locality', ''] }
+            },
+            ward: { $first: '$ward' },
+            contactCount: { $sum: 1 },
+            voterCount: { $sum: { $ifNull: ['$voterCount', 1] } },
+            sureCount: { $sum: { $cond: [{ $eq: ['$isSureVoter', true] }, { $ifNull: ['$voterCount', 1] }, 0] } },
+            contactedCount: { $sum: { $cond: [{ $eq: ['$contacted', true] }, 1, 0] } },
+          }
+        }
+      ]);
+
+      const map = new Map();
+      agg.forEach((item) => {
+        const subName = item._id.subLocality.trim();
+        const locName = item._id.locality.trim();
+        const key = `${locName.toLowerCase()}:::${subName.toLowerCase()}`;
+        map.set(key, {
+          name: subName,
+          locality: locName,
+          ward: item.ward || '',
+          contactCount: item.contactCount || 0,
+          voterCount: item.voterCount || 0,
+          sureCount: item.sureCount || 0,
+          contactedCount: item.contactedCount || 0,
+          pendingCount: Math.max(0, (item.contactCount || 0) - (item.contactedCount || 0)),
+        });
+      });
+
+      // 2. Also incorporate registered subLocalities from Locality Master even if they have 0 voters yet
+      let locQuery = {};
+      if (locality && locality !== 'ALL') {
+        locQuery.name = { $regex: new RegExp(`^${locality.trim()}$`, 'i') };
+      }
+      const allLocs = await Locality.find(locQuery).lean();
+      allLocs.forEach((loc) => {
+        if (Array.isArray(loc.subLocalities)) {
+          loc.subLocalities.forEach((sub) => {
+            if (!sub || !sub.trim()) return;
+            const subTrimmed = sub.trim();
+            const key = `${loc.name.toLowerCase().trim()}:::${subTrimmed.toLowerCase()}`;
+            if (!map.has(key)) {
+              map.set(key, {
+                name: subTrimmed,
+                locality: loc.name,
+                ward: loc.ward || '',
+                contactCount: 0,
+                voterCount: 0,
+                sureCount: 0,
+                contactedCount: 0,
+                pendingCount: 0,
+              });
+            } else {
+              // Fill ward if missing
+              const existing = map.get(key);
+              if (!existing.ward && loc.ward) existing.ward = loc.ward;
+            }
+          });
+        }
+      });
+
+      const list = Array.from(map.values()).sort((a, b) => {
+        if (b.voterCount !== a.voterCount) return b.voterCount - a.voterCount;
+        return a.name.localeCompare(b.name);
+      });
+
+      return res.json({ success: true, data: list });
+    }
+
+    // Default simple array mode
     const filter = { subLocality: { $exists: true, $ne: '' } };
     if (locality && locality !== 'ALL') {
       filter.locality = { $regex: new RegExp(`^${locality.trim()}$`, 'i') };
@@ -945,6 +1027,57 @@ app.get('/api/sub-localities', async (req, res) => {
     }
     const combined = Array.from(new Set([...fromContacts, ...fromLocalities].map((s) => s.trim()))).filter(Boolean).sort();
     res.json({ success: true, data: combined });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/sub-localities (Add new sub-locality under a locality)
+app.post('/api/sub-localities', async (req, res) => {
+  try {
+    const { locality, name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Apartment / Sub-Locality name is required' });
+    }
+    if (!locality || !locality.trim()) {
+      return res.status(400).json({ success: false, error: 'Locality is required' });
+    }
+    const cleanName = name.trim();
+    const cleanLoc = locality.trim();
+
+    const loc = await Locality.findOneAndUpdate(
+      { name: { $regex: new RegExp(`^${cleanLoc}$`, 'i') } },
+      { $addToSet: { subLocalities: cleanName } },
+      { new: true }
+    );
+    if (!loc) {
+      return res.status(404).json({ success: false, error: 'Locality not found' });
+    }
+    res.status(201).json({
+      success: true,
+      message: `Sub-locality '${cleanName}' added under '${loc.name}'`,
+      data: { name: cleanName, locality: loc.name, ward: loc.ward }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/sub-localities (Remove sub-locality from locality)
+app.delete('/api/sub-localities', async (req, res) => {
+  try {
+    const { locality, name } = req.body;
+    if (!name || !locality) {
+      return res.status(400).json({ success: false, error: 'Name and locality are required' });
+    }
+    const cleanName = name.trim();
+    const cleanLoc = locality.trim();
+
+    await Locality.updateOne(
+      { name: { $regex: new RegExp(`^${cleanLoc}$`, 'i') } },
+      { $pull: { subLocalities: cleanName } }
+    );
+    res.json({ success: true, message: `Sub-locality '${cleanName}' removed` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

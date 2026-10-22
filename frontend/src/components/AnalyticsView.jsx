@@ -24,6 +24,7 @@ import {
   Layers,
   ChevronRight,
   Sparkles,
+  Building2,
 } from 'lucide-react';
 
 export default function AnalyticsView({
@@ -105,6 +106,41 @@ export default function AnalyticsView({
     });
   }, [localities, contacts]);
 
+  // Sub-Locality / Apartment Breakdown
+  const subLocalityBreakdown = useMemo(() => {
+    const map = {};
+    contacts.forEach((c) => {
+      const sub = (c.subLocality || '').trim();
+      if (!sub) return;
+      const loc = (c.locality || '').trim() || 'General';
+      const key = `${loc}:::${sub}`;
+      if (!map[key]) {
+        map[key] = {
+          name: sub,
+          locality: loc,
+          ward: c.ward || '',
+          total: 0,
+          totalFamilies: 0,
+          sure: 0,
+          contacted: 0,
+        };
+      }
+      const vCount = c.voterCount || 1;
+      map[key].total += vCount;
+      map[key].totalFamilies += 1;
+      if (c.isSureVoter) map[key].sure += vCount;
+      if (c.contacted) map[key].contacted += vCount;
+    });
+
+    return Object.values(map)
+      .map((item) => ({
+        ...item,
+        percentSure: item.total > 0 ? Math.round((item.sure / item.total) * 100) : 0,
+        percentContacted: item.totalFamilies > 0 ? Math.round((item.contacted / item.totalFamilies) * 100) : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [contacts]);
+
   // Filtered Campaign Voters for Table
   const filteredCampaignContacts = useMemo(() => {
     return contacts.filter((c) => {
@@ -124,8 +160,10 @@ export default function AnalyticsView({
         const mName = (c.name || '').toLowerCase().includes(q);
         const mPhone = (c.phone || '').includes(q);
         const mLoc = (c.locality || '').toLowerCase().includes(q);
+        const mSub = (c.subLocality || '').toLowerCase().includes(q);
+        const mHouse = (c.houseNo || '').toLowerCase().includes(q);
         const mRef = (c.reference || '').toLowerCase().includes(q);
-        return mName || mPhone || mLoc || mRef;
+        return mName || mPhone || mLoc || mSub || mHouse || mRef;
       }
       return true;
     });
@@ -664,6 +702,73 @@ export default function AnalyticsView({
                           borderRadius: '3px',
                         }}
                       />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Apartment & Sub-Locality Grid Breakdown */}
+          {subLocalityBreakdown.length > 0 && (
+            <div className="glass-panel" style={{ padding: '16px', marginBottom: '14px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Building2 size={16} color="#059669" />
+                  <h3 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
+                    Apartment & Sub-Locality Breakdown ({subLocalityBreakdown.length} Societies / Towers)
+                  </h3>
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>
+                  Door-to-door and apartment outreach tracker
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '10px' }}>
+                {subLocalityBreakdown.map((sub, idx) => (
+                  <div
+                    key={`${sub.locality}-${sub.name}-${idx}`}
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '10px',
+                      padding: '12px 14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4px', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.90rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          🏢 {sub.name}
+                        </span>
+                        <span style={{ fontSize: '0.68rem', color: '#b45309', background: '#fef3c7', padding: '1px 5px', borderRadius: '4px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                          📍 {sub.locality}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.76rem', color: '#475569', marginTop: '6px' }}>
+                        <span>Voters: <strong>{sub.total}</strong> ({sub.totalFamilies} fl.)</span>
+                        <span style={{ color: '#b45309', fontWeight: 700 }}>⭐ {sub.sure} ({sub.percentSure}%)</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                        <span>Contacted:</span>
+                        <span style={{ color: '#059669', fontWeight: 700 }}>{sub.contacted} done ({sub.percentContacted}%)</span>
+                      </div>
+
+                      <div style={{ width: '100%', height: '5px', background: '#e2e8f0', borderRadius: '3px', marginTop: '5px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            width: `${sub.percentContacted}%`,
+                            height: '100%',
+                            background: sub.percentContacted >= 50 ? '#10b981' : '#f59e0b',
+                            borderRadius: '3px',
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}

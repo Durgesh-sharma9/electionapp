@@ -1806,6 +1806,11 @@ export default function App() {
             setLocalityFilter(locName);
             navigateTab('contacts');
           }}
+          onFilterBySubLocality={(subName, locName) => {
+            if (locName) setLocalityFilter(locName);
+            setSearchQuery(subName);
+            navigateTab('contacts');
+          }}
           onBack={handleBack}
           totalContacts={contacts.length}
           onToast={showToast}
